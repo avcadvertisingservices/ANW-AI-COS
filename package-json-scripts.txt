@@ -1,0 +1,7 @@
+"scripts": {
+  "dev": "tsx src/app/index.ts",
+  "build": "tsc --project tsconfig.json",
+  "start": "node dist/src/app/index.js",
+  "test": "tsx --test tests/**/*.test.ts",
+  "typecheck": "tsc --noEmit"
+}

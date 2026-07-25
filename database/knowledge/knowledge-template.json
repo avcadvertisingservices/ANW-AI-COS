@@ -1,0 +1,33 @@
+{
+  "sources": [
+    {
+      "id": "source-example-001",
+      "title": "Replace with a verified source",
+      "publisher": "",
+      "url": "",
+      "publicationDate": "",
+      "accessedAt": "",
+      "notes": "Template only. Do not treat as medical evidence."
+    }
+  ],
+  "records": [
+    {
+      "id": "record-template-001",
+      "slug": "replace-this-slug",
+      "title": "Replace This Title",
+      "summary": "Replace with a concise, source-supported summary.",
+      "body": "Replace with reviewed content. Do not publish medical claims without source verification and human review.",
+      "category": "faq",
+      "tags": [
+        "template"
+      ],
+      "status": "draft",
+      "medicalReviewRequired": true,
+      "sourceIds": [
+        "source-example-001"
+      ],
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    }
+  ]
+}

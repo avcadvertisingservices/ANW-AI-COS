@@ -1,13 +1,9 @@
-/**
- * ANW AI-COS
- * Application Bootstrap
- * Version: 1.0.0
- */
+import { Application } from "./app.js";
+import { handleFatalError } from "../core/errors/index.js";
 
-console.log("=====================================");
-console.log(" ANW AI-COS");
-console.log(" Acoustic Neuroma Warrior");
-console.log(" AI Content Operating System");
-console.log(" Version 1.0.0");
-console.log("=====================================");
-console.log("Application starting...");
+async function bootstrap(): Promise<void> {
+  const application = new Application();
+  await application.start();
+}
+
+bootstrap().catch(handleFatalError);
