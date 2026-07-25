@@ -1,0 +1,22 @@
+flowchart TD
+    Users[Warriors, Caregivers, Families]
+    WP[WordPress + Elementor]
+    Next[Next.js Apps]
+    SB[Supabase]
+    Make[Make.com]
+    GDrive[Google Drive]
+    GH[GitHub]
+    Notion[Notion]
+    AI[AI Services]
+
+    Users --> WP
+    Users --> Next
+    WP --> SB
+    Next --> SB
+    Make --> WP
+    Make --> SB
+    Make --> GDrive
+    AI --> Make
+    GH --> WP
+    GH --> Next
+    Notion --> Make

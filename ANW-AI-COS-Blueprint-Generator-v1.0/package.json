@@ -1,0 +1,19 @@
+{
+  "name": "anw-ai-cos-blueprint-generator",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Documentation infrastructure generator for ANW AI-COS Enterprise Edition.",
+  "type": "module",
+  "scripts": {
+    "docs:init": "tsx scripts/generate-docs.ts",
+    "docs:module": "tsx scripts/create-module.ts",
+    "docs:adr": "tsx scripts/create-adr.ts",
+    "docs:check": "tsx scripts/validate-docs.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

@@ -1,3 +1,20 @@
+---
+title: "Docs Overview"
+documentType: Project Documentation
+version: 1.0.0
+status: Draft
+owner: AVC Advertising Services
+project: ANW AI-COS
+created: 2026-07-26
+lastUpdated: 2026-07-26
+nextReview:
+category: "Docs"
+tags:
+  - documentation
+dependencies: []
+relatedDocuments: []
+relatedADR: []
+---
 # ANW AI-COS Master Blueprint v1.0
 
 This documentation set is the official source of truth.

@@ -1,3 +1,20 @@
+---
+title: "Ai Agents"
+documentType: Project Documentation
+version: 1.0.0
+status: Draft
+owner: AVC Advertising Services
+project: ANW AI-COS
+created: 2026-07-26
+lastUpdated: 2026-07-26
+nextReview:
+category: "Docs"
+tags:
+  - documentation
+dependencies: []
+relatedDocuments: []
+relatedADR: []
+---
 # 06 — AI Agent Responsibilities
 
 - **Chief Editor:** ranks topics by mission fit, audience demand, gaps, and performance.

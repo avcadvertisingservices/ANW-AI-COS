@@ -1,3 +1,20 @@
+---
+title: "Governance And Versioning"
+documentType: Project Documentation
+version: 1.0.0
+status: Draft
+owner: AVC Advertising Services
+project: ANW AI-COS
+created: 2026-07-26
+lastUpdated: 2026-07-26
+nextReview:
+category: "Docs"
+tags:
+  - documentation
+dependencies: []
+relatedDocuments: []
+relatedADR: []
+---
 # 16 — Governance and Versioning
 
 ## Source of Truth
