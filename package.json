@@ -10,7 +10,8 @@
     "test": "vitest run",
     "blueprint:init": "tsx scripts/blueprint-init.ts",
     "blueprint:demo": "tsx src/modules/blueprint/demo.ts",
-    "knowledge:demo": "tsx src/modules/knowledge/demo.ts"
+    "knowledge:demo": "tsx src/modules/knowledge/demo.ts",
+    "knowledge:supabase-demo": "tsx src/modules/knowledge/supabase-demo.ts"
   },
   "repository": {
     "type": "git",
@@ -25,11 +26,13 @@
   },
   "homepage": "https://github.com/avcadvertisingservices/ANW-AI-COS#readme",
   "dependencies": {
+    "@supabase/supabase-js": "^2.110.8",
     "@types/node": "^26.1.1",
     "dotenv": "^17.4.2",
     "typescript": "^7.0.2"
   },
   "devDependencies": {
+    "supabase": "^2.109.1",
     "tsx": "^4.23.1",
     "vitest": "^4.1.10"
   }

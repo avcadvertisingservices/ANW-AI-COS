@@ -23,3 +23,11 @@ export type {
   KnowledgeSource,
   KnowledgeStatus,
 } from "./types.js";
+
+export { SupabaseKnowledgeRepository } from "./supabase-repository.js";
+export { createSupabaseKnowledgeService } from "./supabase-service.js";
+export {
+  knowledgeDomainToInsert,
+  knowledgeDomainToUpdate,
+  knowledgeRowToDomain,
+} from "./supabase-mapper.js";

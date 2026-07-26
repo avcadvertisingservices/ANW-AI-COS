@@ -1,68 +1,140 @@
-# ANW AI-COS Knowledge Engine v1.1 — Fixed Installation
+# Knowledge Engine v1.1 — Supabase Persistence
 
-This package fixes the Vitest error:
+## Step 1 — Copy the package
 
-```text
-No test suite found
-```
-
-The Knowledge Engine tests were already working. The failure came from three older empty placeholder files.
-
-## Step 1 — Extract the ZIP
-
-Extract this package.
-
-## Step 2 — Copy into ANW-AI-COS
-
-Copy these folders into the root of your `ANW-AI-COS` repository:
+Extract the ZIP and copy these items into the root of `ANW-AI-COS`:
 
 ```text
-scripts
-tests
+src/
+tests/
+docs/
+supabase/
+.env.example
 ```
 
 Choose **Yes** when Windows asks to merge folders.
 
-## Step 3 — Run the safe cleanup
+## Step 2 — Update the Knowledge Engine index
 
-In the VS Code terminal, from the `ANW-AI-COS` root, run:
+Open:
+
+```text
+src/modules/knowledge/index.ts
+```
+
+Copy the exports from:
+
+```text
+src/modules/knowledge/index.ts.patch.txt
+```
+
+to the bottom of `index.ts`.
+
+After copying, delete `index.ts.patch.txt`.
+
+## Step 3 — Install packages
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts/fix-empty-tests.ps1
+npm install @supabase/supabase-js dotenv
 ```
 
-The script checks only these three files:
+```powershell
+npm install -D supabase
+```
+
+## Step 4 — Protect secrets
+
+Confirm `.gitignore` contains:
 
 ```text
-tests/environment.test.ts
-tests/knowledge-service.test.ts
-tests/knowledge-validation.test.ts
+.env
+.env.local
+.env.*.local
 ```
 
-It removes a file only when it contains no `describe()`, `it()`, or `test()` suite.
+Never commit the real service-role key.
 
-Before removal, it creates a backup under:
+## Step 5 — Create your local environment file
+
+Copy `.env.example` to `.env`:
+
+```powershell
+Copy-Item ".env.example" ".env"
+```
+
+Open `.env` and enter:
 
 ```text
-backups/empty-tests/
+SUPABASE_URL=your Supabase project URL
+SUPABASE_SERVICE_ROLE_KEY=your server-only service-role key
 ```
 
-## Step 4 — Run all tests
+Do not show this key in screenshots.
+
+## Step 6 — Link your Supabase project
+
+If Supabase CLI is not logged in:
+
+```powershell
+npx supabase login
+```
+
+Then link the repository:
+
+```powershell
+npx supabase link --project-ref YOUR_PROJECT_REF
+```
+
+Replace `YOUR_PROJECT_REF` with the reference shown in your Supabase project URL.
+
+## Step 7 — Apply the migration
+
+```powershell
+npx supabase db push
+```
+
+This creates `public.knowledge_entries`, indexes, validation constraints, and RLS protection.
+
+## Step 8 — Register the live demo
+
+```powershell
+npm pkg set scripts.knowledge:supabase-demo="tsx src/modules/knowledge/supabase-demo.ts"
+```
+
+## Step 9 — Validate locally
+
+```powershell
+npm run typecheck
+```
 
 ```powershell
 npm test
 ```
 
-## Step 5 — Run the Knowledge Engine demo
+## Step 10 — Run the Supabase demo
 
 ```powershell
-npm run knowledge:demo
+npm run knowledge:supabase-demo
 ```
 
-## Step 6 — Save the fix
+Expected result:
+
+```text
+CREATED or EXISTS: what-is-acoustic-neuroma
+CREATED or EXISTS: one-sided-hearing-loss
+CREATED or EXISTS: you-are-not-alone
+hearingSearchCount: 1
+topResult: One-Sided Hearing Loss
+```
+
+## Step 11 — Save the milestone
 
 ```powershell
 git add .
-git commit -m "fix: remove empty placeholder tests"
+git commit -m "feat: add Supabase persistence to knowledge engine"
 git push origin HEAD:main
 ```
+
+## Safety requirement
+
+The service-role key bypasses normal RLS controls. Keep it only in secure server-side environments.

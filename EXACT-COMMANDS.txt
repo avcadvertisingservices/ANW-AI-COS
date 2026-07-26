@@ -1,6 +1,13 @@
-powershell -ExecutionPolicy Bypass -File scripts/fix-empty-tests.ps1
+npm install @supabase/supabase-js dotenv
+npm install -D supabase
+Copy-Item ".env.example" ".env"
+npx supabase login
+npx supabase link --project-ref YOUR_PROJECT_REF
+npx supabase db push
+npm pkg set scripts.knowledge:supabase-demo="tsx src/modules/knowledge/supabase-demo.ts"
+npm run typecheck
 npm test
-npm run knowledge:demo
+npm run knowledge:supabase-demo
 git add .
-git commit -m "fix: remove empty placeholder tests"
+git commit -m "feat: add Supabase persistence to knowledge engine"
 git push origin HEAD:main
