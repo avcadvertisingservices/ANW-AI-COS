@@ -1,34 +1,38 @@
-import { createKnowledgeService } from "./factory.js";
-import type { KnowledgeRecord } from "./types.js";
+import {
+  createStarterKnowledge,
+  InMemoryKnowledgeRepository,
+  KnowledgeService,
+} from "./index.js";
 
-const now = new Date().toISOString();
+async function main(): Promise<void> {
+  const repository = new InMemoryKnowledgeRepository();
+  const service = new KnowledgeService(repository);
 
-const demoRecord: KnowledgeRecord = {
-  id: "demo-001",
-  slug: "welcome-to-the-knowledge-engine",
-  title: "Welcome to the Knowledge Engine",
-  summary: "A non-medical demonstration record used to verify the module.",
-  body: "This record confirms that loading, validation, filtering, and search work.",
-  category: "glossary",
-  tags: ["demo", "system"],
-  status: "approved",
-  medicalReviewRequired: false,
-  sourceIds: [],
-  createdAt: now,
-  updatedAt: now,
-};
+  for (const entry of createStarterKnowledge()) {
+    await service.create(entry);
+  }
 
-const knowledge = createKnowledgeService([demoRecord]);
-const results = await knowledge.searchApproved({ text: "knowledge" });
+  const allResults = await service.search({
+    text: "hearing",
+    limit: 10,
+  });
 
-console.log(
-  JSON.stringify(
-    {
-      module: "knowledge",
-      resultCount: results.length,
-      titles: results.map((result) => result.record.title),
-    },
-    null,
-    2,
-  ),
-);
+  const approvedResults = await service.search({
+    approvedOnly: true,
+  });
+
+  console.log({
+    totalSeedEntries: (await repository.list()).length,
+    hearingSearchCount: allResults.length,
+    topHearingResult: allResults[0]?.entry.title ?? null,
+    approvedCount: approvedResults.length,
+    missionPresent: approvedResults.some(
+      (result) => result.entry.slug === "you-are-not-alone",
+    ),
+  });
+}
+
+main().catch((error: unknown) => {
+  console.error(error);
+  process.exitCode = 1;
+});

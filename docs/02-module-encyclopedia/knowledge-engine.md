@@ -2,110 +2,66 @@
 title: "Knowledge Engine"
 documentType: "Module Specification"
 version: "1.0.0"
-status: "Draft"
+status: "Active"
 owner: "AVC Advertising Services"
 project: "ANW AI-COS"
-created: "2026-07-26"
-lastUpdated: "2026-07-26"
-nextReview: ""
-category: "Module"
+category: "Knowledge"
 tags:
-  - "module"
-  - "engine"
-dependencies:
-  []
-relatedDocuments: []
-relatedADR: []
+  - "knowledge"
+  - "medical-safety"
+  - "retrieval"
+dependencies: []
+relatedDocuments:
+  - "../00-governance/medical-safety-policy.md"
+relatedADR:
+  - "../03-architecture-decisions/ADR-003-human-review.md"
 ---
 
 # Knowledge Engine
 
 ## Executive Summary
 
-To be completed.
+The Knowledge Engine is the controlled information layer for ANW AI-COS. It stores structured facts, symptoms, treatment information, recovery education, FAQs, survivor stories, research references, glossary entries, and resources.
 
-## Purpose
+## Core Responsibilities
 
-To be completed.
+- Store structured knowledge entries.
+- Track source metadata and evidence level.
+- Enforce medical-review requirements.
+- Search by text, tags, status, and category.
+- Prevent duplicate identifiers and slugs.
+- Provide approved knowledge to future content engines.
+- Preserve draft, review, approved, and archived states.
 
-## Responsibilities
+## Safety Rule
 
-To be completed.
+Medical entries must never be treated as publishable merely because they exist in the repository. Entries marked `medicalReviewRequired: true` require reviewer metadata before they can be approved.
 
-## Scope
+## Initial Storage
 
-To be completed.
-
-## Functional Requirements
-
-To be completed.
-
-## Non-functional Requirements
-
-To be completed.
-
-## Inputs
-
-To be completed.
-
-## Outputs
-
-To be completed.
+Version 1.0 uses an in-memory repository for testing and architecture validation. A future Supabase repository will implement the same `KnowledgeRepository` interface.
 
 ## Public API
 
-To be completed.
+```ts
+const service = new KnowledgeService(repository);
 
-## Internal Components
-
-To be completed.
-
-## Configuration
-
-To be completed.
-
-## Error Handling
-
-To be completed.
-
-## Logging and Observability
-
-To be completed.
-
-## Security and Privacy
-
-To be completed.
-
-## Performance
-
-To be completed.
-
-## Testing
-
-To be completed.
-
-## Examples
-
-To be completed.
+await service.create(entry);
+await service.getById(id);
+await service.getBySlug(slug);
+await service.search(query);
+await service.approve({ id, reviewedBy });
+await service.archive(id);
+```
 
 ## Future Roadmap
 
-To be completed.
-
-## Dependencies
-
-None documented.
-
-## Review Checklist
-
-- [ ] Metadata complete
-- [ ] Purpose defined
-- [ ] Responsibilities documented
-- [ ] Interfaces identified
-- [ ] Dependencies listed
-- [ ] Error handling covered
-- [ ] Security reviewed
-- [ ] Examples included
-- [ ] Testing requirements documented
-- [ ] Approved
-
+- Supabase repository
+- database migrations
+- citation verification
+- source freshness checks
+- semantic embeddings
+- AI retrieval
+- multilingual knowledge
+- reviewer workflow
+- content provenance

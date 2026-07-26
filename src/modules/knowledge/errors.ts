@@ -1,25 +1,30 @@
-import { AppError } from "../../core/errors/index.js";
+export class KnowledgeError extends Error {
+  public readonly code: string;
 
-export class KnowledgeValidationError extends AppError {
-  constructor(message: string, details?: Record<string, unknown>) {
-    super({
-      code: "KNOWLEDGE_VALIDATION_ERROR",
-      message,
-      statusCode: 400,
-      details,
-    });
+  public constructor(message: string, code: string) {
+    super(message);
+    this.name = "KnowledgeError";
+    this.code = code;
+  }
+}
+
+export class KnowledgeValidationError extends KnowledgeError {
+  public constructor(message: string) {
+    super(message, "KNOWLEDGE_VALIDATION_ERROR");
     this.name = "KnowledgeValidationError";
   }
 }
 
-export class KnowledgeNotFoundError extends AppError {
-  constructor(idOrSlug: string) {
-    super({
-      code: "KNOWLEDGE_NOT_FOUND",
-      message: `Knowledge record not found: ${idOrSlug}`,
-      statusCode: 404,
-      details: { idOrSlug },
-    });
+export class KnowledgeConflictError extends KnowledgeError {
+  public constructor(message: string) {
+    super(message, "KNOWLEDGE_CONFLICT_ERROR");
+    this.name = "KnowledgeConflictError";
+  }
+}
+
+export class KnowledgeNotFoundError extends KnowledgeError {
+  public constructor(message: string) {
+    super(message, "KNOWLEDGE_NOT_FOUND");
     this.name = "KnowledgeNotFoundError";
   }
 }

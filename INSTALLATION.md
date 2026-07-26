@@ -1,55 +1,68 @@
-# Sprint 06 Installation
+# ANW AI-COS Knowledge Engine v1.1 — Fixed Installation
 
-## 1. Copy files
-
-Extract the ZIP and copy its contents into the root of the local `ANW-AI-COS` repository.
-
-This pack adds:
-- `src/modules/knowledge`
-- `database/knowledge`
-- knowledge tests
-- sprint documentation
-
-## 2. Add a demo script
-
-Run:
-
-```powershell
-npm pkg set scripts.knowledge:demo="tsx src/modules/knowledge/demo.ts"
-```
-
-Your existing test command should already be:
+This package fixes the Vitest error:
 
 ```text
-tsx --test tests/**/*.test.ts
+No test suite found
 ```
 
-## 3. Validate
+The Knowledge Engine tests were already working. The failure came from three older empty placeholder files.
 
-Run one command at a time:
+## Step 1 — Extract the ZIP
+
+Extract this package.
+
+## Step 2 — Copy into ANW-AI-COS
+
+Copy these folders into the root of your `ANW-AI-COS` repository:
+
+```text
+scripts
+tests
+```
+
+Choose **Yes** when Windows asks to merge folders.
+
+## Step 3 — Run the safe cleanup
+
+In the VS Code terminal, from the `ANW-AI-COS` root, run:
 
 ```powershell
-npm run typecheck
+powershell -ExecutionPolicy Bypass -File scripts/fix-empty-tests.ps1
+```
+
+The script checks only these three files:
+
+```text
+tests/environment.test.ts
+tests/knowledge-service.test.ts
+tests/knowledge-validation.test.ts
+```
+
+It removes a file only when it contains no `describe()`, `it()`, or `test()` suite.
+
+Before removal, it creates a backup under:
+
+```text
+backups/empty-tests/
+```
+
+## Step 4 — Run all tests
+
+```powershell
 npm test
+```
+
+## Step 5 — Run the Knowledge Engine demo
+
+```powershell
 npm run knowledge:demo
 ```
 
-## Expected demo result
-
-The terminal should print JSON containing:
-
-```json
-{
-  "module": "knowledge",
-  "resultCount": 1
-}
-```
-
-## 4. Commit after tests pass
+## Step 6 — Save the fix
 
 ```powershell
-git status
 git add .
-git commit -m "feat: add Sprint 06 knowledge engine"
-git push origin main
+git commit -m "fix: remove empty placeholder tests"
+git push origin HEAD:main
 ```

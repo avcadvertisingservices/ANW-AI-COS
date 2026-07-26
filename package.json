@@ -9,7 +9,8 @@
   "scripts": {
     "test": "vitest run",
     "blueprint:init": "tsx scripts/blueprint-init.ts",
-    "blueprint:demo": "tsx src/modules/blueprint/demo.ts"
+    "blueprint:demo": "tsx src/modules/blueprint/demo.ts",
+    "knowledge:demo": "tsx src/modules/knowledge/demo.ts"
   },
   "repository": {
     "type": "git",

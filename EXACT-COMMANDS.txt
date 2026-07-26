@@ -1,0 +1,6 @@
+powershell -ExecutionPolicy Bypass -File scripts/fix-empty-tests.ps1
+npm test
+npm run knowledge:demo
+git add .
+git commit -m "fix: remove empty placeholder tests"
+git push origin HEAD:main
