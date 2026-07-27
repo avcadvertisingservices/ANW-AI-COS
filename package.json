@@ -14,7 +14,9 @@
     "knowledge:supabase-demo": "tsx src/modules/knowledge/supabase-demo.ts",
     "content:demo": "tsx src/modules/content/demo.ts",
     "content:live-demo": "tsx src/modules/content/live-demo.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "carousel:demo": "tsx src/modules/carousel/demo.ts",
+    "carousel:integrated-demo": "tsx src/modules/carousel/integrated-demo.ts"
   },
   "repository": {
     "type": "git",

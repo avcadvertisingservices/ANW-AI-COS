@@ -1,12 +1,15 @@
-npm install openai zod
-npm pkg set scripts.content:demo="tsx src/modules/content/demo.ts"
-npm pkg set scripts.content:live-demo="tsx src/modules/content/live-demo.ts"
+npm pkg set scripts.carousel:demo="tsx src/modules/carousel/demo.ts"
+npm pkg set scripts.carousel:integrated-demo="tsx src/modules/carousel/integrated-demo.ts"
 npm run typecheck
 npm test
-npm run content:demo
+npm run carousel:demo
+npm run carousel:integrated-demo
 npx supabase db push
-npm run content:live-demo
-git add .
-git status
-git commit -m "feat: add AI Content Engine v1"
+git check-ignore .env
+git check-ignore output
+git add -A
+git --no-pager diff --cached --name-only
+git commit -m "feat: add Carousel Production Engine v1"
 git push origin HEAD:main
+git tag -a v1.3.0 -m "Carousel Production Engine v1"
+git push origin v1.3.0

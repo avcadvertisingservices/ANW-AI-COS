@@ -1,61 +1,143 @@
-# AI Content Engine v1.0 Installation
+# ANW AI-COS Carousel Production Engine v1.3.0
 
-## 1. Copy files
-Extract this ZIP. Copy `src`, `tests`, `supabase`, and `docs` into the root of `ANW-AI-COS`. Choose **Yes** to merge folders.
+## What this release does
 
-## 2. Install packages
-```powershell
-npm install openai zod
-```
+It converts a Content Engine carousel into a complete design-production package:
 
-## 3. Register commands
-```powershell
-npm pkg set scripts.content:demo="tsx src/modules/content/demo.ts"
-npm pkg set scripts.content:live-demo="tsx src/modules/content/live-demo.ts"
-```
+- 10 design-ready slide specifications
+- Canva Bulk Create CSV
+- Storyboard Markdown
+- Image-generation prompts
+- Per-slide copy files
+- File naming conventions
+- Quality checks
+- Medical-review flags
+- Supabase production tables
 
-## 4. Confirm `.gitignore`
+It does not auto-publish and does not directly call Canva yet.
+
+## Step 1 — Copy the package
+
+Extract the ZIP. Copy these folders into the root of `ANW-AI-COS`:
+
 ```text
-.env
-.env.local
-.env.*.local
-node_modules/
-dist/
-coverage/
-output/
-supabase/.temp/
+src
+tests
+supabase
+docs
 ```
 
-## 5. Validate without OpenAI charges
+Choose **Yes** when Windows asks to merge folders.
+
+## Step 2 — Register scripts
+
+```powershell
+npm pkg set scripts.carousel:demo="tsx src/modules/carousel/demo.ts"
+```
+
+```powershell
+npm pkg set scripts.carousel:integrated-demo="tsx src/modules/carousel/integrated-demo.ts"
+```
+
+## Step 3 — Validate the code
+
 ```powershell
 npm run typecheck
-npm test
-npm run content:demo
 ```
-Expected: `carouselSlides: 10`, all format flags `true`, and `missionPresent: true`.
 
-## 6. Apply database migration
+```powershell
+npm test
+```
+
+## Step 4 — Run the local demo
+
+This demo does not use Supabase or paid AI credits:
+
+```powershell
+npm run carousel:demo
+```
+
+Expected output includes:
+
+```text
+slides: 10
+aspectRatio: 9:16
+canvas: 1080x1920
+structuralValidation: true
+readyForDesign: true
+requiresHumanReview: true
+errorCount: 0
+```
+
+Files are generated under:
+
+```text
+output/carousels/
+```
+
+## Step 5 — Run the integrated demo
+
+This uses the existing approved Knowledge Engine records and the free mock Content Provider:
+
+```powershell
+npm run carousel:integrated-demo
+```
+
+## Step 6 — Apply the Supabase migration
+
 ```powershell
 npx supabase db push
 ```
 
-## 7. Optional live OpenAI generation
-Add only to your local `.env`:
-```text
-OPENAI_API_KEY=your_private_openai_api_key
-OPENAI_MODEL=gpt-5.6
-```
-Never show or commit the API key. Then run:
-```powershell
-npm run content:live-demo
-```
-The bundle is saved under `output/`.
+Approve this migration when prompted:
 
-## 8. Commit after tests pass
+```text
+202607270002_create_carousel_production_tables.sql
+```
+
+It creates:
+
+```text
+carousel_projects
+carousel_slide_specs
+```
+
+## Step 7 — Security check
+
+Confirm `output/` and `.env` are ignored:
+
 ```powershell
-git add .
-git status
-git commit -m "feat: add AI Content Engine v1"
+git check-ignore .env
+```
+
+```powershell
+git check-ignore output
+```
+
+## Step 8 — Commit and release
+
+```powershell
+git add -A
+```
+
+```powershell
+git --no-pager diff --cached --name-only
+```
+
+Confirm `.env` and `output/` are not staged.
+
+```powershell
+git commit -m "feat: add Carousel Production Engine v1"
+```
+
+```powershell
 git push origin HEAD:main
 ```
-Confirm `.env`, `node_modules`, `output`, and `supabase/.temp` are not staged.
+
+```powershell
+git tag -a v1.3.0 -m "Carousel Production Engine v1"
+```
+
+```powershell
+git push origin v1.3.0
+```
