@@ -21,3 +21,4 @@ coverage/
 # macOS
 .DS_Store
 supabase/.temp/
+output/
