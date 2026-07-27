@@ -1,24 +1,25 @@
-# ANW AI-COS Carousel Production Engine v1.3.0
+# ANW AI-COS Knowledge Review Workflow v1.4.0
 
-## What this release does
+## What this release adds
 
-It converts a Content Engine carousel into a complete design-production package:
+- Knowledge review policy engine
+- Draft, submit, in-review, changes-requested, approved, and rejected states
+- Medical-reviewer authorization rules
+- Source-count and source-URL validation
+- Supabase review-request repository
+- Immutable audit events
+- Safe read-only topic diagnostic
+- In-memory demo and automated tests
 
-- 10 design-ready slide specifications
-- Canva Bulk Create CSV
-- Storyboard Markdown
-- Image-generation prompts
-- Per-slide copy files
-- File naming conventions
-- Quality checks
-- Medical-review flags
-- Supabase production tables
+## Step 1 — Extract outside the repository
 
-It does not auto-publish and does not directly call Canva yet.
+Extract this ZIP somewhere outside:
 
-## Step 1 — Copy the package
+```text
+C:\Users\LAPTOP\Documents\GitHub\ANW-AI-COS
+```
 
-Extract the ZIP. Copy these folders into the root of `ANW-AI-COS`:
+Then copy only these folders into the repository root:
 
 ```text
 src
@@ -27,19 +28,21 @@ supabase
 docs
 ```
 
-Choose **Yes** when Windows asks to merge folders.
+Choose **Merge** when Windows asks.
+
+Do not leave the extracted package folder inside the repository because Vitest may discover duplicate tests.
 
 ## Step 2 — Register scripts
 
 ```powershell
-npm pkg set scripts.carousel:demo="tsx src/modules/carousel/demo.ts"
+npm pkg set scripts.review:demo="tsx src/modules/review/demo.ts"
 ```
 
 ```powershell
-npm pkg set scripts.carousel:integrated-demo="tsx src/modules/carousel/integrated-demo.ts"
+npm pkg set scripts.review:check-topic="tsx src/modules/review/check-topic.ts"
 ```
 
-## Step 3 — Validate the code
+## Step 3 — Validate locally
 
 ```powershell
 npm run typecheck
@@ -49,95 +52,70 @@ npm run typecheck
 npm test
 ```
 
-## Step 4 — Run the local demo
-
-This demo does not use Supabase or paid AI credits:
-
 ```powershell
-npm run carousel:demo
+npm run review:demo
 ```
 
-Expected output includes:
+Expected demo fields include:
 
 ```text
-slides: 10
-aspectRatio: 9:16
-canvas: 1080x1920
-structuralValidation: true
-readyForDesign: true
-requiresHumanReview: true
-errorCount: 0
+requestStatus: approved
+knowledgeStatus: approved
+requiresMedicalReviewer: true
+sourceCount: 2
+eventCount: 4
 ```
 
-Files are generated under:
-
-```text
-output/carousels/
-```
-
-## Step 5 — Run the integrated demo
-
-This uses the existing approved Knowledge Engine records and the free mock Content Provider:
-
-```powershell
-npm run carousel:integrated-demo
-```
-
-## Step 6 — Apply the Supabase migration
+## Step 4 — Apply the Supabase migration
 
 ```powershell
 npx supabase db push
 ```
 
-Approve this migration when prompted:
+Approve the migration when prompted:
 
 ```text
-202607270002_create_carousel_production_tables.sql
+202607270002_create_knowledge_review_workflow.sql
 ```
 
-It creates:
-
-```text
-carousel_projects
-carousel_slide_specs
-```
-
-## Step 7 — Security check
-
-Confirm `output/` and `.env` are ignored:
+## Step 5 — Inspect the real hearing-loss entry safely
 
 ```powershell
-git check-ignore .env
+npm run review:check-topic
 ```
 
+This is read-only. It prints policy failures without exposing your Supabase secret.
+
+To inspect another slug temporarily:
+
 ```powershell
-git check-ignore output
+$env:REVIEW_TOPIC_SLUG="what-is-acoustic-neuroma"
+npm run review:check-topic
+Remove-Item Env:REVIEW_TOPIC_SLUG
 ```
 
-## Step 8 — Commit and release
+## Step 6 — Release only after validation passes
 
 ```powershell
+git status
 git add -A
-```
-
-```powershell
 git --no-pager diff --cached --name-only
 ```
 
-Confirm `.env` and `output/` are not staged.
+Confirm the staged list does not contain:
 
-```powershell
-git commit -m "feat: add Carousel Production Engine v1"
+```text
+.env
+node_modules
+output
+supabase/.temp
 ```
 
+Then:
+
 ```powershell
+git commit -m "feat: add Knowledge Review Workflow v1.4.0"
 git push origin HEAD:main
-```
-
-```powershell
-git tag -a v1.3.0 -m "Carousel Production Engine v1"
-```
-
-```powershell
-git push origin v1.3.0
+git tag -a v1.4.0 -m "Knowledge Review and Approval Workflow v1.4.0"
+git push origin v1.4.0
 ```

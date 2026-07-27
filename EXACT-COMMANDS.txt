@@ -1,15 +1,14 @@
-npm pkg set scripts.carousel:demo="tsx src/modules/carousel/demo.ts"
-npm pkg set scripts.carousel:integrated-demo="tsx src/modules/carousel/integrated-demo.ts"
+npm pkg set scripts.review:demo="tsx src/modules/review/demo.ts"
+npm pkg set scripts.review:check-topic="tsx src/modules/review/check-topic.ts"
 npm run typecheck
 npm test
-npm run carousel:demo
-npm run carousel:integrated-demo
+npm run review:demo
 npx supabase db push
-git check-ignore .env
-git check-ignore output
+npm run review:check-topic
+git status
 git add -A
 git --no-pager diff --cached --name-only
-git commit -m "feat: add Carousel Production Engine v1"
+git commit -m "feat: add Knowledge Review Workflow v1.4.0"
 git push origin HEAD:main
-git tag -a v1.3.0 -m "Carousel Production Engine v1"
-git push origin v1.3.0
+git tag -a v1.4.0 -m "Knowledge Review and Approval Workflow v1.4.0"
+git push origin v1.4.0

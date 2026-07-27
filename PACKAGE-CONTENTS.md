@@ -1,30 +1,26 @@
 # Package Contents
 
 ```text
-src/modules/carousel/
-├── index.ts
+src/modules/review/
 ├── types.ts
-├── brand.ts
-├── layout.ts
-├── utils.ts
-├── prompts.ts
-├── validator.ts
-├── engine.ts
-├── exporters.ts
-├── writer.ts
+├── errors.ts
+├── policy.ts
+├── repository.ts
+├── in-memory.ts
+├── supabase-repository.ts
+├── service.ts
 ├── factory.ts
-├── demo-fixture.ts
 ├── demo.ts
-└── integrated-demo.ts
+├── check-topic.ts
+└── index.ts
 
-tests/carousel/
-├── carousel-production-engine.test.ts
-├── carousel-exporters.test.ts
-└── carousel-validator.test.ts
+tests/review/
+├── policy.test.ts
+└── workflow.test.ts
 
 supabase/migrations/
-└── 202607270002_create_carousel_production_tables.sql
+└── 202607270002_create_knowledge_review_workflow.sql
 
 docs/02-module-encyclopedia/
-└── carousel-production-engine.md
+└── knowledge-review-workflow.md
 ```

@@ -1,20 +1,29 @@
-# Validation Report
+# Validation Report — v1.4.0
 
-Package: ANW AI-COS Carousel Production Engine v1.3.0
+Validated on July 27, 2026.
 
-Validation completed before packaging:
+## Passed
 
-- TypeScript strict compilation: PASS
-- NodeNext module resolution: PASS
-- Exact optional property types: PASS
-- No unchecked indexed access: PASS
-- Local 10-slide demo execution: PASS
-- 9:16 canvas output: PASS (1080 × 1920)
-- Structural validation: PASS
-- Design-ready package creation: PASS
-- Canva CSV generation: PASS
-- JSON manifest generation: PASS
-- Storyboard generation: PASS
-- Per-slide copy and image prompt generation: PASS
+- Strict TypeScript compilation
+- `exactOptionalPropertyTypes`
+- `noUncheckedIndexedAccess`
+- `noUnusedLocals`
+- In-memory full workflow demo
+- Draft → submitted → in review → approved lifecycle
+- Four-event audit trail
+- Medical reviewer authorization
+- Editorial reviewer blocked from medical approval
 
-The integrated Supabase demo must still be run inside the user's ANW-AI-COS repository because it depends on the user's private Supabase environment and approved Knowledge Engine records.
+## Demo Result
+
+```text
+requestStatus: approved
+knowledgeStatus: approved
+requiresMedicalReviewer: true
+sourceCount: 2
+eventCount: 4
+```
+
+## Important
+
+The `example.org` source URLs used by the local demo and tests are technical fixtures only. They are not medical references and must never be copied into production knowledge entries. Real medical entries still require reliable sources and qualified human review.
