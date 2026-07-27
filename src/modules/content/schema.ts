@@ -1,0 +1,15 @@
+import { z } from "zod";
+const n=z.string().nullable();
+const slide=z.object({slideNumber:z.number().int(),role:z.enum(["hook","introduction","education","tips","myth","survivor-insight","takeaways","cta"]),title:z.string(),headline:z.string(),body:z.string(),imagePrompt:z.string(),designNotes:z.string(),icons:z.array(z.string()),voiceover:z.string(),altText:z.string(),callToAction:z.string(),medicalReviewFlag:z.boolean()});
+export const contentBundleSchema=z.object({
+ id:z.string(),topic:z.string(),audience:z.string(),language:z.string(),status:z.enum(["draft","medical_review","approved","rejected","archived"]),knowledgeEntryIds:z.array(z.string()),knowledgeSnapshot:z.array(z.object({id:z.string(),slug:z.string(),title:z.string(),summary:z.string(),body:z.string(),category:z.enum(["medical-fact","symptom","diagnosis","treatment","recovery","faq","survivor-story","research","glossary","resource"]),tags:z.array(z.string()),sourceTitles:z.array(z.string()),reviewedBy:n,reviewedAt:n})),generatedAt:z.string(),model:z.string(),
+ blog:z.object({title:z.string(),slug:z.string(),excerpt:z.string(),introduction:z.string(),sections:z.array(z.object({heading:z.string(),body:z.string()})),conclusion:z.string(),callToAction:z.string(),seoTitle:z.string(),seoDescription:z.string(),keywords:z.array(z.string())}).nullable(),
+ facebook:z.object({hook:z.string(),body:z.string(),callToAction:z.string(),hashtags:z.array(z.string()),firstComment:z.string()}).nullable(),
+ carousel:z.object({title:z.string(),slideCount:z.number().int(),caption:z.string(),hashtags:z.array(z.string()),slides:z.array(slide)}).nullable(),
+ reel:z.object({title:z.string(),hook:z.string(),durationSeconds:z.number().int(),scenes:z.array(z.object({sceneNumber:z.number().int(),durationSeconds:z.number().int(),visual:z.string(),onScreenText:z.string(),voiceover:z.string()})),caption:z.string(),callToAction:z.string(),hashtags:z.array(z.string())}).nullable(),
+ pinterest:z.object({pinTitle:z.string(),pinDescription:z.string(),overlayText:z.string(),boardSuggestion:z.string(),keywords:z.array(z.string()),imagePrompt:z.string(),destinationPath:z.string()}).nullable(),
+ email:z.object({subject:z.string(),previewText:z.string(),greeting:z.string(),body:z.string(),callToActionLabel:z.string(),callToActionPath:z.string(),closing:z.string()}).nullable(),
+ youtube:z.object({title:z.string(),thumbnailText:z.string(),description:z.string(),hook:z.string(),script:z.string(),callToAction:z.string(),chapters:z.array(z.object({timestamp:z.string(),title:z.string()})),tags:z.array(z.string())}).nullable(),
+ safety:z.object({requiresMedicalReview:z.boolean(),approvedKnowledgeOnly:z.boolean(),containsDiagnosisLanguage:z.boolean(),containsGuaranteedOutcomeLanguage:z.boolean(),containsUnsupportedStatistics:z.boolean(),containsAbsoluteMedicalAdvice:z.boolean(),warnings:z.array(z.string())}),
+ brand:z.object({includesMissionMessage:z.boolean(),includesWebsiteBranding:z.boolean(),compassionateTone:z.boolean(),warnings:z.array(z.string())})
+});

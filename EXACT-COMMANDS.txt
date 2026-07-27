@@ -1,13 +1,12 @@
-npm install @supabase/supabase-js dotenv
-npm install -D supabase
-Copy-Item ".env.example" ".env"
-npx supabase login
-npx supabase link --project-ref YOUR_PROJECT_REF
-npx supabase db push
-npm pkg set scripts.knowledge:supabase-demo="tsx src/modules/knowledge/supabase-demo.ts"
+npm install openai zod
+npm pkg set scripts.content:demo="tsx src/modules/content/demo.ts"
+npm pkg set scripts.content:live-demo="tsx src/modules/content/live-demo.ts"
 npm run typecheck
 npm test
-npm run knowledge:supabase-demo
+npm run content:demo
+npx supabase db push
+npm run content:live-demo
 git add .
-git commit -m "feat: add Supabase persistence to knowledge engine"
+git status
+git commit -m "feat: add AI Content Engine v1"
 git push origin HEAD:main

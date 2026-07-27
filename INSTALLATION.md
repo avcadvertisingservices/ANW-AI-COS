@@ -1,140 +1,61 @@
-# Knowledge Engine v1.1 — Supabase Persistence
+# AI Content Engine v1.0 Installation
 
-## Step 1 — Copy the package
+## 1. Copy files
+Extract this ZIP. Copy `src`, `tests`, `supabase`, and `docs` into the root of `ANW-AI-COS`. Choose **Yes** to merge folders.
 
-Extract the ZIP and copy these items into the root of `ANW-AI-COS`:
-
-```text
-src/
-tests/
-docs/
-supabase/
-.env.example
-```
-
-Choose **Yes** when Windows asks to merge folders.
-
-## Step 2 — Update the Knowledge Engine index
-
-Open:
-
-```text
-src/modules/knowledge/index.ts
-```
-
-Copy the exports from:
-
-```text
-src/modules/knowledge/index.ts.patch.txt
-```
-
-to the bottom of `index.ts`.
-
-After copying, delete `index.ts.patch.txt`.
-
-## Step 3 — Install packages
-
+## 2. Install packages
 ```powershell
-npm install @supabase/supabase-js dotenv
+npm install openai zod
 ```
 
+## 3. Register commands
 ```powershell
-npm install -D supabase
+npm pkg set scripts.content:demo="tsx src/modules/content/demo.ts"
+npm pkg set scripts.content:live-demo="tsx src/modules/content/live-demo.ts"
 ```
 
-## Step 4 — Protect secrets
-
-Confirm `.gitignore` contains:
-
+## 4. Confirm `.gitignore`
 ```text
 .env
 .env.local
 .env.*.local
+node_modules/
+dist/
+coverage/
+output/
+supabase/.temp/
 ```
 
-Never commit the real service-role key.
-
-## Step 5 — Create your local environment file
-
-Copy `.env.example` to `.env`:
-
+## 5. Validate without OpenAI charges
 ```powershell
-Copy-Item ".env.example" ".env"
+npm run typecheck
+npm test
+npm run content:demo
 ```
+Expected: `carouselSlides: 10`, all format flags `true`, and `missionPresent: true`.
 
-Open `.env` and enter:
-
-```text
-SUPABASE_URL=your Supabase project URL
-SUPABASE_SERVICE_ROLE_KEY=your server-only service-role key
-```
-
-Do not show this key in screenshots.
-
-## Step 6 — Link your Supabase project
-
-If Supabase CLI is not logged in:
-
-```powershell
-npx supabase login
-```
-
-Then link the repository:
-
-```powershell
-npx supabase link --project-ref YOUR_PROJECT_REF
-```
-
-Replace `YOUR_PROJECT_REF` with the reference shown in your Supabase project URL.
-
-## Step 7 — Apply the migration
-
+## 6. Apply database migration
 ```powershell
 npx supabase db push
 ```
 
-This creates `public.knowledge_entries`, indexes, validation constraints, and RLS protection.
-
-## Step 8 — Register the live demo
-
-```powershell
-npm pkg set scripts.knowledge:supabase-demo="tsx src/modules/knowledge/supabase-demo.ts"
-```
-
-## Step 9 — Validate locally
-
-```powershell
-npm run typecheck
-```
-
-```powershell
-npm test
-```
-
-## Step 10 — Run the Supabase demo
-
-```powershell
-npm run knowledge:supabase-demo
-```
-
-Expected result:
-
+## 7. Optional live OpenAI generation
+Add only to your local `.env`:
 ```text
-CREATED or EXISTS: what-is-acoustic-neuroma
-CREATED or EXISTS: one-sided-hearing-loss
-CREATED or EXISTS: you-are-not-alone
-hearingSearchCount: 1
-topResult: One-Sided Hearing Loss
+OPENAI_API_KEY=your_private_openai_api_key
+OPENAI_MODEL=gpt-5.6
 ```
+Never show or commit the API key. Then run:
+```powershell
+npm run content:live-demo
+```
+The bundle is saved under `output/`.
 
-## Step 11 — Save the milestone
-
+## 8. Commit after tests pass
 ```powershell
 git add .
-git commit -m "feat: add Supabase persistence to knowledge engine"
+git status
+git commit -m "feat: add AI Content Engine v1"
 git push origin HEAD:main
 ```
-
-## Safety requirement
-
-The service-role key bypasses normal RLS controls. Keep it only in secure server-side environments.
+Confirm `.env`, `node_modules`, `output`, and `supabase/.temp` are not staged.
