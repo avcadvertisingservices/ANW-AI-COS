@@ -1,0 +1,873 @@
+{
+  "id": "ab7c8a7a-75b7-4f2c-b246-c84852f1bf63",
+  "contentBundleId": "19e333f9-ab1b-4c82-90fa-da42fb0485f7",
+  "topic": "you are not alone",
+  "title": "you are not alone: What Warriors Should Know",
+  "caption": "A community-support entry reflecting the central ANW mission.\n\nThis content is for general education and support only. Discuss personal medical concerns with your healthcare team.\n\nYou Are Not Alone.\n\nacousticneuromawarrior.com",
+  "hashtags": [
+    "#AcousticNeuroma",
+    "#AcousticNeuromaWarrior",
+    "#VestibularSchwannoma",
+    "#BrainTumorAwareness",
+    "#YouAreNotAlone"
+  ],
+  "status": "medical_review",
+  "aspectRatio": "9:16",
+  "platforms": [
+    "facebook",
+    "instagram"
+  ],
+  "version": 1,
+  "createdAt": "2026-07-27T17:22:18.541Z",
+  "brand": {
+    "brandName": "Acoustic Neuroma Warrior",
+    "missionMessage": "You Are Not Alone.",
+    "website": "acousticneuromawarrior.com",
+    "logoAssetName": "ANW shield logo with white awareness ribbon",
+    "palette": {
+      "emerald": "#0B4D3B",
+      "sage": "#A8BFAF",
+      "cream": "#F7F1E7",
+      "white": "#FFFFFF",
+      "charcoal": "#20322C",
+      "accent": "#D8E7DC"
+    },
+    "typography": {
+      "titleFamily": "Cormorant Garamond",
+      "bodyFamily": "Montserrat",
+      "titleWeight": 700,
+      "bodyWeight": 500
+    },
+    "visualStyle": [
+      "premium medical-awareness aesthetic",
+      "dark emerald green and white palette with soft sage accents",
+      "bold serif-led title hierarchy",
+      "clean medical iconography",
+      "subtle botanical accents",
+      "hopeful, compassionate, and trustworthy tone",
+      "small official ANW logo",
+      "small subtle website branding"
+    ],
+    "requiredFooterText": "Acoustic Neuroma Warrior | acousticneuromawarrior.com"
+  },
+  "canvas": {
+    "aspectRatio": "9:16",
+    "width": 1080,
+    "height": 1920,
+    "safeArea": {
+      "top": 120,
+      "right": 72,
+      "bottom": 150,
+      "left": 72
+    }
+  },
+  "slides": [
+    {
+      "slideNumber": 1,
+      "role": "hook",
+      "layout": "hero",
+      "canvas": {
+        "aspectRatio": "9:16",
+        "width": 1080,
+        "height": 1920,
+        "safeArea": {
+          "top": 120,
+          "right": 72,
+          "bottom": 150,
+          "left": 72
+        }
+      },
+      "zones": {
+        "title": {
+          "xPercent": 7,
+          "yPercent": 10,
+          "widthPercent": 86,
+          "heightPercent": 23
+        },
+        "media": {
+          "xPercent": 8,
+          "yPercent": 34,
+          "widthPercent": 84,
+          "heightPercent": 45
+        },
+        "body": {
+          "xPercent": 9,
+          "yPercent": 78,
+          "widthPercent": 82,
+          "heightPercent": 10
+        },
+        "footer": {
+          "xPercent": 7,
+          "yPercent": 91,
+          "widthPercent": 86,
+          "heightPercent": 5
+        }
+      },
+      "title": "you are not alone",
+      "headline": "What every warrior should know about You Are Not Alone",
+      "body": "A community-support entry reflecting the central ANW mission.",
+      "callToAction": "",
+      "icons": [
+        "brain",
+        "hearing",
+        "education"
+      ],
+      "voiceover": "A community-support entry reflecting the central ANW mission.",
+      "altText": "Acoustic Neuroma Warrior slide 1 of 10 about you are not alone. What every warrior should know about You Are Not Alone",
+      "sourceImagePrompt": "Create a 9:16 premium Acoustic Neuroma Warrior medical-awareness graphic. Topic: you are not alone. Slide role: hook. Use dark emerald green, white, cream, and soft sage. Use a strong readable title hierarchy, clean medical iconography, elegant botanical accents, and generous negative space. Include a small official ANW shield logo with white awareness ribbon. Include small subtle acousticneuromawarrior.com branding. Create a compassionate educational composition appropriate for editable text overlays. Do not render paragraphs or tiny text inside the artwork. Avoid graphic surgery, frightening imagery, exaggerated claims, and guaranteed outcomes.",
+      "productionImagePrompt": "Create a 9:16 vertical social-media visual for Acoustic Neuroma Warrior. Slide role: hook. Layout direction: hero. Subject and visual concept: Create a 9:16 premium Acoustic Neuroma Warrior medical-awareness graphic. Topic: you are not alone. Slide role: hook. Use dark emerald green, white, cream, and soft sage. Use a strong readable title hierarchy, clean medical iconography, elegant botanical accents, and generous negative space. Include a small official ANW shield logo with white awareness ribbon. Include small subtle acousticneuromawarrior.com branding. Create a compassionate educational composition appropriate for editable text overlays. Do not render paragraphs or tiny text inside the artwork. Avoid graphic surgery, frightening imagery, exaggerated claims, and guaranteed outcomes. Visual identity: premium medical-awareness aesthetic; dark emerald green and white palette with soft sage accents; bold serif-led title hierarchy; clean medical iconography; subtle botanical accents; hopeful, compassionate, and trustworthy tone; small official ANW logo; small subtle website branding. Palette: emerald #0B4D3B, sage #A8BFAF, cream #F7F1E7, white #FFFFFF. Use the small ANW shield logo with white awareness ribbon. Reserve clean negative space for editable title, body, and CTA overlays. Do not render paragraphs or tiny text inside the generated artwork. Avoid frightening imagery, exaggerated medical claims, graphic surgery, or guaranteed outcomes. The emotional tone must be compassionate, hopeful, medically respectful, and trustworthy. Small branding reference: acousticneuromawarrior.com.",
+      "designNotes": [
+        "Use a large readable heading, clear visual hierarchy, generous spacing, accessible contrast, small ANW logo, and subtle acousticneuromawarrior.com branding.",
+        "Use Cormorant Garamond for titles and Montserrat for body copy.",
+        "Keep all important content inside the 72px left, 72px right, 120px top, and 150px bottom safe areas.",
+        "Footer: Acoustic Neuroma Warrior | acousticneuromawarrior.com."
+      ],
+      "filename": "2026-07-27_ANW_Carousel_you-are-not-alone_9x16_S01_v01.png",
+      "textMetrics": {
+        "titleWords": 4,
+        "headlineWords": 10,
+        "bodyWords": 8,
+        "callToActionWords": 0,
+        "totalCharacters": 132,
+        "recommendedBodyWordLimit": 56,
+        "exceedsRecommendedBodyLength": false
+      },
+      "medicalReviewFlag": true,
+      "copyReviewRequired": false
+    },
+    {
+      "slideNumber": 2,
+      "role": "introduction",
+      "layout": "editorial",
+      "canvas": {
+        "aspectRatio": "9:16",
+        "width": 1080,
+        "height": 1920,
+        "safeArea": {
+          "top": 120,
+          "right": 72,
+          "bottom": 150,
+          "left": 72
+        }
+      },
+      "zones": {
+        "title": {
+          "xPercent": 7,
+          "yPercent": 8,
+          "widthPercent": 86,
+          "heightPercent": 18
+        },
+        "media": {
+          "xPercent": 58,
+          "yPercent": 28,
+          "widthPercent": 34,
+          "heightPercent": 45
+        },
+        "body": {
+          "xPercent": 8,
+          "yPercent": 29,
+          "widthPercent": 46,
+          "heightPercent": 52
+        },
+        "footer": {
+          "xPercent": 7,
+          "yPercent": 91,
+          "widthPercent": 86,
+          "heightPercent": 5
+        }
+      },
+      "title": "Understanding You Are Not Alone",
+      "headline": "A community-support entry reflecting the central ANW mission.",
+      "body": "Approved overview: A community-support entry reflecting the central ANW mission.",
+      "callToAction": "",
+      "icons": [
+        "brain",
+        "hearing",
+        "education"
+      ],
+      "voiceover": "Approved overview: A community-support entry reflecting the central ANW mission.",
+      "altText": "Acoustic Neuroma Warrior slide 2 of 10 about you are not alone. A community-support entry reflecting the central ANW mission.",
+      "sourceImagePrompt": "Create a 9:16 premium Acoustic Neuroma Warrior medical-awareness graphic. Topic: you are not alone. Slide role: introduction. Use dark emerald green, white, cream, and soft sage. Use a strong readable title hierarchy, clean medical iconography, elegant botanical accents, and generous negative space. Include a small official ANW shield logo with white awareness ribbon. Include small subtle acousticneuromawarrior.com branding. Create a compassionate educational composition appropriate for editable text overlays. Do not render paragraphs or tiny text inside the artwork. Avoid graphic surgery, frightening imagery, exaggerated claims, and guaranteed outcomes.",
+      "productionImagePrompt": "Create a 9:16 vertical social-media visual for Acoustic Neuroma Warrior. Slide role: introduction. Layout direction: editorial. Subject and visual concept: Create a 9:16 premium Acoustic Neuroma Warrior medical-awareness graphic. Topic: you are not alone. Slide role: introduction. Use dark emerald green, white, cream, and soft sage. Use a strong readable title hierarchy, clean medical iconography, elegant botanical accents, and generous negative space. Include a small official ANW shield logo with white awareness ribbon. Include small subtle acousticneuromawarrior.com branding. Create a compassionate educational composition appropriate for editable text overlays. Do not render paragraphs or tiny text inside the artwork. Avoid graphic surgery, frightening imagery, exaggerated claims, and guaranteed outcomes. Visual identity: premium medical-awareness aesthetic; dark emerald green and white palette with soft sage accents; bold serif-led title hierarchy; clean medical iconography; subtle botanical accents; hopeful, compassionate, and trustworthy tone; small official ANW logo; small subtle website branding. Palette: emerald #0B4D3B, sage #A8BFAF, cream #F7F1E7, white #FFFFFF. Use the small ANW shield logo with white awareness ribbon. Reserve clean negative space for editable title, body, and CTA overlays. Do not render paragraphs or tiny text inside the generated artwork. Avoid frightening imagery, exaggerated medical claims, graphic surgery, or guaranteed outcomes. The emotional tone must be compassionate, hopeful, medically respectful, and trustworthy. Small branding reference: acousticneuromawarrior.com.",
+      "designNotes": [
+        "Use a large readable heading, clear visual hierarchy, generous spacing, accessible contrast, small ANW logo, and subtle acousticneuromawarrior.com branding.",
+        "Use Cormorant Garamond for titles and Montserrat for body copy.",
+        "Keep all important content inside the 72px left, 72px right, 120px top, and 150px bottom safe areas.",
+        "Footer: Acoustic Neuroma Warrior | acousticneuromawarrior.com."
+      ],
+      "filename": "2026-07-27_ANW_Carousel_you-are-not-alone_9x16_S02_v01.png",
+      "textMetrics": {
+        "titleWords": 5,
+        "headlineWords": 8,
+        "bodyWords": 10,
+        "callToActionWords": 0,
+        "totalCharacters": 172,
+        "recommendedBodyWordLimit": 56,
+        "exceedsRecommendedBodyLength": false
+      },
+      "medicalReviewFlag": true,
+      "copyReviewRequired": false
+    },
+    {
+      "slideNumber": 3,
+      "role": "education",
+      "layout": "split-visual",
+      "canvas": {
+        "aspectRatio": "9:16",
+        "width": 1080,
+        "height": 1920,
+        "safeArea": {
+          "top": 120,
+          "right": 72,
+          "bottom": 150,
+          "left": 72
+        }
+      },
+      "zones": {
+        "title": {
+          "xPercent": 7,
+          "yPercent": 8,
+          "widthPercent": 86,
+          "heightPercent": 17
+        },
+        "media": {
+          "xPercent": 7,
+          "yPercent": 28,
+          "widthPercent": 40,
+          "heightPercent": 52
+        },
+        "body": {
+          "xPercent": 52,
+          "yPercent": 28,
+          "widthPercent": 40,
+          "heightPercent": 52
+        },
+        "footer": {
+          "xPercent": 7,
+          "yPercent": 91,
+          "widthPercent": 86,
+          "heightPercent": 5
+        }
+      },
+      "title": "What the Approved Knowledge Says",
+      "headline": "Start with reviewed, approved information",
+      "body": "The reviewed knowledge explains: A community-support entry reflecting the central ANW mission.",
+      "callToAction": "",
+      "icons": [
+        "brain",
+        "hearing",
+        "education"
+      ],
+      "voiceover": "The reviewed knowledge explains: A community-support entry reflecting the central ANW mission.",
+      "altText": "Acoustic Neuroma Warrior slide 3 of 10 about you are not alone. Start with reviewed, approved information",
+      "sourceImagePrompt": "Create a 9:16 premium Acoustic Neuroma Warrior medical-awareness graphic. Topic: you are not alone. Slide role: education. Use dark emerald green, white, cream, and soft sage. Use a strong readable title hierarchy, clean medical iconography, elegant botanical accents, and generous negative space. Include a small official ANW shield logo with white awareness ribbon. Include small subtle acousticneuromawarrior.com branding. Create a compassionate educational composition appropriate for editable text overlays. Do not render paragraphs or tiny text inside the artwork. Avoid graphic surgery, frightening imagery, exaggerated claims, and guaranteed outcomes.",
+      "productionImagePrompt": "Create a 9:16 vertical social-media visual for Acoustic Neuroma Warrior. Slide role: education. Layout direction: split-visual. Subject and visual concept: Create a 9:16 premium Acoustic Neuroma Warrior medical-awareness graphic. Topic: you are not alone. Slide role: education. Use dark emerald green, white, cream, and soft sage. Use a strong readable title hierarchy, clean medical iconography, elegant botanical accents, and generous negative space. Include a small official ANW shield logo with white awareness ribbon. Include small subtle acousticneuromawarrior.com branding. Create a compassionate educational composition appropriate for editable text overlays. Do not render paragraphs or tiny text inside the artwork. Avoid graphic surgery, frightening imagery, exaggerated claims, and guaranteed outcomes. Visual identity: premium medical-awareness aesthetic; dark emerald green and white palette with soft sage accents; bold serif-led title hierarchy; clean medical iconography; subtle botanical accents; hopeful, compassionate, and trustworthy tone; small official ANW logo; small subtle website branding. Palette: emerald #0B4D3B, sage #A8BFAF, cream #F7F1E7, white #FFFFFF. Use the small ANW shield logo with white awareness ribbon. Reserve clean negative space for editable title, body, and CTA overlays. Do not render paragraphs or tiny text inside the generated artwork. Avoid frightening imagery, exaggerated medical claims, graphic surgery, or guaranteed outcomes. The emotional tone must be compassionate, hopeful, medically respectful, and trustworthy. Small branding reference: acousticneuromawarrior.com.",
+      "designNotes": [
+        "Use a large readable heading, clear visual hierarchy, generous spacing, accessible contrast, small ANW logo, and subtle acousticneuromawarrior.com branding.",
+        "Use Cormorant Garamond for titles and Montserrat for body copy.",
+        "Keep all important content inside the 72px left, 72px right, 120px top, and 150px bottom safe areas.",
+        "Footer: Acoustic Neuroma Warrior | acousticneuromawarrior.com."
+      ],
+      "filename": "2026-07-27_ANW_Carousel_you-are-not-alone_9x16_S03_v01.png",
+      "textMetrics": {
+        "titleWords": 5,
+        "headlineWords": 5,
+        "bodyWords": 12,
+        "callToActionWords": 0,
+        "totalCharacters": 167,
+        "recommendedBodyWordLimit": 56,
+        "exceedsRecommendedBodyLength": false
+      },
+      "medicalReviewFlag": true,
+      "copyReviewRequired": false
+    },
+    {
+      "slideNumber": 4,
+      "role": "education",
+      "layout": "split-visual",
+      "canvas": {
+        "aspectRatio": "9:16",
+        "width": 1080,
+        "height": 1920,
+        "safeArea": {
+          "top": 120,
+          "right": 72,
+          "bottom": 150,
+          "left": 72
+        }
+      },
+      "zones": {
+        "title": {
+          "xPercent": 7,
+          "yPercent": 8,
+          "widthPercent": 86,
+          "heightPercent": 17
+        },
+        "media": {
+          "xPercent": 7,
+          "yPercent": 28,
+          "widthPercent": 40,
+          "heightPercent": 52
+        },
+        "body": {
+          "xPercent": 52,
+          "yPercent": 28,
+          "widthPercent": 40,
+          "heightPercent": 52
+        },
+        "footer": {
+          "xPercent": 7,
+          "yPercent": 91,
+          "widthPercent": 86,
+          "heightPercent": 5
+        }
+      },
+      "title": "A Key Point to Understand",
+      "headline": "Break the topic into clear, manageable points",
+      "body": "One approved point to understand is this: Acoustic Neuroma Warrior exists to help patients, survivors, caregivers, and families feel supported through education, practical resources, and compassionate community.",
+      "callToAction": "",
+      "icons": [
+        "brain",
+        "hearing",
+        "education"
+      ],
+      "voiceover": "One approved point to understand is this: Acoustic Neuroma Warrior exists to help patients, survivors, caregivers, and families feel supported through education, practical resources, and compassionate community.",
+      "altText": "Acoustic Neuroma Warrior slide 4 of 10 about you are not alone. Break the topic into clear, manageable points",
+      "sourceImagePrompt": "Create a 9:16 premium Acoustic Neuroma Warrior medical-awareness graphic. Topic: you are not alone. Slide role: education. Use dark emerald green, white, cream, and soft sage. Use a strong readable title hierarchy, clean medical iconography, elegant botanical accents, and generous negative space. Include a small official ANW shield logo with white awareness ribbon. Include small subtle acousticneuromawarrior.com branding. Create a compassionate educational composition appropriate for editable text overlays. Do not render paragraphs or tiny text inside the artwork. Avoid graphic surgery, frightening imagery, exaggerated claims, and guaranteed outcomes.",
+      "productionImagePrompt": "Create a 9:16 vertical social-media visual for Acoustic Neuroma Warrior. Slide role: education. Layout direction: split-visual. Subject and visual concept: Create a 9:16 premium Acoustic Neuroma Warrior medical-awareness graphic. Topic: you are not alone. Slide role: education. Use dark emerald green, white, cream, and soft sage. Use a strong readable title hierarchy, clean medical iconography, elegant botanical accents, and generous negative space. Include a small official ANW shield logo with white awareness ribbon. Include small subtle acousticneuromawarrior.com branding. Create a compassionate educational composition appropriate for editable text overlays. Do not render paragraphs or tiny text inside the artwork. Avoid graphic surgery, frightening imagery, exaggerated claims, and guaranteed outcomes. Visual identity: premium medical-awareness aesthetic; dark emerald green and white palette with soft sage accents; bold serif-led title hierarchy; clean medical iconography; subtle botanical accents; hopeful, compassionate, and trustworthy tone; small official ANW logo; small subtle website branding. Palette: emerald #0B4D3B, sage #A8BFAF, cream #F7F1E7, white #FFFFFF. Use the small ANW shield logo with white awareness ribbon. Reserve clean negative space for editable title, body, and CTA overlays. Do not render paragraphs or tiny text inside the generated artwork. Avoid frightening imagery, exaggerated medical claims, graphic surgery, or guaranteed outcomes. The emotional tone must be compassionate, hopeful, medically respectful, and trustworthy. Small branding reference: acousticneuromawarrior.com.",
+      "designNotes": [
+        "Use a large readable heading, clear visual hierarchy, generous spacing, accessible contrast, small ANW logo, and subtle acousticneuromawarrior.com branding.",
+        "Use Cormorant Garamond for titles and Montserrat for body copy.",
+        "Keep all important content inside the 72px left, 72px right, 120px top, and 150px bottom safe areas.",
+        "Footer: Acoustic Neuroma Warrior | acousticneuromawarrior.com."
+      ],
+      "filename": "2026-07-27_ANW_Carousel_you-are-not-alone_9x16_S04_v01.png",
+      "textMetrics": {
+        "titleWords": 5,
+        "headlineWords": 7,
+        "bodyWords": 27,
+        "callToActionWords": 0,
+        "totalCharacters": 281,
+        "recommendedBodyWordLimit": 56,
+        "exceedsRecommendedBodyLength": false
+      },
+      "medicalReviewFlag": true,
+      "copyReviewRequired": false
+    },
+    {
+      "slideNumber": 5,
+      "role": "tips",
+      "layout": "checklist",
+      "canvas": {
+        "aspectRatio": "9:16",
+        "width": 1080,
+        "height": 1920,
+        "safeArea": {
+          "top": 120,
+          "right": 72,
+          "bottom": 150,
+          "left": 72
+        }
+      },
+      "zones": {
+        "title": {
+          "xPercent": 7,
+          "yPercent": 8,
+          "widthPercent": 86,
+          "heightPercent": 17
+        },
+        "media": {
+          "xPercent": 68,
+          "yPercent": 28,
+          "widthPercent": 24,
+          "heightPercent": 22
+        },
+        "body": {
+          "xPercent": 8,
+          "yPercent": 28,
+          "widthPercent": 82,
+          "heightPercent": 56
+        },
+        "footer": {
+          "xPercent": 7,
+          "yPercent": 91,
+          "widthPercent": 86,
+          "heightPercent": 5
+        }
+      },
+      "title": "Questions Worth Asking",
+      "headline": "Write down questions for your healthcare team",
+      "body": "Use this approved information to prepare questions: A community-support entry reflecting the central ANW mission.",
+      "callToAction": "",
+      "icons": [
+        "notes",
+        "question",
+        "medical-team"
+      ],
+      "voiceover": "Use this approved information to prepare questions: A community-support entry reflecting the central ANW mission.",
+      "altText": "Acoustic Neuroma Warrior slide 5 of 10 about you are not alone. Write down questions for your healthcare team",
+      "sourceImagePrompt": "Create a 9:16 premium Acoustic Neuroma Warrior medical-awareness graphic. Topic: you are not alone. Slide role: tips. Use dark emerald green, white, cream, and soft sage. Use a strong readable title hierarchy, clean medical iconography, elegant botanical accents, and generous negative space. Include a small official ANW shield logo with white awareness ribbon. Include small subtle acousticneuromawarrior.com branding. Create a compassionate educational composition appropriate for editable text overlays. Do not render paragraphs or tiny text inside the artwork. Avoid graphic surgery, frightening imagery, exaggerated claims, and guaranteed outcomes.",
+      "productionImagePrompt": "Create a 9:16 vertical social-media visual for Acoustic Neuroma Warrior. Slide role: tips. Layout direction: checklist. Subject and visual concept: Create a 9:16 premium Acoustic Neuroma Warrior medical-awareness graphic. Topic: you are not alone. Slide role: tips. Use dark emerald green, white, cream, and soft sage. Use a strong readable title hierarchy, clean medical iconography, elegant botanical accents, and generous negative space. Include a small official ANW shield logo with white awareness ribbon. Include small subtle acousticneuromawarrior.com branding. Create a compassionate educational composition appropriate for editable text overlays. Do not render paragraphs or tiny text inside the artwork. Avoid graphic surgery, frightening imagery, exaggerated claims, and guaranteed outcomes. Visual identity: premium medical-awareness aesthetic; dark emerald green and white palette with soft sage accents; bold serif-led title hierarchy; clean medical iconography; subtle botanical accents; hopeful, compassionate, and trustworthy tone; small official ANW logo; small subtle website branding. Palette: emerald #0B4D3B, sage #A8BFAF, cream #F7F1E7, white #FFFFFF. Use the small ANW shield logo with white awareness ribbon. Reserve clean negative space for editable title, body, and CTA overlays. Do not render paragraphs or tiny text inside the generated artwork. Avoid frightening imagery, exaggerated medical claims, graphic surgery, or guaranteed outcomes. The emotional tone must be compassionate, hopeful, medically respectful, and trustworthy. Small branding reference: acousticneuromawarrior.com.",
+      "designNotes": [
+        "Use a large readable heading, clear visual hierarchy, generous spacing, accessible contrast, small ANW logo, and subtle acousticneuromawarrior.com branding.",
+        "Use Cormorant Garamond for titles and Montserrat for body copy.",
+        "Keep all important content inside the 72px left, 72px right, 120px top, and 150px bottom safe areas.",
+        "Footer: Acoustic Neuroma Warrior | acousticneuromawarrior.com."
+      ],
+      "filename": "2026-07-27_ANW_Carousel_you-are-not-alone_9x16_S05_v01.png",
+      "textMetrics": {
+        "titleWords": 3,
+        "headlineWords": 7,
+        "bodyWords": 15,
+        "callToActionWords": 0,
+        "totalCharacters": 180,
+        "recommendedBodyWordLimit": 56,
+        "exceedsRecommendedBodyLength": false
+      },
+      "medicalReviewFlag": true,
+      "copyReviewRequired": false
+    },
+    {
+      "slideNumber": 6,
+      "role": "education",
+      "layout": "split-visual",
+      "canvas": {
+        "aspectRatio": "9:16",
+        "width": 1080,
+        "height": 1920,
+        "safeArea": {
+          "top": 120,
+          "right": 72,
+          "bottom": 150,
+          "left": 72
+        }
+      },
+      "zones": {
+        "title": {
+          "xPercent": 7,
+          "yPercent": 8,
+          "widthPercent": 86,
+          "heightPercent": 17
+        },
+        "media": {
+          "xPercent": 7,
+          "yPercent": 28,
+          "widthPercent": 40,
+          "heightPercent": 52
+        },
+        "body": {
+          "xPercent": 52,
+          "yPercent": 28,
+          "widthPercent": 40,
+          "heightPercent": 52
+        },
+        "footer": {
+          "xPercent": 7,
+          "yPercent": 91,
+          "widthPercent": 86,
+          "heightPercent": 5
+        }
+      },
+      "title": "Why Trusted Information Matters",
+      "headline": "Personal experiences and needs can differ",
+      "body": "For clearer understanding, keep this reviewed point in mind: Acoustic Neuroma Warrior exists to help patients, survivors, caregivers, and families feel supported through education, practical resources, and compassionate community.",
+      "callToAction": "",
+      "icons": [
+        "brain",
+        "hearing",
+        "education"
+      ],
+      "voiceover": "For clearer understanding, keep this reviewed point in mind: Acoustic Neuroma Warrior exists to help patients, survivors, caregivers, and families feel supported through education, practical resources, and compassionate community.",
+      "altText": "Acoustic Neuroma Warrior slide 6 of 10 about you are not alone. Personal experiences and needs can differ",
+      "sourceImagePrompt": "Create a 9:16 premium Acoustic Neuroma Warrior medical-awareness graphic. Topic: you are not alone. Slide role: education. Use dark emerald green, white, cream, and soft sage. Use a strong readable title hierarchy, clean medical iconography, elegant botanical accents, and generous negative space. Include a small official ANW shield logo with white awareness ribbon. Include small subtle acousticneuromawarrior.com branding. Create a compassionate educational composition appropriate for editable text overlays. Do not render paragraphs or tiny text inside the artwork. Avoid graphic surgery, frightening imagery, exaggerated claims, and guaranteed outcomes.",
+      "productionImagePrompt": "Create a 9:16 vertical social-media visual for Acoustic Neuroma Warrior. Slide role: education. Layout direction: split-visual. Subject and visual concept: Create a 9:16 premium Acoustic Neuroma Warrior medical-awareness graphic. Topic: you are not alone. Slide role: education. Use dark emerald green, white, cream, and soft sage. Use a strong readable title hierarchy, clean medical iconography, elegant botanical accents, and generous negative space. Include a small official ANW shield logo with white awareness ribbon. Include small subtle acousticneuromawarrior.com branding. Create a compassionate educational composition appropriate for editable text overlays. Do not render paragraphs or tiny text inside the artwork. Avoid graphic surgery, frightening imagery, exaggerated claims, and guaranteed outcomes. Visual identity: premium medical-awareness aesthetic; dark emerald green and white palette with soft sage accents; bold serif-led title hierarchy; clean medical iconography; subtle botanical accents; hopeful, compassionate, and trustworthy tone; small official ANW logo; small subtle website branding. Palette: emerald #0B4D3B, sage #A8BFAF, cream #F7F1E7, white #FFFFFF. Use the small ANW shield logo with white awareness ribbon. Reserve clean negative space for editable title, body, and CTA overlays. Do not render paragraphs or tiny text inside the generated artwork. Avoid frightening imagery, exaggerated medical claims, graphic surgery, or guaranteed outcomes. The emotional tone must be compassionate, hopeful, medically respectful, and trustworthy. Small branding reference: acousticneuromawarrior.com.",
+      "designNotes": [
+        "Use a large readable heading, clear visual hierarchy, generous spacing, accessible contrast, small ANW logo, and subtle acousticneuromawarrior.com branding.",
+        "Use Cormorant Garamond for titles and Montserrat for body copy.",
+        "Keep all important content inside the 72px left, 72px right, 120px top, and 150px bottom safe areas.",
+        "Footer: Acoustic Neuroma Warrior | acousticneuromawarrior.com."
+      ],
+      "filename": "2026-07-27_ANW_Carousel_you-are-not-alone_9x16_S06_v01.png",
+      "textMetrics": {
+        "titleWords": 4,
+        "headlineWords": 6,
+        "bodyWords": 29,
+        "callToActionWords": 0,
+        "totalCharacters": 302,
+        "recommendedBodyWordLimit": 56,
+        "exceedsRecommendedBodyLength": false
+      },
+      "medicalReviewFlag": true,
+      "copyReviewRequired": false
+    },
+    {
+      "slideNumber": 7,
+      "role": "survivor-insight",
+      "layout": "survivor-quote",
+      "canvas": {
+        "aspectRatio": "9:16",
+        "width": 1080,
+        "height": 1920,
+        "safeArea": {
+          "top": 120,
+          "right": 72,
+          "bottom": 150,
+          "left": 72
+        }
+      },
+      "zones": {
+        "title": {
+          "xPercent": 9,
+          "yPercent": 14,
+          "widthPercent": 82,
+          "heightPercent": 16
+        },
+        "media": {
+          "xPercent": 65,
+          "yPercent": 63,
+          "widthPercent": 27,
+          "heightPercent": 20
+        },
+        "body": {
+          "xPercent": 10,
+          "yPercent": 33,
+          "widthPercent": 78,
+          "heightPercent": 38
+        },
+        "footer": {
+          "xPercent": 7,
+          "yPercent": 91,
+          "widthPercent": 86,
+          "heightPercent": 5
+        }
+      },
+      "title": "Every Experience Is Individual",
+      "headline": "Reliable education can make conversations easier",
+      "body": "Every experience is individual. The approved context says: A community-support entry reflecting the central ANW mission.",
+      "callToAction": "",
+      "icons": [
+        "brain",
+        "hearing",
+        "education"
+      ],
+      "voiceover": "Every experience is individual. The approved context says: A community-support entry reflecting the central ANW mission.",
+      "altText": "Acoustic Neuroma Warrior slide 7 of 10 about you are not alone. Reliable education can make conversations easier",
+      "sourceImagePrompt": "Create a 9:16 premium Acoustic Neuroma Warrior medical-awareness graphic. Topic: you are not alone. Slide role: survivor-insight. Use dark emerald green, white, cream, and soft sage. Use a strong readable title hierarchy, clean medical iconography, elegant botanical accents, and generous negative space. Include a small official ANW shield logo with white awareness ribbon. Include small subtle acousticneuromawarrior.com branding. Create a compassionate educational composition appropriate for editable text overlays. Do not render paragraphs or tiny text inside the artwork. Avoid graphic surgery, frightening imagery, exaggerated claims, and guaranteed outcomes.",
+      "productionImagePrompt": "Create a 9:16 vertical social-media visual for Acoustic Neuroma Warrior. Slide role: survivor-insight. Layout direction: survivor-quote. Subject and visual concept: Create a 9:16 premium Acoustic Neuroma Warrior medical-awareness graphic. Topic: you are not alone. Slide role: survivor-insight. Use dark emerald green, white, cream, and soft sage. Use a strong readable title hierarchy, clean medical iconography, elegant botanical accents, and generous negative space. Include a small official ANW shield logo with white awareness ribbon. Include small subtle acousticneuromawarrior.com branding. Create a compassionate educational composition appropriate for editable text overlays. Do not render paragraphs or tiny text inside the artwork. Avoid graphic surgery, frightening imagery, exaggerated claims, and guaranteed outcomes. Visual identity: premium medical-awareness aesthetic; dark emerald green and white palette with soft sage accents; bold serif-led title hierarchy; clean medical iconography; subtle botanical accents; hopeful, compassionate, and trustworthy tone; small official ANW logo; small subtle website branding. Palette: emerald #0B4D3B, sage #A8BFAF, cream #F7F1E7, white #FFFFFF. Use the small ANW shield logo with white awareness ribbon. Reserve clean negative space for editable title, body, and CTA overlays. Do not render paragraphs or tiny text inside the generated artwork. Avoid frightening imagery, exaggerated medical claims, graphic surgery, or guaranteed outcomes. The emotional tone must be compassionate, hopeful, medically respectful, and trustworthy. Small branding reference: acousticneuromawarrior.com.",
+      "designNotes": [
+        "Use a large readable heading, clear visual hierarchy, generous spacing, accessible contrast, small ANW logo, and subtle acousticneuromawarrior.com branding.",
+        "Use Cormorant Garamond for titles and Montserrat for body copy.",
+        "Keep all important content inside the 72px left, 72px right, 120px top, and 150px bottom safe areas.",
+        "Footer: Acoustic Neuroma Warrior | acousticneuromawarrior.com."
+      ],
+      "filename": "2026-07-27_ANW_Carousel_you-are-not-alone_9x16_S07_v01.png",
+      "textMetrics": {
+        "titleWords": 4,
+        "headlineWords": 6,
+        "bodyWords": 16,
+        "callToActionWords": 0,
+        "totalCharacters": 198,
+        "recommendedBodyWordLimit": 56,
+        "exceedsRecommendedBodyLength": false
+      },
+      "medicalReviewFlag": true,
+      "copyReviewRequired": false
+    },
+    {
+      "slideNumber": 8,
+      "role": "education",
+      "layout": "split-visual",
+      "canvas": {
+        "aspectRatio": "9:16",
+        "width": 1080,
+        "height": 1920,
+        "safeArea": {
+          "top": 120,
+          "right": 72,
+          "bottom": 150,
+          "left": 72
+        }
+      },
+      "zones": {
+        "title": {
+          "xPercent": 7,
+          "yPercent": 8,
+          "widthPercent": 86,
+          "heightPercent": 17
+        },
+        "media": {
+          "xPercent": 7,
+          "yPercent": 28,
+          "widthPercent": 40,
+          "heightPercent": 52
+        },
+        "body": {
+          "xPercent": 52,
+          "yPercent": 28,
+          "widthPercent": 40,
+          "heightPercent": 52
+        },
+        "footer": {
+          "xPercent": 7,
+          "yPercent": 91,
+          "widthPercent": 86,
+          "heightPercent": 5
+        }
+      },
+      "title": "Preparing for Your Next Conversation",
+      "headline": "Use this information to support—not replace—medical care",
+      "body": "Before making personal medical decisions, discuss this reviewed information with your healthcare team: Acoustic Neuroma Warrior exists to help patients, survivors, caregivers, and families feel supported through education, practical resources, and compassiona…",
+      "callToAction": "",
+      "icons": [
+        "brain",
+        "hearing",
+        "education"
+      ],
+      "voiceover": "Before making personal medical decisions, discuss this reviewed information with your healthcare team: Acoustic Neuroma Warrior exists to help patients, survivors, caregivers, and families feel supported through education, practical resources, and compassiona…",
+      "altText": "Acoustic Neuroma Warrior slide 8 of 10 about you are not alone. Use this information to support—not replace—medical care",
+      "sourceImagePrompt": "Create a 9:16 premium Acoustic Neuroma Warrior medical-awareness graphic. Topic: you are not alone. Slide role: education. Use dark emerald green, white, cream, and soft sage. Use a strong readable title hierarchy, clean medical iconography, elegant botanical accents, and generous negative space. Include a small official ANW shield logo with white awareness ribbon. Include small subtle acousticneuromawarrior.com branding. Create a compassionate educational composition appropriate for editable text overlays. Do not render paragraphs or tiny text inside the artwork. Avoid graphic surgery, frightening imagery, exaggerated claims, and guaranteed outcomes.",
+      "productionImagePrompt": "Create a 9:16 vertical social-media visual for Acoustic Neuroma Warrior. Slide role: education. Layout direction: split-visual. Subject and visual concept: Create a 9:16 premium Acoustic Neuroma Warrior medical-awareness graphic. Topic: you are not alone. Slide role: education. Use dark emerald green, white, cream, and soft sage. Use a strong readable title hierarchy, clean medical iconography, elegant botanical accents, and generous negative space. Include a small official ANW shield logo with white awareness ribbon. Include small subtle acousticneuromawarrior.com branding. Create a compassionate educational composition appropriate for editable text overlays. Do not render paragraphs or tiny text inside the artwork. Avoid graphic surgery, frightening imagery, exaggerated claims, and guaranteed outcomes. Visual identity: premium medical-awareness aesthetic; dark emerald green and white palette with soft sage accents; bold serif-led title hierarchy; clean medical iconography; subtle botanical accents; hopeful, compassionate, and trustworthy tone; small official ANW logo; small subtle website branding. Palette: emerald #0B4D3B, sage #A8BFAF, cream #F7F1E7, white #FFFFFF. Use the small ANW shield logo with white awareness ribbon. Reserve clean negative space for editable title, body, and CTA overlays. Do not render paragraphs or tiny text inside the generated artwork. Avoid frightening imagery, exaggerated medical claims, graphic surgery, or guaranteed outcomes. The emotional tone must be compassionate, hopeful, medically respectful, and trustworthy. Small branding reference: acousticneuromawarrior.com.",
+      "designNotes": [
+        "Use a large readable heading, clear visual hierarchy, generous spacing, accessible contrast, small ANW logo, and subtle acousticneuromawarrior.com branding.",
+        "Use Cormorant Garamond for titles and Montserrat for body copy.",
+        "Keep all important content inside the 72px left, 72px right, 120px top, and 150px bottom safe areas.",
+        "Footer: Acoustic Neuroma Warrior | acousticneuromawarrior.com."
+      ],
+      "filename": "2026-07-27_ANW_Carousel_you-are-not-alone_9x16_S08_v01.png",
+      "textMetrics": {
+        "titleWords": 5,
+        "headlineWords": 7,
+        "bodyWords": 32,
+        "callToActionWords": 0,
+        "totalCharacters": 352,
+        "recommendedBodyWordLimit": 56,
+        "exceedsRecommendedBodyLength": false
+      },
+      "medicalReviewFlag": true,
+      "copyReviewRequired": false
+    },
+    {
+      "slideNumber": 9,
+      "role": "takeaways",
+      "layout": "summary",
+      "canvas": {
+        "aspectRatio": "9:16",
+        "width": 1080,
+        "height": 1920,
+        "safeArea": {
+          "top": 120,
+          "right": 72,
+          "bottom": 150,
+          "left": 72
+        }
+      },
+      "zones": {
+        "title": {
+          "xPercent": 7,
+          "yPercent": 8,
+          "widthPercent": 86,
+          "heightPercent": 18
+        },
+        "media": {
+          "xPercent": 70,
+          "yPercent": 29,
+          "widthPercent": 21,
+          "heightPercent": 20
+        },
+        "body": {
+          "xPercent": 8,
+          "yPercent": 29,
+          "widthPercent": 82,
+          "heightPercent": 55
+        },
+        "footer": {
+          "xPercent": 7,
+          "yPercent": 91,
+          "widthPercent": 86,
+          "heightPercent": 5
+        }
+      },
+      "title": "Key Takeaways",
+      "headline": "Keep the most important information close",
+      "body": "Remember these approved points: A community-support entry reflecting the central ANW mission. Acoustic Neuroma Warrior exists to help patients, survivors, caregivers, and families feel supported through education, practical resources, and compassionate commun…",
+      "callToAction": "",
+      "icons": [
+        "brain",
+        "hearing",
+        "education"
+      ],
+      "voiceover": "Remember these approved points: A community-support entry reflecting the central ANW mission. Acoustic Neuroma Warrior exists to help patients, survivors, caregivers, and families feel supported through education, practical resources, and compassionate commun…",
+      "altText": "Acoustic Neuroma Warrior slide 9 of 10 about you are not alone. Keep the most important information close",
+      "sourceImagePrompt": "Create a 9:16 premium Acoustic Neuroma Warrior medical-awareness graphic. Topic: you are not alone. Slide role: takeaways. Use dark emerald green, white, cream, and soft sage. Use a strong readable title hierarchy, clean medical iconography, elegant botanical accents, and generous negative space. Include a small official ANW shield logo with white awareness ribbon. Include small subtle acousticneuromawarrior.com branding. Create a compassionate educational composition appropriate for editable text overlays. Do not render paragraphs or tiny text inside the artwork. Avoid graphic surgery, frightening imagery, exaggerated claims, and guaranteed outcomes.",
+      "productionImagePrompt": "Create a 9:16 vertical social-media visual for Acoustic Neuroma Warrior. Slide role: takeaways. Layout direction: summary. Subject and visual concept: Create a 9:16 premium Acoustic Neuroma Warrior medical-awareness graphic. Topic: you are not alone. Slide role: takeaways. Use dark emerald green, white, cream, and soft sage. Use a strong readable title hierarchy, clean medical iconography, elegant botanical accents, and generous negative space. Include a small official ANW shield logo with white awareness ribbon. Include small subtle acousticneuromawarrior.com branding. Create a compassionate educational composition appropriate for editable text overlays. Do not render paragraphs or tiny text inside the artwork. Avoid graphic surgery, frightening imagery, exaggerated claims, and guaranteed outcomes. Visual identity: premium medical-awareness aesthetic; dark emerald green and white palette with soft sage accents; bold serif-led title hierarchy; clean medical iconography; subtle botanical accents; hopeful, compassionate, and trustworthy tone; small official ANW logo; small subtle website branding. Palette: emerald #0B4D3B, sage #A8BFAF, cream #F7F1E7, white #FFFFFF. Use the small ANW shield logo with white awareness ribbon. Reserve clean negative space for editable title, body, and CTA overlays. Do not render paragraphs or tiny text inside the generated artwork. Avoid frightening imagery, exaggerated medical claims, graphic surgery, or guaranteed outcomes. The emotional tone must be compassionate, hopeful, medically respectful, and trustworthy. Small branding reference: acousticneuromawarrior.com.",
+      "designNotes": [
+        "Use a large readable heading, clear visual hierarchy, generous spacing, accessible contrast, small ANW logo, and subtle acousticneuromawarrior.com branding.",
+        "Use Cormorant Garamond for titles and Montserrat for body copy.",
+        "Keep all important content inside the 72px left, 72px right, 120px top, and 150px bottom safe areas.",
+        "Footer: Acoustic Neuroma Warrior | acousticneuromawarrior.com."
+      ],
+      "filename": "2026-07-27_ANW_Carousel_you-are-not-alone_9x16_S09_v01.png",
+      "textMetrics": {
+        "titleWords": 2,
+        "headlineWords": 6,
+        "bodyWords": 32,
+        "callToActionWords": 0,
+        "totalCharacters": 314,
+        "recommendedBodyWordLimit": 56,
+        "exceedsRecommendedBodyLength": false
+      },
+      "medicalReviewFlag": true,
+      "copyReviewRequired": false
+    },
+    {
+      "slideNumber": 10,
+      "role": "cta",
+      "layout": "call-to-action",
+      "canvas": {
+        "aspectRatio": "9:16",
+        "width": 1080,
+        "height": 1920,
+        "safeArea": {
+          "top": 120,
+          "right": 72,
+          "bottom": 150,
+          "left": 72
+        }
+      },
+      "zones": {
+        "title": {
+          "xPercent": 9,
+          "yPercent": 14,
+          "widthPercent": 82,
+          "heightPercent": 22
+        },
+        "media": {
+          "xPercent": 26,
+          "yPercent": 38,
+          "widthPercent": 48,
+          "heightPercent": 28
+        },
+        "body": {
+          "xPercent": 12,
+          "yPercent": 68,
+          "widthPercent": 76,
+          "heightPercent": 15
+        },
+        "footer": {
+          "xPercent": 7,
+          "yPercent": 90,
+          "widthPercent": 86,
+          "heightPercent": 6
+        }
+      },
+      "title": "You Are Not Alone",
+      "headline": "Support, education, and hope",
+      "body": "Continue learning, write down your questions, and discuss personal medical decisions with your healthcare team.",
+      "callToAction": "Visit acousticneuromawarrior.com",
+      "icons": [
+        "heart",
+        "support",
+        "community"
+      ],
+      "voiceover": "You are not alone in this journey. Continue learning and bring your personal questions to your healthcare team.",
+      "altText": "Acoustic Neuroma Warrior slide 10 of 10 about you are not alone. Support, education, and hope",
+      "sourceImagePrompt": "Create a 9:16 premium Acoustic Neuroma Warrior medical-awareness graphic. Topic: you are not alone. Slide role: cta. Use dark emerald green, white, cream, and soft sage. Use a strong readable title hierarchy, clean medical iconography, elegant botanical accents, and generous negative space. Include a small official ANW shield logo with white awareness ribbon. Include small subtle acousticneuromawarrior.com branding. Create a hopeful closing composition centered on the message \"You Are Not Alone.\" Do not render paragraphs or tiny text inside the artwork. Avoid graphic surgery, frightening imagery, exaggerated claims, and guaranteed outcomes.",
+      "productionImagePrompt": "Create a 9:16 vertical social-media visual for Acoustic Neuroma Warrior. Slide role: cta. Layout direction: call-to-action. Subject and visual concept: Create a 9:16 premium Acoustic Neuroma Warrior medical-awareness graphic. Topic: you are not alone. Slide role: cta. Use dark emerald green, white, cream, and soft sage. Use a strong readable title hierarchy, clean medical iconography, elegant botanical accents, and generous negative space. Include a small official ANW shield logo with white awareness ribbon. Include small subtle acousticneuromawarrior.com branding. Create a hopeful closing composition centered on the message \"You Are Not Alone.\" Do not render paragraphs or tiny text inside the artwork. Avoid graphic surgery, frightening imagery, exaggerated claims, and guaranteed outcomes. Visual identity: premium medical-awareness aesthetic; dark emerald green and white palette with soft sage accents; bold serif-led title hierarchy; clean medical iconography; subtle botanical accents; hopeful, compassionate, and trustworthy tone; small official ANW logo; small subtle website branding. Palette: emerald #0B4D3B, sage #A8BFAF, cream #F7F1E7, white #FFFFFF. Use the small ANW shield logo with white awareness ribbon. Reserve clean negative space for editable title, body, and CTA overlays. Do not render paragraphs or tiny text inside the generated artwork. Avoid frightening imagery, exaggerated medical claims, graphic surgery, or guaranteed outcomes. The emotional tone must be compassionate, hopeful, medically respectful, and trustworthy. Small branding reference: acousticneuromawarrior.com.",
+      "designNotes": [
+        "Use a large readable heading, clear visual hierarchy, generous spacing, accessible contrast, small ANW logo, and subtle acousticneuromawarrior.com branding.",
+        "Use Cormorant Garamond for titles and Montserrat for body copy.",
+        "Keep all important content inside the 72px left, 72px right, 120px top, and 150px bottom safe areas.",
+        "Footer: Acoustic Neuroma Warrior | acousticneuromawarrior.com."
+      ],
+      "filename": "2026-07-27_ANW_Carousel_you-are-not-alone_9x16_S10_v01.png",
+      "textMetrics": {
+        "titleWords": 4,
+        "headlineWords": 4,
+        "bodyWords": 15,
+        "callToActionWords": 2,
+        "totalCharacters": 188,
+        "recommendedBodyWordLimit": 56,
+        "exceedsRecommendedBodyLength": false
+      },
+      "medicalReviewFlag": true,
+      "copyReviewRequired": false
+    }
+  ],
+  "quality": {
+    "passedStructuralValidation": true,
+    "readyForDesign": true,
+    "requiresHumanReview": true,
+    "requiresMedicalReview": true,
+    "errorCount": 0,
+    "warningCount": 1,
+    "infoCount": 10,
+    "issues": [
+      {
+        "code": "CAROUSEL_MEDICAL_REVIEW_REQUIRED",
+        "severity": "info",
+        "message": "This slide is marked for medical review before publication.",
+        "slideNumber": 1
+      },
+      {
+        "code": "CAROUSEL_MEDICAL_REVIEW_REQUIRED",
+        "severity": "info",
+        "message": "This slide is marked for medical review before publication.",
+        "slideNumber": 2
+      },
+      {
+        "code": "CAROUSEL_MEDICAL_REVIEW_REQUIRED",
+        "severity": "info",
+        "message": "This slide is marked for medical review before publication.",
+        "slideNumber": 3
+      },
+      {
+        "code": "CAROUSEL_MEDICAL_REVIEW_REQUIRED",
+        "severity": "info",
+        "message": "This slide is marked for medical review before publication.",
+        "slideNumber": 4
+      },
+      {
+        "code": "CAROUSEL_MEDICAL_REVIEW_REQUIRED",
+        "severity": "info",
+        "message": "This slide is marked for medical review before publication.",
+        "slideNumber": 5
+      },
+      {
+        "code": "CAROUSEL_MEDICAL_REVIEW_REQUIRED",
+        "severity": "info",
+        "message": "This slide is marked for medical review before publication.",
+        "slideNumber": 6
+      },
+      {
+        "code": "CAROUSEL_MEDICAL_REVIEW_REQUIRED",
+        "severity": "info",
+        "message": "This slide is marked for medical review before publication.",
+        "slideNumber": 7
+      },
+      {
+        "code": "CAROUSEL_MEDICAL_REVIEW_REQUIRED",
+        "severity": "info",
+        "message": "This slide is marked for medical review before publication.",
+        "slideNumber": 8
+      },
+      {
+        "code": "CAROUSEL_MEDICAL_REVIEW_REQUIRED",
+        "severity": "info",
+        "message": "This slide is marked for medical review before publication.",
+        "slideNumber": 9
+      },
+      {
+        "code": "CAROUSEL_MEDICAL_REVIEW_REQUIRED",
+        "severity": "info",
+        "message": "This slide is marked for medical review before publication.",
+        "slideNumber": 10
+      },
+      {
+        "code": "CAROUSEL_MISSION_MESSAGE_MISSING",
+        "severity": "warning",
+        "message": "The final slide should contain the mission message: You Are Not Alone.",
+        "slideNumber": 10
+      }
+    ]
+  }
+}

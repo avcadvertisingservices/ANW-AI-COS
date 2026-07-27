@@ -6,7 +6,7 @@ import { writeCarouselProductionPackage } from "./writer.js";
 async function main(): Promise<void> {
   const contentEngine = createMockContentEngine();
   const contentBundle = await contentEngine.generate({
-    topic: "one-sided hearing loss",
+    topic: "you are not alone",
     audience: "Acoustic Neuroma patients, survivors, and caregivers",
     formats: ["carousel"],
     tone: "compassionate",

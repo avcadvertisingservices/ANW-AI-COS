@@ -16,7 +16,8 @@
     "content:live-demo": "tsx src/modules/content/live-demo.ts",
     "typecheck": "tsc --noEmit",
     "carousel:demo": "tsx src/modules/carousel/demo.ts",
-    "carousel:integrated-demo": "tsx src/modules/carousel/integrated-demo.ts"
+    "carousel:integrated-demo": "tsx src/modules/carousel/integrated-demo.ts",
+    "knowledge:check-topic": "tsx src/modules/knowledge/check-topic.ts"
   },
   "repository": {
     "type": "git",
