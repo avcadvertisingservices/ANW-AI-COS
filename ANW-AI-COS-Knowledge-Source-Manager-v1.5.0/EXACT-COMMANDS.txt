@@ -1,0 +1,19 @@
+npm pkg set scripts.source:demo="tsx src/modules/source/demo.ts"
+npm pkg set scripts.source:check-topic="tsx src/modules/source/check-topic.ts"
+npm pkg set scripts.source:add="tsx src/modules/source/add-source.ts"
+npm pkg set scripts.source:update="tsx src/modules/source/update-source.ts"
+npm pkg set scripts.source:remove="tsx src/modules/source/remove-source.ts"
+npm run typecheck
+npm test
+npm run source:demo
+npx supabase migration list
+npx supabase db push --dry-run
+npx supabase db push
+npm run source:check-topic
+git status
+git add -A
+git --no-pager diff --cached --name-only
+git commit -m "feat: add Knowledge Source Manager"
+git push origin HEAD:main
+git tag -a v1.5.0 -m "Knowledge Source Manager"
+git push origin v1.5.0

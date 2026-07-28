@@ -13,11 +13,11 @@ type KnowledgeSearchResult = Awaited<
   ReturnType<KnowledgeService["search"]>
 >[number];
 
-type KnowledgeSearchEntry =
+type KnowledgeEntry =
   KnowledgeSearchResult["entry"];
 
 interface RankedKnowledgeEntry {
-  entry: KnowledgeSearchEntry;
+  entry: KnowledgeEntry;
   score: number;
 }
 
@@ -40,7 +40,7 @@ function normalizeText(value: string): string {
     .trim();
 }
 
-function createTokens(value: string): string[] {
+function tokenize(value: string): string[] {
   const ignoredWords = new Set([
     "a",
     "an",
@@ -66,16 +66,17 @@ function createTokens(value: string): string[] {
     );
 }
 
-function getEntryKeywords(
-  entry: KnowledgeSearchEntry,
+function getStringArrayProperty(
+  entry: KnowledgeEntry,
+  propertyName: "keywords" | "aliases",
 ): string[] {
   if (
-    "keywords" in entry &&
-    Array.isArray(entry.keywords)
+    propertyName in entry &&
+    Array.isArray(entry[propertyName])
   ) {
-    return entry.keywords.filter(
-      (keyword): keyword is string =>
-        typeof keyword === "string",
+    return entry[propertyName].filter(
+      (value): value is string =>
+        typeof value === "string",
     );
   }
 
@@ -83,7 +84,7 @@ function getEntryKeywords(
 }
 
 function isGenericMissionEntry(
-  entry: KnowledgeSearchEntry,
+  entry: KnowledgeEntry,
 ): boolean {
   const title = normalizeText(entry.title);
   const slug = normalizeText(entry.slug);
@@ -99,55 +100,94 @@ function isGenericMissionEntry(
 }
 
 function scoreKnowledgeEntry(
-  entry: KnowledgeSearchEntry,
+  entry: KnowledgeEntry,
   requestedTopic: string,
 ): number {
   const topic = normalizeText(requestedTopic);
-  const topicSlug = topic.replace(/\s+/g, "-");
 
   const title = normalizeText(entry.title);
   const slug = normalizeText(entry.slug);
   const summary = normalizeText(entry.summary);
   const body = normalizeText(entry.body);
+  const category = normalizeText(
+    String(entry.category ?? ""),
+  );
 
-  const tags = (entry.tags ?? []).map(normalizeText);
+  const tags = (entry.tags ?? []).map(
+    normalizeText,
+  );
+
   const keywords =
-    getEntryKeywords(entry).map(normalizeText);
+    getStringArrayProperty(
+      entry,
+      "keywords",
+    ).map(normalizeText);
 
-  const topicTokens = createTokens(requestedTopic);
+  const aliases =
+    getStringArrayProperty(
+      entry,
+      "aliases",
+    ).map(normalizeText);
+
+  const topicTokens = tokenize(requestedTopic);
 
   let score = 0;
 
   /*
-   * Exact topic matches receive the greatest priority.
+   * Exact matches receive the strongest ranking.
    */
   if (title === topic) {
     score += 10_000;
   }
 
-  if (
-    slug === topic ||
-    entry.slug.toLowerCase() === topicSlug
-  ) {
+  if (slug === topic) {
+    score += 9_500;
+  }
+
+  if (aliases.includes(topic)) {
     score += 9_000;
   }
 
+  if (keywords.includes(topic)) {
+    score += 8_500;
+  }
+
+  if (tags.includes(topic)) {
+    score += 8_000;
+  }
+
   /*
-   * Strong phrase matches.
+   * Phrase matches.
    */
   if (title.includes(topic)) {
     score += 3_000;
   }
 
   if (slug.includes(topic)) {
+    score += 2_800;
+  }
+
+  if (
+    aliases.some((alias) =>
+      alias.includes(topic),
+    )
+  ) {
     score += 2_500;
   }
 
-  if (tags.includes(topic)) {
-    score += 2_000;
+  if (
+    keywords.some((keyword) =>
+      keyword.includes(topic),
+    )
+  ) {
+    score += 2_300;
   }
 
-  if (keywords.includes(topic)) {
+  if (
+    tags.some((tag) =>
+      tag.includes(topic),
+    )
+  ) {
     score += 2_000;
   }
 
@@ -160,13 +200,15 @@ function scoreKnowledgeEntry(
     }
 
     if (slug.includes(token)) {
-      score += 400;
+      score += 450;
     }
 
     if (
-      tags.some((tag) => tag.includes(token))
+      aliases.some((alias) =>
+        alias.includes(token),
+      )
     ) {
-      score += 300;
+      score += 400;
     }
 
     if (
@@ -174,21 +216,75 @@ function scoreKnowledgeEntry(
         keyword.includes(token),
       )
     ) {
+      score += 350;
+    }
+
+    if (
+      tags.some((tag) =>
+        tag.includes(token),
+      )
+    ) {
       score += 300;
     }
 
     if (summary.includes(token)) {
-      score += 80;
+      score += 100;
     }
 
     if (body.includes(token)) {
-      score += 20;
+      score += 25;
+    }
+
+    if (category.includes(token)) {
+      score += 50;
     }
   }
 
   /*
-   * Generic mission records must not override a
-   * specific medical or recovery topic.
+   * Extra support for hearing-loss terminology.
+   */
+  if (
+    topic.includes("hearing") &&
+    (
+      title.includes("hearing") ||
+      slug.includes("hearing") ||
+      summary.includes("hearing") ||
+      tags.some((tag) =>
+        tag.includes("hearing"),
+      ) ||
+      keywords.some((keyword) =>
+        keyword.includes("hearing"),
+      )
+    )
+  ) {
+    score += 500;
+  }
+
+  if (
+    topic.includes("one sided") &&
+    (
+      title.includes("one sided") ||
+      slug.includes("one sided") ||
+      aliases.some((alias) =>
+        alias.includes("one sided"),
+      ) ||
+      keywords.some((keyword) =>
+        keyword.includes("one sided"),
+      ) ||
+      aliases.some((alias) =>
+        alias.includes("unilateral"),
+      ) ||
+      keywords.some((keyword) =>
+        keyword.includes("unilateral"),
+      )
+    )
+  ) {
+    score += 500;
+  }
+
+  /*
+   * A generic mission record must never replace a
+   * specific medical, symptom, recovery, or treatment topic.
    */
   const topicIsMission =
     topic === "you are not alone" ||
@@ -199,7 +295,7 @@ function scoreKnowledgeEntry(
     !topicIsMission &&
     isGenericMissionEntry(entry)
   ) {
-    score -= 10_000;
+    score -= 20_000;
   }
 
   return score;
@@ -209,7 +305,7 @@ function rankKnowledgeEntries(
   results: KnowledgeSearchResult[],
   requestedTopic: string,
   requestedLimit: number,
-): KnowledgeSearchEntry[] {
+): KnowledgeEntry[] {
   const ranked: RankedKnowledgeEntry[] =
     results
       .map(({ entry }) => ({
@@ -234,20 +330,39 @@ function rankKnowledgeEntries(
   );
 
   if (relevantEntries.length === 0) {
-    return [];
+    const diagnostic = ranked
+      .slice(0, 5)
+      .map(
+        ({ entry, score }) =>
+          `${entry.slug}:${score}`,
+      )
+      .join(", ");
+
+    throw new ContentEngineError(
+      [
+        `Approved knowledge was found, but none was sufficiently relevant to "${requestedTopic}".`,
+        diagnostic
+          ? `Top results: ${diagnostic}`
+          : "No ranked results were available.",
+      ].join(" "),
+      "NO_RELEVANT_APPROVED_KNOWLEDGE",
+    );
   }
 
   const bestScore =
     relevantEntries[0]?.score ?? 0;
 
   /*
-   * When an exact match exists, exclude weak,
-   * generic, or accidental search matches.
+   * When an exact match exists, allow only strongly
+   * related supporting records.
    */
   const minimumAcceptedScore =
-    bestScore >= 9_000
+    bestScore >= 8_000
       ? 500
-      : Math.max(1, Math.floor(bestScore * 0.15));
+      : Math.max(
+          1,
+          Math.floor(bestScore * 0.15),
+        );
 
   return relevantEntries
     .filter(
@@ -267,9 +382,8 @@ export class ContentKnowledgeRetriever {
     request: ContentGenerationRequest,
   ): Promise<KnowledgeContextItem[]> {
     /*
-     * Retrieve a wider candidate pool before ranking.
-     * Otherwise, an imprecise first database result can
-     * hide the exact topic match.
+     * Retrieve a wider candidate pool before applying
+     * ANW-specific topic relevance ranking.
      */
     const results =
       await this.service.search({
@@ -292,13 +406,6 @@ export class ContentKnowledgeRetriever {
         request.knowledgeLimit,
       );
 
-    if (rankedEntries.length === 0) {
-      throw new ContentEngineError(
-        `Approved knowledge was found, but none was sufficiently relevant to "${request.topic}".`,
-        "NO_RELEVANT_APPROVED_KNOWLEDGE",
-      );
-    }
-
     return rankedEntries.map((entry) => ({
       id: entry.id,
       slug: entry.slug,
@@ -306,12 +413,18 @@ export class ContentKnowledgeRetriever {
       summary: entry.summary,
       body: entry.body,
       category: entry.category,
-      tags: entry.tags,
-      sourceTitles: entry.sources.map(
-        (source) => source.title,
-      ),
-      reviewedBy: entry.reviewedBy,
-      reviewedAt: entry.reviewedAt,
+      tags: entry.tags ?? [],
+
+      sourceTitles:
+        (entry.sources ?? []).map(
+          (source) => source.title,
+        ),
+
+      reviewedBy:
+        entry.reviewedBy,
+
+      reviewedAt:
+        entry.reviewedAt,
     }));
   }
 }
@@ -319,14 +432,27 @@ export class ContentKnowledgeRetriever {
 export function validateRequest(
   request: ContentGenerationRequest,
 ): void {
-  if (request.topic.trim().length < 3) {
+  if (
+    request.topic.trim().length < 3
+  ) {
     throw new ContentEngineError(
       "Topic is too short.",
       "INVALID_REQUEST",
     );
   }
 
-  if (request.formats.length === 0) {
+  if (
+    request.audience.trim().length < 3
+  ) {
+    throw new ContentEngineError(
+      "Audience is too short.",
+      "INVALID_REQUEST",
+    );
+  }
+
+  if (
+    request.formats.length === 0
+  ) {
     throw new ContentEngineError(
       "Choose at least one format.",
       "INVALID_REQUEST",
@@ -365,8 +491,12 @@ export function prompts(
     "You are the ANW AI-COS Content Engine.",
     "Return only structured output.",
     "Use only the approved knowledge supplied.",
-    "Prioritize the first knowledge record because it is the strongest topic match.",
-    "Never diagnose, prescribe, promise outcomes, invent statistics or citations, or give absolute medical advice.",
+    "The first knowledge record is the strongest topic match.",
+    "Never diagnose an individual.",
+    "Never prescribe treatment.",
+    "Never promise outcomes.",
+    "Never invent statistics, citations, doctors, hospitals, or research.",
+    "Never give absolute medical advice.",
     "All patient-facing medical content requires human review.",
     "Brand: Acoustic Neuroma Warrior.",
     'Mission: "You Are Not Alone."',
@@ -375,7 +505,7 @@ export function prompts(
     `Carousel must contain exactly ${request.carouselSlideCount} slides.`,
     "Use a meaningful progression: hook, introduction, topic education, practical guidance, takeaways, and final CTA.",
     "Do not repeat identical titles, headlines, or body copy across several slides.",
-    'Reserve "You Are Not Alone" primarily for the final CTA instead of using it as every slide title.',
+    'Reserve "You Are Not Alone" mainly for the final CTA.',
     "Every slide needs an image prompt, design notes, voiceover, alt text, and medical review flag.",
     "Return null for formats not requested.",
   ].join(" ");
@@ -387,7 +517,11 @@ export function prompts(
     `Tone: ${request.tone}`,
     `Language: ${request.language}`,
     "Approved knowledge, ordered from most relevant to least relevant:",
-    JSON.stringify(knowledge, null, 2),
+    JSON.stringify(
+      knowledge,
+      null,
+      2,
+    ),
     "Create the complete content bundle.",
     "Use the exact supplied knowledge IDs.",
     "Set status to medical_review.",
@@ -426,12 +560,12 @@ export function safetyReport(
     );
 
   const containsGuaranteedOutcomeLanguage =
-    /\bguaranteed\b|\bwill cure\b|\b100%\b/i.test(
+    /\bguaranteed\b|\bwill cure\b|\bwill fully recover\b|\b100%\b/i.test(
       value,
     );
 
   const containsAbsoluteMedicalAdvice =
-    /\byou must choose surgery\b|\bstop taking\b/i.test(
+    /\byou must choose surgery\b|\bstop taking\b|\bdo not take\b/i.test(
       value,
     );
 
@@ -441,13 +575,17 @@ export function safetyReport(
     );
   }
 
-  if (containsGuaranteedOutcomeLanguage) {
+  if (
+    containsGuaranteedOutcomeLanguage
+  ) {
     warnings.push(
       "Guaranteed outcome language detected.",
     );
   }
 
-  if (containsAbsoluteMedicalAdvice) {
+  if (
+    containsAbsoluteMedicalAdvice
+  ) {
     warnings.push(
       "Absolute medical advice detected.",
     );
@@ -455,12 +593,18 @@ export function safetyReport(
 
   return {
     requiresMedicalReview: true,
+
     approvedKnowledgeOnly:
       bundle.safety.approvedKnowledgeOnly,
+
     containsDiagnosisLanguage,
+
     containsGuaranteedOutcomeLanguage,
+
     containsUnsupportedStatistics: false,
+
     containsAbsoluteMedicalAdvice,
+
     warnings,
   };
 }
@@ -475,10 +619,14 @@ export function brandReport(
     /you are not alone/i.test(value);
 
   const includesWebsiteBranding =
-    /acousticneuromawarrior\.com/i.test(value);
+    /acousticneuromawarrior\.com/i.test(
+      value,
+    );
 
   const compassionateTone =
-    !/just get over it/i.test(value);
+    !/just get over it|stop complaining|you are weak/i.test(
+      value,
+    );
 
   if (!includesMissionMessage) {
     warnings.push(
@@ -510,7 +658,9 @@ export class ContentEngineService {
   public constructor(
     private readonly retriever:
       ContentKnowledgeRetriever,
-    private readonly provider: ContentProvider,
+
+    private readonly provider:
+      ContentProvider,
   ) {}
 
   public async generate(
@@ -519,7 +669,9 @@ export class ContentEngineService {
     validateRequest(request);
 
     const knowledge =
-      await this.retriever.retrieve(request);
+      await this.retriever.retrieve(
+        request,
+      );
 
     const promptValues =
       prompts(request, knowledge);
@@ -528,25 +680,47 @@ export class ContentEngineService {
       await this.provider.generate({
         request,
         knowledge,
-        systemPrompt: promptValues.system,
-        userPrompt: promptValues.user,
+
+        systemPrompt:
+          promptValues.system,
+
+        userPrompt:
+          promptValues.user,
       });
 
     const bundle: ContentBundle = {
       ...raw,
-      id: raw.id || randomUUID(),
-      topic: request.topic,
-      audience: request.audience,
-      language: request.language,
-      status: "medical_review",
-      knowledgeEntryIds: knowledge.map(
-        (entry) => entry.id,
-      ),
-      knowledgeSnapshot: knowledge,
+
+      id:
+        raw.id ||
+        randomUUID(),
+
+      topic:
+        request.topic,
+
+      audience:
+        request.audience,
+
+      language:
+        request.language,
+
+      status:
+        "medical_review",
+
+      knowledgeEntryIds:
+        knowledge.map(
+          (entry) => entry.id,
+        ),
+
+      knowledgeSnapshot:
+        knowledge,
+
       generatedAt:
         raw.generatedAt ||
         new Date().toISOString(),
-      model: this.provider.model,
+
+      model:
+        this.provider.model,
     };
 
     if (
@@ -564,10 +738,17 @@ export class ContentEngineService {
       );
     }
 
+    const safety =
+      safetyReport(bundle);
+
+    const brand =
+      brandReport(bundle);
+
     return {
       ...bundle,
-      safety: safetyReport(bundle),
-      brand: brandReport(bundle),
+      safety,
+      brand,
+      status: "medical_review",
     };
   }
 }

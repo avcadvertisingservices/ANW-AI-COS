@@ -19,7 +19,16 @@
     "carousel:integrated-demo": "tsx src/modules/carousel/integrated-demo.ts",
     "knowledge:check-topic": "tsx src/modules/knowledge/check-topic.ts",
     "review:demo": "tsx src/modules/review/demo.ts",
-    "review:check-topic": "tsx src/modules/review/check-topic.ts"
+    "review:check-topic": "tsx src/modules/review/check-topic.ts",
+    "source:demo": "tsx src/modules/source/demo.ts",
+    "source:check-topic": "tsx src/modules/source/check-topic.ts",
+    "source:add": "tsx src/modules/source/add-source.ts",
+    "source:update": "tsx src/modules/source/update-source.ts",
+    "source:remove": "tsx src/modules/source/remove-source.ts",
+    "review:submit": "tsx src/modules/review/submit-topic.ts",
+    "review:start": "tsx src/modules/review/start-review.ts",
+    "review:approve": "tsx src/modules/review/approve-topic.ts",
+    "review:reject": "tsx src/modules/review/reject-topic.ts"
   },
   "repository": {
     "type": "git",
