@@ -11,6 +11,7 @@ export type KnowledgeSource = {
   status: string;
   eventType: string;
   updatedAt: string | null;
+  isRemoved: boolean;
 };
 
 export type KnowledgeReviewEvent = {
@@ -22,20 +23,24 @@ export type KnowledgeReviewEvent = {
   actorEmail: string | null;
   notes: string | null;
   createdAt: string | null;
+  isPlaceholderActor: boolean;
 };
 
 export type KnowledgeLibraryEntry = {
   id: string;
   slug: string;
   title: string;
-  summary: string;
-  body: string;
   category: string;
+  summary: string | null;
+  body: string | null;
   knowledgeStatus: string;
   reviewStatus: string | null;
+  reviewRequestId: string | null;
+  reviewerName: string | null;
   sourceCount: number;
   sources: KnowledgeSource[];
-  reviewEvents: KnowledgeReviewEvent[];
+  reviewTimeline: KnowledgeReviewEvent[];
+  createdAt: string | null;
   updatedAt: string | null;
 };
 
@@ -47,25 +52,32 @@ export type KnowledgeLibraryData = {
 type UnknownRow = Record<string, unknown>;
 
 type SourceEventRow = {
+  id: string | null;
   knowledge_entry_id: string | null;
   knowledge_slug: string | null;
   source_id: string | null;
   event_type: string | null;
+  before_source: unknown;
   after_source: unknown;
   created_at: string | null;
 };
 
 type ReviewRequestRow = {
-  id: string;
+  id: string | null;
   knowledge_entry_id: string | null;
   knowledge_slug: string | null;
   status: string | null;
+  assigned_reviewer: unknown;
+  reviewer: unknown;
+  reviewer_actor: unknown;
+  medical_reviewer: unknown;
   created_at: string | null;
+  updated_at: string | null;
 };
 
 type ReviewEventRow = {
-  id: string;
-  review_request_id: string;
+  id: string | null;
+  review_request_id: string | null;
   knowledge_entry_id: string | null;
   event_type: string | null;
   actor: unknown;
@@ -85,125 +97,95 @@ export async function getKnowledgeLibraryData(): Promise<KnowledgeLibraryData> {
     supabase
       .from("knowledge_entries")
       .select("*")
-      .order("updated_at", { ascending: false }),
+      .order("updated_at", {
+        ascending: false,
+      }),
 
     supabase
       .from("knowledge_source_events")
       .select(
-        "knowledge_entry_id,knowledge_slug,source_id,event_type,after_source,created_at",
+        [
+          "id",
+          "knowledge_entry_id",
+          "knowledge_slug",
+          "source_id",
+          "event_type",
+          "before_source",
+          "after_source",
+          "created_at",
+        ].join(","),
       )
-      .order("created_at", { ascending: false }),
+      .order("created_at", {
+        ascending: false,
+      }),
 
     supabase
       .from("knowledge_review_requests")
-      .select(
-        "id,knowledge_entry_id,knowledge_slug,status,created_at",
-      )
-      .order("created_at", { ascending: false }),
+      .select("*")
+      .order("created_at", {
+        ascending: false,
+      }),
 
     supabase
       .from("knowledge_review_events")
-      .select(
-        "id,review_request_id,knowledge_entry_id,event_type,actor,notes,created_at",
-      )
-      .order("created_at", { ascending: false }),
+      .select("*")
+      .order("created_at", {
+        ascending: false,
+      }),
   ]);
 
-  const errors = [
-    knowledgeResult.error,
-    sourceEventsResult.error,
-    reviewRequestsResult.error,
-    reviewEventsResult.error,
-  ].filter(Boolean);
+  const errorMessages = [
+    knowledgeResult.error?.message,
+    sourceEventsResult.error?.message,
+    reviewRequestsResult.error?.message,
+    reviewEventsResult.error?.message,
+  ].filter(
+    (message): message is string =>
+      typeof message === "string" &&
+      message.trim().length > 0,
+  );
 
-  if (errors.length > 0) {
+  if (errorMessages.length > 0) {
     return {
       entries: [],
-      errorMessage: errors
-        .map((error) => error?.message)
-        .filter(Boolean)
-        .join(" | "),
+      errorMessage: errorMessages.join(" | "),
     };
   }
 
   const knowledgeRows =
-    (knowledgeResult.data ?? []) as UnknownRow[];
+    (knowledgeResult.data ?? []) as unknown as UnknownRow[];
 
-  const sourceEvents =
-    (sourceEventsResult.data ?? []) as SourceEventRow[];
+  const sourceEventRows =
+    (sourceEventsResult.data ?? []) as unknown as SourceEventRow[];
 
-  const reviewRequests =
-    (reviewRequestsResult.data ?? []) as ReviewRequestRow[];
+  const reviewRequestRows =
+    (reviewRequestsResult.data ?? []) as unknown as ReviewRequestRow[];
 
-  const reviewEvents =
-    (reviewEventsResult.data ?? []) as ReviewEventRow[];
+  const reviewEventRows =
+    (reviewEventsResult.data ?? []) as unknown as ReviewEventRow[];
 
-  const sourcesByEntry = createSourceMap(sourceEvents);
-  const latestReviewByEntry = createLatestReviewMap(reviewRequests);
-  const reviewEventsByEntry = createReviewEventMap(reviewEvents);
+  const sourcesByKnowledge =
+    createSourcesByKnowledgeMap(sourceEventRows);
 
-  const entries: KnowledgeLibraryEntry[] = knowledgeRows.map((row) => {
-    const id = readString(row.id) ?? "";
+  const latestReviewByKnowledge =
+    createLatestReviewByKnowledgeMap(reviewRequestRows);
 
-    const slug =
-      readString(row.slug) ??
-      readString(row.knowledge_slug) ??
-      id;
+  const reviewEventsByKnowledge =
+    createReviewEventsByKnowledgeMap(
+      reviewEventRows,
+      reviewRequestRows,
+    );
 
-    const title =
-      readString(row.title) ??
-      formatSlug(slug);
-
-    const summary =
-      readString(row.summary) ??
-      readString(row.description) ??
-      "";
-
-    const body =
-      readString(row.body) ??
-      readString(row.content) ??
-      "";
-
-    const category =
-      readString(row.category) ??
-      "General";
-
-    const knowledgeStatus =
-      readString(row.status) ??
-      readString(row.approval_status) ??
-      "draft";
-
-    const updatedAt =
-      readString(row.updated_at) ??
-      readString(row.created_at);
-
-    const latestReview =
-      latestReviewByEntry.get(id) ??
-      latestReviewByEntry.get(slug);
-
-    const sources =
-      sourcesByEntry.get(id) ??
-      sourcesByEntry.get(slug) ??
-      [];
-
-    const entryReviewEvents =
-      reviewEventsByEntry.get(id) ?? [];
-
-    return {
-      id,
-      slug,
-      title,
-      summary,
-      body,
-      category,
-      knowledgeStatus,
-      reviewStatus: latestReview?.status ?? null,
-      sourceCount: sources.length,
-      sources,
-      reviewEvents: entryReviewEvents,
-      updatedAt,
-    };
-  });
+  const entries = knowledgeRows
+    .map((row) =>
+      normalizeKnowledgeEntry(
+        row,
+        sourcesByKnowledge,
+        latestReviewByKnowledge,
+        reviewEventsByKnowledge,
+      ),
+    )
+    .sort(compareKnowledgeEntries);
 
   return {
     entries,
@@ -212,205 +194,401 @@ export async function getKnowledgeLibraryData(): Promise<KnowledgeLibraryData> {
 }
 
 export async function getKnowledgeEntryBySlug(
-  requestedSlug: string,
-): Promise<{
-  entry: KnowledgeLibraryEntry | null;
-  errorMessage: string | null;
-}> {
+  slug: string,
+): Promise<KnowledgeLibraryEntry | null> {
   const libraryData = await getKnowledgeLibraryData();
 
   if (libraryData.errorMessage) {
-    return {
-      entry: null,
-      errorMessage: libraryData.errorMessage,
-    };
+    return null;
   }
 
-  const decodedSlug = decodeURIComponent(requestedSlug);
+  const normalizedSlug = normalizeSlug(slug);
 
-  const entry =
+  return (
     libraryData.entries.find(
-      (item) =>
-        item.slug === decodedSlug ||
-        item.id === decodedSlug,
-    ) ?? null;
+      (entry) =>
+        normalizeSlug(entry.slug) === normalizedSlug,
+    ) ?? null
+  );
+}
+
+function normalizeKnowledgeEntry(
+  row: UnknownRow,
+  sourcesByKnowledge: Map<string, KnowledgeSource[]>,
+  latestReviewByKnowledge: Map<string, ReviewRequestRow>,
+  reviewEventsByKnowledge: Map<string, KnowledgeReviewEvent[]>,
+): KnowledgeLibraryEntry {
+  const id =
+    readString(row.id) ??
+    readString(row.knowledge_entry_id) ??
+    "unknown-knowledge-entry";
+
+  const slug =
+    readString(row.slug) ??
+    readString(row.knowledge_slug) ??
+    createSlugFromId(id);
+
+  const title =
+    readString(row.title) ??
+    readString(row.name) ??
+    formatSlug(slug);
+
+  const category =
+    readString(row.category) ??
+    readString(row.topic_category) ??
+    readString(row.type) ??
+    "General";
+
+  const summary =
+    readString(row.summary) ??
+    readString(row.description) ??
+    readString(row.excerpt) ??
+    null;
+
+  const body =
+    readString(row.body) ??
+    readString(row.content) ??
+    readString(row.knowledge_body) ??
+    readString(row.details) ??
+    null;
+
+  const knowledgeStatus = normalizeStatus(
+    readString(row.status) ??
+      readString(row.knowledge_status) ??
+      "draft",
+  );
+
+  const sources =
+    sourcesByKnowledge.get(id) ??
+    sourcesByKnowledge.get(slug) ??
+    [];
+
+  const latestReview =
+    latestReviewByKnowledge.get(id) ??
+    latestReviewByKnowledge.get(slug) ??
+    null;
+
+  const reviewTimeline =
+    reviewEventsByKnowledge.get(id) ??
+    reviewEventsByKnowledge.get(slug) ??
+    [];
+
+  const reviewer = latestReview
+    ? readFirstObject([
+        latestReview.assigned_reviewer,
+        latestReview.reviewer,
+        latestReview.reviewer_actor,
+        latestReview.medical_reviewer,
+      ])
+    : {};
+
+  const reviewerName =
+    readString(reviewer.name) ??
+    readString(reviewer.displayName) ??
+    readString(reviewer.display_name) ??
+    findLatestReviewerName(reviewTimeline);
+
+  const reviewStatus = latestReview?.status
+    ? normalizeStatus(latestReview.status)
+    : null;
 
   return {
-    entry,
-    errorMessage: null,
+    id,
+    slug,
+    title,
+    category,
+    summary,
+    body,
+    knowledgeStatus,
+    reviewStatus,
+    reviewRequestId: latestReview?.id ?? null,
+    reviewerName,
+    sourceCount: sources.length,
+    sources,
+    reviewTimeline,
+    createdAt: readString(row.created_at),
+    updatedAt:
+      readString(row.updated_at) ??
+      readString(row.modified_at) ??
+      readString(row.created_at),
   };
 }
 
-function createSourceMap(
-  events: SourceEventRow[],
+function createSourcesByKnowledgeMap(
+  rows: SourceEventRow[],
 ): Map<string, KnowledgeSource[]> {
-  const latestEventByEntryAndSource =
+  const latestEventBySource =
     new Map<string, SourceEventRow>();
 
-  for (const event of events) {
-    if (!event.knowledge_entry_id || !event.source_id) {
+  for (const row of rows) {
+    if (!row.source_id) {
       continue;
     }
 
-    const key =
-      event.knowledge_entry_id +
-      "::" +
-      event.source_id;
+    const knowledgeKey =
+      row.knowledge_entry_id ??
+      row.knowledge_slug ??
+      "unknown-knowledge";
 
-    // Events are newest first, so retain only the first event
-    // encountered for each knowledge-entry/source pair.
-    if (!latestEventByEntryAndSource.has(key)) {
-      latestEventByEntryAndSource.set(key, event);
+    const compositeKey =
+      `${knowledgeKey}::${row.source_id}`;
+
+    if (!latestEventBySource.has(compositeKey)) {
+      latestEventBySource.set(compositeKey, row);
     }
   }
 
-  const sourcesByEntry =
+  const result =
     new Map<string, KnowledgeSource[]>();
 
-  for (const event of latestEventByEntryAndSource.values()) {
-    if (!event.knowledge_entry_id || !event.source_id) {
-      continue;
-    }
+  for (const row of latestEventBySource.values()) {
+    const eventType = normalizeStatus(
+      row.event_type ?? "source_updated",
+    );
 
-    const eventType =
-      event.event_type?.toLowerCase() ?? "";
-
-    const removed =
+    const isRemoved =
       eventType === "source_removed" ||
       eventType === "source_deleted";
 
-    if (removed) {
+    if (isRemoved) {
       continue;
     }
 
-    const sourceData = readObject(event.after_source);
+    const afterSource = readObject(row.after_source);
+    const beforeSource = readObject(row.before_source);
+
+    const sourceData =
+      Object.keys(afterSource).length > 0
+        ? afterSource
+        : beforeSource;
+
+    const sourceId =
+      row.source_id ?? "unknown-source";
 
     const source: KnowledgeSource = {
-      id: event.source_id,
+      id: sourceId,
+
       title:
         readString(sourceData.title) ??
         readString(sourceData.name) ??
-        formatSourceId(event.source_id),
+        formatSourceId(sourceId),
+
       organization:
         readString(sourceData.organization) ??
+        readString(sourceData.organisation) ??
         null,
+
       publisher:
         readString(sourceData.publisher) ??
         readString(sourceData.provider) ??
         null,
+
       url:
         readString(sourceData.url) ??
         readString(sourceData.sourceUrl) ??
+        readString(sourceData.source_url) ??
         null,
-      status:
-        readString(sourceData.status) ??
-        "active",
-      eventType:
-        event.event_type ??
-        "source_updated",
+
+      status: normalizeStatus(
+        readString(sourceData.status) ?? "active",
+      ),
+
+      eventType,
+
       updatedAt:
-        event.created_at,
+        readString(sourceData.updatedAt) ??
+        readString(sourceData.updated_at) ??
+        row.created_at,
+
+      isRemoved: false,
     };
 
-    const current =
-      sourcesByEntry.get(event.knowledge_entry_id) ?? [];
+    const knowledgeKeys = [
+      row.knowledge_entry_id,
+      row.knowledge_slug,
+    ].filter(isNonEmptyString);
 
-    current.push(source);
+    for (const key of knowledgeKeys) {
+      const existingSources = result.get(key) ?? [];
 
-    sourcesByEntry.set(
-      event.knowledge_entry_id,
-      current,
-    );
+      const withoutDuplicate = existingSources.filter(
+        (existingSource) =>
+          existingSource.id !== source.id,
+      );
 
-    if (event.knowledge_slug) {
-      sourcesByEntry.set(
-        event.knowledge_slug,
-        current,
+      result.set(
+        key,
+        [...withoutDuplicate, source].sort(
+          (first, second) =>
+            first.title.localeCompare(second.title),
+        ),
       );
     }
   }
 
-  return sourcesByEntry;
+  return result;
 }
 
-function createLatestReviewMap(
-  reviews: ReviewRequestRow[],
+function createLatestReviewByKnowledgeMap(
+  rows: ReviewRequestRow[],
 ): Map<string, ReviewRequestRow> {
-  const latestReview =
+  const result =
     new Map<string, ReviewRequestRow>();
 
-  for (const review of reviews) {
-    if (
-      review.knowledge_entry_id &&
-      !latestReview.has(review.knowledge_entry_id)
-    ) {
-      latestReview.set(
-        review.knowledge_entry_id,
-        review,
-      );
-    }
+  for (const row of rows) {
+    const knowledgeKeys = [
+      row.knowledge_entry_id,
+      row.knowledge_slug,
+    ].filter(isNonEmptyString);
 
-    if (
-      review.knowledge_slug &&
-      !latestReview.has(review.knowledge_slug)
-    ) {
-      latestReview.set(
-        review.knowledge_slug,
-        review,
-      );
+    for (const key of knowledgeKeys) {
+      if (!result.has(key)) {
+        result.set(key, row);
+      }
     }
   }
 
-  return latestReview;
+  return result;
 }
 
-function createReviewEventMap(
-  events: ReviewEventRow[],
+function createReviewEventsByKnowledgeMap(
+  eventRows: ReviewEventRow[],
+  requestRows: ReviewRequestRow[],
 ): Map<string, KnowledgeReviewEvent[]> {
-  const eventsByEntry =
+  const requestById =
+    new Map<string, ReviewRequestRow>();
+
+  for (const request of requestRows) {
+    if (request.id) {
+      requestById.set(request.id, request);
+    }
+  }
+
+  const result =
     new Map<string, KnowledgeReviewEvent[]>();
 
-  for (const event of events) {
-    if (!event.knowledge_entry_id) {
+  for (const row of eventRows) {
+    const reviewRequestId =
+      row.review_request_id ??
+      "unknown-review-request";
+
+    const request =
+      requestById.get(reviewRequestId);
+
+    const knowledgeEntryId =
+      row.knowledge_entry_id ??
+      request?.knowledge_entry_id ??
+      null;
+
+    const knowledgeSlug =
+      request?.knowledge_slug ?? null;
+
+    if (!knowledgeEntryId && !knowledgeSlug) {
       continue;
     }
 
-    const actor = readObject(event.actor);
+    const actor = readObject(row.actor);
 
-    const normalizedEvent: KnowledgeReviewEvent = {
-      id: event.id,
-      reviewRequestId: event.review_request_id,
-      eventType:
-        event.event_type ??
-        "review_event",
-      actorName:
-        readString(actor.name) ??
-        readString(actor.displayName) ??
-        "System",
+    const actorName =
+      readString(actor.name) ??
+      readString(actor.displayName) ??
+      readString(actor.display_name) ??
+      "System";
+
+    const event: KnowledgeReviewEvent = {
+      id:
+        row.id ??
+        `${reviewRequestId}-${row.created_at ?? "event"}`,
+
+      reviewRequestId,
+
+      eventType: normalizeStatus(
+        row.event_type ?? "review_event",
+      ),
+
+      actorName,
+
       actorRole:
-        readString(actor.role) ??
-        null,
+        readString(actor.role) ?? null,
+
       actorEmail:
-        readString(actor.email) ??
-        null,
-      notes:
-        event.notes,
-      createdAt:
-        event.created_at,
+        readString(actor.email) ?? null,
+
+      notes: row.notes ?? null,
+
+      createdAt: row.created_at,
+
+      isPlaceholderActor:
+        isPlaceholderReviewer(actorName),
     };
 
-    const current =
-      eventsByEntry.get(event.knowledge_entry_id) ?? [];
+    const knowledgeKeys = [
+      knowledgeEntryId,
+      knowledgeSlug,
+    ].filter(isNonEmptyString);
 
-    current.push(normalizedEvent);
+    for (const key of knowledgeKeys) {
+      const existingEvents = result.get(key) ?? [];
 
-    eventsByEntry.set(
-      event.knowledge_entry_id,
-      current,
-    );
+      const withoutDuplicate = existingEvents.filter(
+        (existingEvent) =>
+          existingEvent.id !== event.id,
+      );
+
+      result.set(
+        key,
+        [...withoutDuplicate, event].sort(
+          (first, second) =>
+            getTimestamp(second.createdAt) -
+            getTimestamp(first.createdAt),
+        ),
+      );
+    }
   }
 
-  return eventsByEntry;
+  return result;
+}
+
+function findLatestReviewerName(
+  events: KnowledgeReviewEvent[],
+): string | null {
+  const reviewerEvent = events.find(
+    (event) =>
+      event.actorName !== "System",
+  );
+
+  return reviewerEvent?.actorName ?? null;
+}
+
+function compareKnowledgeEntries(
+  first: KnowledgeLibraryEntry,
+  second: KnowledgeLibraryEntry,
+): number {
+  const firstTimestamp =
+    getTimestamp(first.updatedAt);
+
+  const secondTimestamp =
+    getTimestamp(second.updatedAt);
+
+  if (firstTimestamp !== secondTimestamp) {
+    return secondTimestamp - firstTimestamp;
+  }
+
+  return first.title.localeCompare(second.title);
+}
+
+function readFirstObject(
+  values: unknown[],
+): Record<string, unknown> {
+  for (const value of values) {
+    const object = readObject(value);
+
+    if (Object.keys(object).length > 0) {
+      return object;
+    }
+  }
+
+  return {};
 }
 
 function readObject(
@@ -440,18 +618,58 @@ function readString(
   return null;
 }
 
+function isNonEmptyString(
+  value: string | null,
+): value is string {
+  return (
+    typeof value === "string" &&
+    value.trim().length > 0
+  );
+}
+
+function normalizeStatus(
+  value: string,
+): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[\s-]+/g, "_");
+}
+
+function normalizeSlug(
+  value: string,
+): string {
+  try {
+    return decodeURIComponent(value)
+      .trim()
+      .toLowerCase();
+  } catch {
+    return value.trim().toLowerCase();
+  }
+}
+
+function createSlugFromId(
+  value: string,
+): string {
+  return value
+    .replace(/^knowledge\./, "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 function formatSlug(
   slug: string,
 ): string {
   return slug
     .split("-")
     .filter(Boolean)
-    .map((word) => {
-      return (
+    .map(
+      (word) =>
         word.charAt(0).toUpperCase() +
-        word.slice(1)
-      );
-    })
+        word.slice(1),
+    )
     .join(" ");
 }
 
@@ -460,13 +678,50 @@ function formatSourceId(
 ): string {
   return sourceId
     .replace(/^source\./, "")
-    .split(/[.-]/)
+    .split(/[._-]/)
     .filter(Boolean)
-    .map((word) => {
-      return (
+    .map(
+      (word) =>
         word.charAt(0).toUpperCase() +
-        word.slice(1)
-      );
-    })
+        word.slice(1),
+    )
     .join(" ");
+}
+
+function isPlaceholderReviewer(
+  value: string | null,
+): boolean {
+  if (!value) {
+    return false;
+  }
+
+  const normalized = value.toLowerCase();
+
+  const placeholderTerms = [
+    "your medical reviewer",
+    "real medical reviewer",
+    "medical reviewer name",
+    "reviewer name",
+    "your reviewer",
+    "test reviewer",
+    "placeholder reviewer",
+  ];
+
+  return placeholderTerms.some((term) =>
+    normalized.includes(term),
+  );
+}
+
+function getTimestamp(
+  value: string | null,
+): number {
+  if (!value) {
+    return 0;
+  }
+
+  const timestamp = new Date(value).getTime();
+
+  return Number.isNaN(timestamp)
+    ? 0
+    : timestamp;
 }

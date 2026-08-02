@@ -1,69 +1,39 @@
 ﻿import "server-only";
 
-import { createAdminClient } from "./supabase/admin";
+import { getKnowledgeLibraryData } from "./knowledge-data";
+import { getMedicalReviewData } from "./review-data";
+
+export type DashboardActiveReview = {
+  id: string;
+  knowledgeEntryId: string;
+  knowledgeSlug: string | null;
+  status: string;
+  reviewerName: string | null;
+  updatedAt: string | null;
+};
 
 export type DashboardData = {
   knowledgeTopicCount: number;
   sourceCount: number;
   submittedReviewCount: number;
-  activeReview: {
-    id: string;
-    status: string;
-    knowledgeEntryId: string;
-    knowledgeSlug: string | null;
-  } | null;
+  activeReview: DashboardActiveReview | null;
   errorMessage: string | null;
 };
 
-type SourceEventRow = {
-  source_id: string | null;
-  event_type: string | null;
-  created_at: string;
-};
-
 export async function getDashboardData(): Promise<DashboardData> {
-  const supabase = createAdminClient();
-
-  const [
-    knowledgeResult,
-    sourceEventsResult,
-    submittedReviewsResult,
-    activeReviewResult,
-  ] = await Promise.all([
-    supabase
-      .from("knowledge_entries")
-      .select("*", { count: "exact", head: true }),
-
-    supabase
-      .from("knowledge_source_events")
-      .select("source_id,event_type,created_at")
-      .order("created_at", { ascending: false }),
-
-    supabase
-      .from("knowledge_review_requests")
-      .select("*", { count: "exact", head: true })
-      .eq("status", "submitted"),
-
-    supabase
-      .from("knowledge_review_requests")
-      .select("id,status,knowledge_entry_id,knowledge_slug,created_at")
-      .in("status", [
-        "draft",
-        "submitted",
-        "in_review",
-        "changes_requested"
-      ])
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle(),
+  const [knowledgeData, reviewData] = await Promise.all([
+    getKnowledgeLibraryData(),
+    getMedicalReviewData(),
   ]);
 
   const errors = [
-    knowledgeResult.error,
-    sourceEventsResult.error,
-    submittedReviewsResult.error,
-    activeReviewResult.error,
-  ].filter(Boolean);
+    knowledgeData.errorMessage,
+    reviewData.errorMessage,
+  ].filter(
+    (message): message is string =>
+      typeof message === "string" &&
+      message.trim().length > 0,
+  );
 
   if (errors.length > 0) {
     return {
@@ -71,64 +41,112 @@ export async function getDashboardData(): Promise<DashboardData> {
       sourceCount: 0,
       submittedReviewCount: 0,
       activeReview: null,
-      errorMessage: errors
-        .map((error) => error?.message)
-        .filter(Boolean)
-        .join(" | "),
+      errorMessage: errors.join(" | "),
     };
   }
 
-  const sourceCount = countActiveSources(
-    (sourceEventsResult.data ?? []) as SourceEventRow[],
+  const sourceCount = knowledgeData.entries.reduce(
+    (total, entry) => {
+      return total + entry.sourceCount;
+    },
+    0,
   );
 
-  return {
-    knowledgeTopicCount: knowledgeResult.count ?? 0,
-    sourceCount,
-    submittedReviewCount: submittedReviewsResult.count ?? 0,
-    activeReview: activeReviewResult.data
+  const activeReviewRecord =
+    findPriorityActiveReview(
+      reviewData.activeReviews,
+    );
+
+  const activeReview: DashboardActiveReview | null =
+    activeReviewRecord
       ? {
-          id: activeReviewResult.data.id,
-          status: activeReviewResult.data.status,
+          id: activeReviewRecord.id,
           knowledgeEntryId:
-            activeReviewResult.data.knowledge_entry_id,
+            activeReviewRecord.knowledgeEntryId,
           knowledgeSlug:
-            activeReviewResult.data.knowledge_slug ?? null,
+            activeReviewRecord.knowledgeSlug,
+          status:
+            activeReviewRecord.status,
+          reviewerName:
+            activeReviewRecord.assignedReviewerName,
+          updatedAt:
+            activeReviewRecord.updatedAt ??
+            activeReviewRecord.createdAt,
         }
-      : null,
+      : null;
+
+  return {
+    knowledgeTopicCount:
+      knowledgeData.entries.length,
+
+    sourceCount,
+
+    submittedReviewCount:
+      reviewData.counts.submitted,
+
+    activeReview,
+
     errorMessage: null,
   };
 }
 
-function countActiveSources(events: SourceEventRow[]): number {
-  const latestEventBySource = new Map<string, string>();
+function findPriorityActiveReview<
+  T extends {
+    status: string;
+    updatedAt: string | null;
+    createdAt: string | null;
+  },
+>(reviews: T[]): T | null {
+  if (reviews.length === 0) {
+    return null;
+  }
 
-  for (const event of events) {
-    if (!event.source_id) {
-      continue;
-    }
+  const statusPriority: Record<string, number> = {
+    changes_requested: 1,
+    in_review: 2,
+    submitted: 3,
+    draft: 4,
+  };
 
-    if (!latestEventBySource.has(event.source_id)) {
-      latestEventBySource.set(
-        event.source_id,
-        event.event_type ?? "",
+  const sortedReviews = [...reviews].sort(
+    (first, second) => {
+      const firstPriority =
+        statusPriority[first.status] ?? 99;
+
+      const secondPriority =
+        statusPriority[second.status] ?? 99;
+
+      if (firstPriority !== secondPriority) {
+        return firstPriority - secondPriority;
+      }
+
+      const firstDate = getTimestamp(
+        first.updatedAt ??
+          first.createdAt,
       );
-    }
+
+      const secondDate = getTimestamp(
+        second.updatedAt ??
+          second.createdAt,
+      );
+
+      return secondDate - firstDate;
+    },
+  );
+
+  return sortedReviews[0] ?? null;
+}
+
+function getTimestamp(
+  value: string | null,
+): number {
+  if (!value) {
+    return 0;
   }
 
-  let count = 0;
+  const timestamp = new Date(value).getTime();
 
-  for (const eventType of latestEventBySource.values()) {
-    const normalized = eventType.toLowerCase();
-
-    const removed =
-      normalized === "source_removed" ||
-      normalized === "source_deleted";
-
-    if (!removed) {
-      count += 1;
-    }
-  }
-
-  return count;
+  return Number.isNaN(timestamp)
+    ? 0
+    : timestamp;
 }
