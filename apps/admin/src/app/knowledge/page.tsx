@@ -10,60 +10,7 @@ export default async function KnowledgeLibraryPage() {
   return (
     <main className="min-h-screen bg-[#f6f2e8] text-slate-900">
       <div className="flex min-h-screen">
-        <aside className="hidden w-72 flex-col bg-[#0b4d3b] text-white lg:flex">
-          <div className="border-b border-white/15 px-7 py-8">
-            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 text-3xl">
-              🎗️
-            </div>
-
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-100">
-              Acoustic Neuroma Warrior
-            </p>
-
-            <h1 className="mt-2 text-2xl font-bold">
-              ANW AI-COS
-            </h1>
-
-            <p className="mt-2 text-sm text-emerald-100">
-              Admin Portal
-            </p>
-          </div>
-
-          <nav className="flex-1 space-y-2 px-4 py-6">
-            <Link
-              href="/"
-              className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50 transition hover:bg-white/10"
-            >
-              <span aria-hidden="true">🏠</span>
-              <span>Dashboard</span>
-            </Link>
-
-            <Link
-              href="/knowledge"
-              className="flex items-center gap-3 rounded-xl bg-white px-4 py-3 text-sm font-semibold text-[#0b4d3b]"
-            >
-              <span aria-hidden="true">📚</span>
-              <span>Knowledge Library</span>
-            </Link>
-
-            <SidebarPlaceholder icon="🔗" label="Source Manager" />
-            <SidebarPlaceholder icon="🩺" label="Medical Reviews" />
-            <SidebarPlaceholder icon="🤖" label="Content Factory" />
-            <SidebarPlaceholder icon="🎨" label="Carousel Builder" />
-            <SidebarPlaceholder icon="📅" label="Publishing" />
-            <SidebarPlaceholder icon="⚙️" label="Settings" />
-          </nav>
-
-          <div className="border-t border-white/15 p-6">
-            <p className="text-sm font-semibold">
-              You Are Not Alone.
-            </p>
-
-            <p className="mt-1 text-xs leading-5 text-emerald-100">
-              Trusted education, compassionate support and practical resources.
-            </p>
-          </div>
-        </aside>
+        <AdminSidebar />
 
         <section className="min-w-0 flex-1">
           <header className="border-b border-emerald-950/10 bg-white/80 px-6 py-5 lg:px-10">
@@ -98,12 +45,21 @@ export default async function KnowledgeLibraryPage() {
               </h2>
 
               <p className="mt-4 max-w-3xl leading-7 text-emerald-50">
-                Review structured knowledge entries, medical sources and
-                approval workflows.
+                Review structured knowledge entries, medical
+                sources and approval workflows.
               </p>
 
-              <div className="mt-6 inline-flex rounded-full bg-white/10 px-4 py-2 text-sm font-medium">
-                {libraryData.entries.length} knowledge entries
+              <div className="mt-6 flex flex-wrap gap-3">
+                <span className="inline-flex rounded-full bg-white/10 px-4 py-2 text-sm font-medium">
+                  {libraryData.entries.length} knowledge entries
+                </span>
+
+                <Link
+                  href="/sources"
+                  className="inline-flex rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#0b4d3b]"
+                >
+                  Open Source Manager
+                </Link>
               </div>
             </section>
 
@@ -194,7 +150,8 @@ export default async function KnowledgeLibraryPage() {
                   <div className="mt-6 flex items-center justify-between gap-4 border-t border-slate-100 pt-5">
                     <p className="text-xs text-slate-500">
                       {entry.updatedAt
-                        ? "Updated " + formatDate(entry.updatedAt)
+                        ? "Updated " +
+                          formatDate(entry.updatedAt)
                         : "Update date unavailable"}
                     </p>
 
@@ -215,6 +172,113 @@ export default async function KnowledgeLibraryPage() {
         </section>
       </div>
     </main>
+  );
+}
+
+function AdminSidebar() {
+  return (
+    <aside className="hidden w-72 flex-col bg-[#0b4d3b] text-white lg:flex">
+      <div className="border-b border-white/15 px-7 py-8">
+        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 text-3xl">
+          🎗️
+        </div>
+
+        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-100">
+          Acoustic Neuroma Warrior
+        </p>
+
+        <h2 className="mt-2 text-2xl font-bold">
+          ANW AI-COS
+        </h2>
+
+        <p className="mt-2 text-sm text-emerald-100">
+          Admin Portal
+        </p>
+      </div>
+
+      <nav className="flex-1 space-y-2 px-4 py-6">
+        <SidebarLink
+          href="/"
+          icon="🏠"
+          label="Dashboard"
+        />
+
+        <SidebarLink
+          href="/knowledge"
+          icon="📚"
+          label="Knowledge Library"
+          active
+        />
+
+        <SidebarLink
+          href="/sources"
+          icon="🔗"
+          label="Source Manager"
+        />
+
+        <SidebarPlaceholder
+          icon="🩺"
+          label="Medical Reviews"
+        />
+
+        <SidebarPlaceholder
+          icon="🤖"
+          label="Content Factory"
+        />
+
+        <SidebarPlaceholder
+          icon="🎨"
+          label="Carousel Builder"
+        />
+
+        <SidebarPlaceholder
+          icon="📅"
+          label="Publishing"
+        />
+
+        <SidebarPlaceholder
+          icon="⚙️"
+          label="Settings"
+        />
+      </nav>
+
+      <div className="border-t border-white/15 p-6">
+        <p className="text-sm font-semibold">
+          You Are Not Alone.
+        </p>
+
+        <p className="mt-1 text-xs leading-5 text-emerald-100">
+          Trusted education, compassionate support and practical
+          resources.
+        </p>
+      </div>
+    </aside>
+  );
+}
+
+function SidebarLink({
+  href,
+  icon,
+  label,
+  active = false,
+}: {
+  href: string;
+  icon: string;
+  label: string;
+  active?: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      className={
+        active
+          ? "flex items-center gap-3 rounded-xl bg-white px-4 py-3 text-sm font-semibold text-[#0b4d3b]"
+          : "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50 transition hover:bg-white/10"
+      }
+    >
+      <span aria-hidden="true">{icon}</span>
+      <span>{label}</span>
+    </Link>
   );
 }
 

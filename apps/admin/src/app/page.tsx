@@ -2,6 +2,8 @@ import Link from "next/link";
 
 import { getDashboardData } from "../lib/dashboard-data";
 
+export const dynamic = "force-dynamic";
+
 const navigationItems = [
   {
     name: "Dashboard",
@@ -15,18 +17,21 @@ const navigationItems = [
     href: "/knowledge",
     active: false,
   },
+  {
+    name: "Source Manager",
+    icon: "🔗",
+    href: "/sources",
+    active: false,
+  },
 ];
 
 const upcomingNavigationItems = [
-  { name: "Source Manager", icon: "🔗" },
   { name: "Medical Reviews", icon: "🩺" },
   { name: "Content Factory", icon: "🤖" },
   { name: "Carousel Builder", icon: "🎨" },
   { name: "Publishing", icon: "📅" },
   { name: "Settings", icon: "⚙️" },
 ];
-
-export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const dashboardData = await getDashboardData();
@@ -64,70 +69,7 @@ export default async function HomePage() {
   return (
     <main className="min-h-screen bg-[#f6f2e8] text-slate-900">
       <div className="flex min-h-screen">
-        <aside className="hidden w-72 flex-col bg-[#0b4d3b] text-white lg:flex">
-          <div className="border-b border-white/15 px-7 py-8">
-            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 text-3xl">
-              🎗️
-            </div>
-
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-100">
-              Acoustic Neuroma Warrior
-            </p>
-
-            <h1 className="mt-2 text-2xl font-bold">
-              ANW AI-COS
-            </h1>
-
-            <p className="mt-2 text-sm text-emerald-100">
-              Admin Portal
-            </p>
-          </div>
-
-          <nav className="flex-1 space-y-2 px-4 py-6">
-            {navigationItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={
-                  item.active
-                    ? "flex w-full items-center gap-3 rounded-xl bg-white px-4 py-3 text-left text-sm font-semibold text-[#0b4d3b]"
-                    : "flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium text-emerald-50 transition hover:bg-white/10"
-                }
-              >
-                <span aria-hidden="true">
-                  {item.icon}
-                </span>
-
-                <span>{item.name}</span>
-              </Link>
-            ))}
-
-            {upcomingNavigationItems.map((item) => (
-              <div
-                key={item.name}
-                className="flex w-full cursor-not-allowed items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium text-emerald-50/70"
-                title="Coming soon"
-              >
-                <span aria-hidden="true">
-                  {item.icon}
-                </span>
-
-                <span>{item.name}</span>
-              </div>
-            ))}
-          </nav>
-
-          <div className="border-t border-white/15 p-6">
-            <p className="text-sm font-semibold">
-              You Are Not Alone.
-            </p>
-
-            <p className="mt-1 text-xs leading-5 text-emerald-100">
-              Trusted education, compassionate support and
-              practical resources.
-            </p>
-          </div>
-        </aside>
+        <AdminSidebar />
 
         <section className="min-w-0 flex-1">
           <header className="border-b border-emerald-950/10 bg-white/80 px-6 py-5 backdrop-blur lg:px-10">
@@ -137,9 +79,9 @@ export default async function HomePage() {
                   ANW AI Content Operating System
                 </p>
 
-                <h2 className="mt-1 text-2xl font-bold tracking-tight">
+                <h1 className="mt-1 text-2xl font-bold tracking-tight">
                   Executive Dashboard
-                </h2>
+                </h1>
               </div>
 
               <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#0b4d3b] font-bold text-white">
@@ -172,10 +114,10 @@ export default async function HomePage() {
                 Admin Portal Foundation
               </p>
 
-              <h3 className="mt-3 max-w-3xl text-3xl font-bold leading-tight lg:text-4xl">
+              <h2 className="mt-3 max-w-3xl text-3xl font-bold leading-tight lg:text-4xl">
                 Welcome to the control center of the Acoustic
                 Neuroma Warrior Content Operating System.
-              </h3>
+              </h2>
 
               <p className="mt-4 max-w-3xl leading-7 text-emerald-50">
                 Manage trusted knowledge, medical sources and
@@ -184,7 +126,7 @@ export default async function HomePage() {
 
               <div className="mt-6 flex flex-wrap gap-3">
                 <span className="inline-flex rounded-full bg-white/10 px-4 py-2 text-sm font-medium">
-                  Portal milestone: v2.0.0-alpha.1
+                  Portal milestone: v2.0.0-alpha.2
                 </span>
 
                 <Link
@@ -192,6 +134,13 @@ export default async function HomePage() {
                   className="inline-flex rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#0b4d3b] transition hover:bg-emerald-50"
                 >
                   Open Knowledge Library
+                </Link>
+
+                <Link
+                  href="/sources"
+                  className="inline-flex rounded-full border border-white/30 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+                >
+                  Open Source Manager
                 </Link>
               </div>
             </section>
@@ -224,9 +173,9 @@ export default async function HomePage() {
                     Current workflow
                   </p>
 
-                  <h3 className="mt-1 text-xl font-bold">
+                  <h2 className="mt-1 text-xl font-bold">
                     {reviewTitle}
-                  </h3>
+                  </h2>
 
                   <p className="mt-1 text-sm text-slate-500">
                     Latest active medical review request
@@ -305,8 +254,8 @@ export default async function HomePage() {
                   </p>
 
                   <p className="mt-2 text-sm text-slate-600">
-                    There are currently no draft, submitted,
-                    in-review or changes-requested records.
+                    There are currently no active medical-review
+                    records.
                   </p>
                 </div>
               )}
@@ -318,15 +267,75 @@ export default async function HomePage() {
   );
 }
 
+function AdminSidebar() {
+  return (
+    <aside className="hidden w-72 flex-col bg-[#0b4d3b] text-white lg:flex">
+      <div className="border-b border-white/15 px-7 py-8">
+        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 text-3xl">
+          🎗️
+        </div>
+
+        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-100">
+          Acoustic Neuroma Warrior
+        </p>
+
+        <h2 className="mt-2 text-2xl font-bold">
+          ANW AI-COS
+        </h2>
+
+        <p className="mt-2 text-sm text-emerald-100">
+          Admin Portal
+        </p>
+      </div>
+
+      <nav className="flex-1 space-y-2 px-4 py-6">
+        {navigationItems.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={
+              item.active
+                ? "flex items-center gap-3 rounded-xl bg-white px-4 py-3 text-sm font-semibold text-[#0b4d3b]"
+                : "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50 transition hover:bg-white/10"
+            }
+          >
+            <span aria-hidden="true">{item.icon}</span>
+            <span>{item.name}</span>
+          </Link>
+        ))}
+
+        {upcomingNavigationItems.map((item) => (
+          <div
+            key={item.name}
+            className="flex cursor-not-allowed items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50/70"
+            title="Coming soon"
+          >
+            <span aria-hidden="true">{item.icon}</span>
+            <span>{item.name}</span>
+          </div>
+        ))}
+      </nav>
+
+      <div className="border-t border-white/15 p-6">
+        <p className="text-sm font-semibold">
+          You Are Not Alone.
+        </p>
+
+        <p className="mt-1 text-xs leading-5 text-emerald-100">
+          Trusted education, compassionate support and practical
+          resources.
+        </p>
+      </div>
+    </aside>
+  );
+}
+
 function formatSlug(slug: string): string {
   return slug
     .split("-")
     .filter(Boolean)
-    .map((word: string) => {
-      return (
-        word.charAt(0).toUpperCase() +
-        word.slice(1)
-      );
+    .map((word) => {
+      return word.charAt(0).toUpperCase() + word.slice(1);
     })
     .join(" ");
 }
@@ -339,56 +348,33 @@ function formatStatus(status: string): string {
   return status
     .split("_")
     .filter(Boolean)
-    .map((word: string) => {
-      return (
-        word.charAt(0).toUpperCase() +
-        word.slice(1)
-      );
+    .map((word) => {
+      return word.charAt(0).toUpperCase() + word.slice(1);
     })
     .join(" ");
 }
 
-function getReviewStatusClass(
-  status: string,
-): string {
+function getReviewStatusClass(status: string): string {
   const baseClass =
     "inline-flex rounded-full px-3 py-1 text-xs font-semibold";
 
   switch (status) {
     case "submitted":
-      return (
-        baseClass +
-        " bg-blue-100 text-blue-800"
-      );
+      return baseClass + " bg-blue-100 text-blue-800";
 
     case "in_review":
-      return (
-        baseClass +
-        " bg-violet-100 text-violet-800"
-      );
+      return baseClass + " bg-violet-100 text-violet-800";
 
     case "changes_requested":
-      return (
-        baseClass +
-        " bg-amber-100 text-amber-800"
-      );
+      return baseClass + " bg-amber-100 text-amber-800";
 
     case "approved":
-      return (
-        baseClass +
-        " bg-emerald-100 text-emerald-800"
-      );
+      return baseClass + " bg-emerald-100 text-emerald-800";
 
     case "rejected":
-      return (
-        baseClass +
-        " bg-red-100 text-red-800"
-      );
+      return baseClass + " bg-red-100 text-red-800";
 
     default:
-      return (
-        baseClass +
-        " bg-slate-100 text-slate-700"
-      );
+      return baseClass + " bg-slate-100 text-slate-700";
   }
 }
