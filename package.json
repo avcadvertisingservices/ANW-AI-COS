@@ -43,16 +43,21 @@
   },
   "homepage": "https://github.com/avcadvertisingservices/ANW-AI-COS#readme",
   "dependencies": {
-    "@supabase/supabase-js": "^2.110.8",
-    "@types/node": "^26.1.1",
+    "@supabase/ssr": "^0.12.4",
+    "@supabase/supabase-js": "^2.111.0",
     "dotenv": "^17.4.2",
     "openai": "^6.49.0",
+    "server-only": "^0.0.1",
     "typescript": "^7.0.2",
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@types/node": "^26.1.2",
+    "npm": "^12.0.2",
+    "run": "^1.5.0",
     "supabase": "^2.109.1",
     "tsx": "^4.23.1",
+    "typecheck": "^0.1.2",
     "vitest": "^4.1.10"
   }
 }
