@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import AdminSidebar from "../../components/AdminSidebar";
 import { getKnowledgeLibraryData } from "../../lib/knowledge-data";
 
 export const dynamic = "force-dynamic";
@@ -45,8 +46,8 @@ export default async function KnowledgeLibraryPage() {
               </h2>
 
               <p className="mt-4 max-w-3xl leading-7 text-emerald-50">
-                Review structured knowledge entries, medical
-                sources and approval workflows.
+                Review structured knowledge entries, medical sources, and
+                approval workflows.
               </p>
 
               <div className="mt-6 flex flex-wrap gap-3">
@@ -56,9 +57,16 @@ export default async function KnowledgeLibraryPage() {
 
                 <Link
                   href="/sources"
-                  className="inline-flex rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#0b4d3b]"
+                  className="inline-flex rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#0b4d3b] transition hover:bg-emerald-50"
                 >
                   Open Source Manager
+                </Link>
+
+                <Link
+                  href="/medical-reviews"
+                  className="inline-flex rounded-full border border-white/30 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+                >
+                  Open Medical Reviews
                 </Link>
               </div>
             </section>
@@ -150,16 +158,14 @@ export default async function KnowledgeLibraryPage() {
                   <div className="mt-6 flex items-center justify-between gap-4 border-t border-slate-100 pt-5">
                     <p className="text-xs text-slate-500">
                       {entry.updatedAt
-                        ? "Updated " +
-                          formatDate(entry.updatedAt)
+                        ? `Updated ${formatDate(entry.updatedAt)}`
                         : "Update date unavailable"}
                     </p>
 
                     <Link
-                      href={
-                        "/knowledge/" +
-                        encodeURIComponent(entry.slug)
-                      }
+                      href={`/knowledge/${encodeURIComponent(
+                        entry.slug,
+                      )}`}
                       className="rounded-xl bg-[#0b4d3b] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#176b52]"
                     >
                       Open Topic
@@ -172,128 +178,6 @@ export default async function KnowledgeLibraryPage() {
         </section>
       </div>
     </main>
-  );
-}
-
-function AdminSidebar() {
-  return (
-    <aside className="hidden w-72 flex-col bg-[#0b4d3b] text-white lg:flex">
-      <div className="border-b border-white/15 px-7 py-8">
-        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 text-3xl">
-          🎗️
-        </div>
-
-        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-100">
-          Acoustic Neuroma Warrior
-        </p>
-
-        <h2 className="mt-2 text-2xl font-bold">
-          ANW AI-COS
-        </h2>
-
-        <p className="mt-2 text-sm text-emerald-100">
-          Admin Portal
-        </p>
-      </div>
-
-      <nav className="flex-1 space-y-2 px-4 py-6">
-        <SidebarLink
-          href="/"
-          icon="🏠"
-          label="Dashboard"
-        />
-
-        <SidebarLink
-          href="/knowledge"
-          icon="📚"
-          label="Knowledge Library"
-          active
-        />
-
-        <SidebarLink
-          href="/sources"
-          icon="🔗"
-          label="Source Manager"
-        />
-
-        <SidebarPlaceholder
-          icon="🩺"
-          label="Medical Reviews"
-        />
-
-        <SidebarPlaceholder
-          icon="🤖"
-          label="Content Factory"
-        />
-
-        <SidebarPlaceholder
-          icon="🎨"
-          label="Carousel Builder"
-        />
-
-        <SidebarPlaceholder
-          icon="📅"
-          label="Publishing"
-        />
-
-        <SidebarPlaceholder
-          icon="⚙️"
-          label="Settings"
-        />
-      </nav>
-
-      <div className="border-t border-white/15 p-6">
-        <p className="text-sm font-semibold">
-          You Are Not Alone.
-        </p>
-
-        <p className="mt-1 text-xs leading-5 text-emerald-100">
-          Trusted education, compassionate support and practical
-          resources.
-        </p>
-      </div>
-    </aside>
-  );
-}
-
-function SidebarLink({
-  href,
-  icon,
-  label,
-  active = false,
-}: {
-  href: string;
-  icon: string;
-  label: string;
-  active?: boolean;
-}) {
-  return (
-    <Link
-      href={href}
-      className={
-        active
-          ? "flex items-center gap-3 rounded-xl bg-white px-4 py-3 text-sm font-semibold text-[#0b4d3b]"
-          : "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50 transition hover:bg-white/10"
-      }
-    >
-      <span aria-hidden="true">{icon}</span>
-      <span>{label}</span>
-    </Link>
-  );
-}
-
-function SidebarPlaceholder({
-  icon,
-  label,
-}: {
-  icon: string;
-  label: string;
-}) {
-  return (
-    <div className="flex cursor-not-allowed items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50/70">
-      <span aria-hidden="true">{icon}</span>
-      <span>{label}</span>
-    </div>
   );
 }
 
@@ -321,10 +205,7 @@ function StatusBadge({
 
   return (
     <span
-      className={
-        "rounded-full px-3 py-1 text-xs font-semibold " +
-        classes
-      }
+      className={`rounded-full px-3 py-1 text-xs font-semibold ${classes}`}
     >
       {formatStatus(status)}
     </span>
@@ -335,9 +216,11 @@ function formatStatus(status: string): string {
   return status
     .split("_")
     .filter(Boolean)
-    .map((word) => {
-      return word.charAt(0).toUpperCase() + word.slice(1);
-    })
+    .map(
+      (word) =>
+        word.charAt(0).toUpperCase() +
+        word.slice(1),
+    )
     .join(" ");
 }
 

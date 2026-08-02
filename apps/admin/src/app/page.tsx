@@ -1,37 +1,9 @@
 import Link from "next/link";
 
+import AdminSidebar from "../components/AdminSidebar";
 import { getDashboardData } from "../lib/dashboard-data";
 
 export const dynamic = "force-dynamic";
-
-const navigationItems = [
-  {
-    name: "Dashboard",
-    icon: "🏠",
-    href: "/",
-    active: true,
-  },
-  {
-    name: "Knowledge Library",
-    icon: "📚",
-    href: "/knowledge",
-    active: false,
-  },
-  {
-    name: "Source Manager",
-    icon: "🔗",
-    href: "/sources",
-    active: false,
-  },
-];
-
-const upcomingNavigationItems = [
-  { name: "Medical Reviews", icon: "🩺" },
-  { name: "Content Factory", icon: "🤖" },
-  { name: "Carousel Builder", icon: "🎨" },
-  { name: "Publishing", icon: "📅" },
-  { name: "Settings", icon: "⚙️" },
-];
 
 export default async function HomePage() {
   const dashboardData = await getDashboardData();
@@ -115,13 +87,13 @@ export default async function HomePage() {
               </p>
 
               <h2 className="mt-3 max-w-3xl text-3xl font-bold leading-tight lg:text-4xl">
-                Welcome to the control center of the Acoustic
-                Neuroma Warrior Content Operating System.
+                Welcome to the control center of the Acoustic Neuroma Warrior
+                Content Operating System.
               </h2>
 
               <p className="mt-4 max-w-3xl leading-7 text-emerald-50">
-                Manage trusted knowledge, medical sources and
-                review workflows from one secure workspace.
+                Manage trusted knowledge, medical sources, and review workflows
+                from one secure workspace.
               </p>
 
               <div className="mt-6 flex flex-wrap gap-3">
@@ -141,6 +113,13 @@ export default async function HomePage() {
                   className="inline-flex rounded-full border border-white/30 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
                 >
                   Open Source Manager
+                </Link>
+
+                <Link
+                  href="/medical-reviews"
+                  className="inline-flex rounded-full border border-white/30 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+                >
+                  Open Medical Reviews
                 </Link>
               </div>
             </section>
@@ -182,11 +161,7 @@ export default async function HomePage() {
                   </p>
                 </div>
 
-                <span
-                  className={getReviewStatusClass(
-                    reviewStatus,
-                  )}
-                >
+                <span className={getReviewStatusClass(reviewStatus)}>
                   {formatStatus(reviewStatus)}
                 </span>
               </div>
@@ -200,10 +175,7 @@ export default async function HomePage() {
                       </p>
 
                       <p className="mt-2 break-all text-sm font-medium">
-                        {
-                          dashboardData.activeReview
-                            .knowledgeEntryId
-                        }
+                        {dashboardData.activeReview.knowledgeEntryId}
                       </p>
                     </div>
 
@@ -225,26 +197,33 @@ export default async function HomePage() {
                       </p>
 
                       <p className="mt-1 text-sm leading-6 text-amber-800">
-                        Content generation remains locked until
-                        a genuine medical reviewer approves this
-                        knowledge entry.
+                        Content generation remains locked until a genuine
+                        medical reviewer approves this knowledge entry.
                       </p>
                     </div>
 
-                    {dashboardData.activeReview.knowledgeSlug ? (
+                    <div className="flex flex-wrap gap-3">
+                      {dashboardData.activeReview.knowledgeSlug ? (
+                        <Link
+                          href={
+                            "/knowledge/" +
+                            encodeURIComponent(
+                              dashboardData.activeReview.knowledgeSlug,
+                            )
+                          }
+                          className="rounded-xl bg-[#0b4d3b] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#176b52]"
+                        >
+                          Open Current Topic
+                        </Link>
+                      ) : null}
+
                       <Link
-                        href={
-                          "/knowledge/" +
-                          encodeURIComponent(
-                            dashboardData.activeReview
-                              .knowledgeSlug,
-                          )
-                        }
-                        className="rounded-xl bg-[#0b4d3b] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#176b52]"
+                        href="/medical-reviews"
+                        className="rounded-xl border border-emerald-900/15 bg-white px-5 py-3 text-sm font-semibold text-[#0b4d3b] transition hover:bg-emerald-50"
                       >
-                        Open Current Topic
+                        Open Review Center
                       </Link>
-                    ) : null}
+                    </div>
                   </div>
                 </>
               ) : (
@@ -254,8 +233,7 @@ export default async function HomePage() {
                   </p>
 
                   <p className="mt-2 text-sm text-slate-600">
-                    There are currently no active medical-review
-                    records.
+                    There are currently no active medical-review records.
                   </p>
                 </div>
               )}
@@ -264,69 +242,6 @@ export default async function HomePage() {
         </section>
       </div>
     </main>
-  );
-}
-
-function AdminSidebar() {
-  return (
-    <aside className="hidden w-72 flex-col bg-[#0b4d3b] text-white lg:flex">
-      <div className="border-b border-white/15 px-7 py-8">
-        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 text-3xl">
-          🎗️
-        </div>
-
-        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-100">
-          Acoustic Neuroma Warrior
-        </p>
-
-        <h2 className="mt-2 text-2xl font-bold">
-          ANW AI-COS
-        </h2>
-
-        <p className="mt-2 text-sm text-emerald-100">
-          Admin Portal
-        </p>
-      </div>
-
-      <nav className="flex-1 space-y-2 px-4 py-6">
-        {navigationItems.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={
-              item.active
-                ? "flex items-center gap-3 rounded-xl bg-white px-4 py-3 text-sm font-semibold text-[#0b4d3b]"
-                : "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50 transition hover:bg-white/10"
-            }
-          >
-            <span aria-hidden="true">{item.icon}</span>
-            <span>{item.name}</span>
-          </Link>
-        ))}
-
-        {upcomingNavigationItems.map((item) => (
-          <div
-            key={item.name}
-            className="flex cursor-not-allowed items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50/70"
-            title="Coming soon"
-          >
-            <span aria-hidden="true">{item.icon}</span>
-            <span>{item.name}</span>
-          </div>
-        ))}
-      </nav>
-
-      <div className="border-t border-white/15 p-6">
-        <p className="text-sm font-semibold">
-          You Are Not Alone.
-        </p>
-
-        <p className="mt-1 text-xs leading-5 text-emerald-100">
-          Trusted education, compassionate support and practical
-          resources.
-        </p>
-      </div>
-    </aside>
   );
 }
 

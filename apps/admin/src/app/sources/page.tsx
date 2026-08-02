@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import AdminSidebar from "../../components/AdminSidebar";
 import {
   getSourceManagerData,
   type SourceManagerRecord,
@@ -30,7 +31,7 @@ export default async function SourceManagerPage() {
 
               <Link
                 href="/"
-                className="rounded-xl border border-emerald-900/15 bg-white px-4 py-2 text-sm font-semibold text-[#0b4d3b]"
+                className="rounded-xl border border-emerald-900/15 bg-white px-4 py-2 text-sm font-semibold text-[#0b4d3b] shadow-sm transition hover:bg-emerald-50"
               >
                 Dashboard
               </Link>
@@ -48,9 +49,8 @@ export default async function SourceManagerPage() {
               </h2>
 
               <p className="mt-4 max-w-3xl leading-7 text-emerald-50">
-                Review active medical references, linked
-                knowledge topics, source URLs and historical
-                removals.
+                Review active medical references, linked knowledge topics,
+                source URLs, and historical removals.
               </p>
 
               <div className="mt-6 flex flex-wrap gap-3">
@@ -68,6 +68,13 @@ export default async function SourceManagerPage() {
                   label="Source events"
                   value={sourceData.totalEvents}
                 />
+
+                <Link
+                  href="/medical-reviews"
+                  className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#0b4d3b] transition hover:bg-emerald-50"
+                >
+                  Open Medical Reviews
+                </Link>
               </div>
             </section>
 
@@ -108,128 +115,6 @@ export default async function SourceManagerPage() {
         </section>
       </div>
     </main>
-  );
-}
-
-function AdminSidebar() {
-  return (
-    <aside className="hidden w-72 flex-col bg-[#0b4d3b] text-white lg:flex">
-      <div className="border-b border-white/15 px-7 py-8">
-        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 text-3xl">
-          🎗️
-        </div>
-
-        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-100">
-          Acoustic Neuroma Warrior
-        </p>
-
-        <h2 className="mt-2 text-2xl font-bold">
-          ANW AI-COS
-        </h2>
-
-        <p className="mt-2 text-sm text-emerald-100">
-          Admin Portal
-        </p>
-      </div>
-
-      <nav className="flex-1 space-y-2 px-4 py-6">
-        <SidebarLink
-          href="/"
-          icon="🏠"
-          label="Dashboard"
-        />
-
-        <SidebarLink
-          href="/knowledge"
-          icon="📚"
-          label="Knowledge Library"
-        />
-
-        <SidebarLink
-          href="/sources"
-          icon="🔗"
-          label="Source Manager"
-          active
-        />
-
-        <SidebarPlaceholder
-          icon="🩺"
-          label="Medical Reviews"
-        />
-
-        <SidebarPlaceholder
-          icon="🤖"
-          label="Content Factory"
-        />
-
-        <SidebarPlaceholder
-          icon="🎨"
-          label="Carousel Builder"
-        />
-
-        <SidebarPlaceholder
-          icon="📅"
-          label="Publishing"
-        />
-
-        <SidebarPlaceholder
-          icon="⚙️"
-          label="Settings"
-        />
-      </nav>
-
-      <div className="border-t border-white/15 p-6">
-        <p className="text-sm font-semibold">
-          You Are Not Alone.
-        </p>
-
-        <p className="mt-1 text-xs leading-5 text-emerald-100">
-          Trusted education, compassionate support and practical
-          resources.
-        </p>
-      </div>
-    </aside>
-  );
-}
-
-function SidebarLink({
-  href,
-  icon,
-  label,
-  active = false,
-}: {
-  href: string;
-  icon: string;
-  label: string;
-  active?: boolean;
-}) {
-  return (
-    <Link
-      href={href}
-      className={
-        active
-          ? "flex items-center gap-3 rounded-xl bg-white px-4 py-3 text-sm font-semibold text-[#0b4d3b]"
-          : "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50 transition hover:bg-white/10"
-      }
-    >
-      <span aria-hidden="true">{icon}</span>
-      <span>{label}</span>
-    </Link>
-  );
-}
-
-function SidebarPlaceholder({
-  icon,
-  label,
-}: {
-  icon: string;
-  label: string;
-}) {
-  return (
-    <div className="flex cursor-not-allowed items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50/70">
-      <span aria-hidden="true">{icon}</span>
-      <span>{label}</span>
-    </div>
   );
 }
 
@@ -296,7 +181,13 @@ function SourceCard({
   source: SourceManagerRecord;
 }) {
   return (
-    <article className="rounded-2xl border border-emerald-950/10 bg-white p-6 shadow-sm">
+    <article
+      className={
+        source.isRemoved
+          ? "rounded-2xl border border-slate-200 bg-slate-100 p-6 shadow-sm"
+          : "rounded-2xl border border-emerald-950/10 bg-white p-6 shadow-sm"
+      }
+    >
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#176b52]">
@@ -348,6 +239,10 @@ function SourceCard({
           <p className="text-sm font-semibold text-amber-900">
             Missing or invalid source URL
           </p>
+
+          <p className="mt-1 text-sm leading-6 text-amber-800">
+            This source requires a valid HTTP or HTTPS URL.
+          </p>
         </div>
       ) : null}
 
@@ -365,10 +260,9 @@ function SourceCard({
 
         {source.knowledgeSlug ? (
           <Link
-            href={
-              "/knowledge/" +
-              encodeURIComponent(source.knowledgeSlug)
-            }
+            href={`/knowledge/${encodeURIComponent(
+              source.knowledgeSlug,
+            )}`}
             className="rounded-xl border border-emerald-900/15 bg-white px-4 py-2 text-sm font-semibold text-[#0b4d3b] transition hover:bg-emerald-50"
           >
             Open Topic
@@ -445,9 +339,11 @@ function formatStatus(status: string): string {
   return status
     .split("_")
     .filter(Boolean)
-    .map((word) => {
-      return word.charAt(0).toUpperCase() + word.slice(1);
-    })
+    .map(
+      (word) =>
+        word.charAt(0).toUpperCase() +
+        word.slice(1),
+    )
     .join(" ");
 }
 

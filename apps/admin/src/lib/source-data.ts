@@ -53,7 +53,9 @@ export async function getSourceManagerData(): Promise<SourceManagerData> {
         "created_at",
       ].join(","),
     )
-    .order("created_at", { ascending: false });
+    .order("created_at", {
+      ascending: false,
+    });
 
   if (result.error) {
     return {
@@ -64,9 +66,11 @@ export async function getSourceManagerData(): Promise<SourceManagerData> {
     };
   }
 
-  const events = (result.data ?? []) as SourceEventRow[];
+  const events =
+    (result.data ?? []) as unknown as SourceEventRow[];
 
-  const latestEventBySource = new Map<string, SourceEventRow>();
+  const latestEventBySource =
+    new Map<string, SourceEventRow>();
 
   for (const event of events) {
     if (!event.source_id) {
@@ -79,13 +83,16 @@ export async function getSourceManagerData(): Promise<SourceManagerData> {
       event.source_id;
 
     if (!latestEventBySource.has(compositeKey)) {
-      latestEventBySource.set(compositeKey, event);
+      latestEventBySource.set(
+        compositeKey,
+        event,
+      );
     }
   }
 
-  const records = Array.from(latestEventBySource.values()).map(
-    normalizeSourceEvent,
-  );
+  const records = Array.from(
+    latestEventBySource.values(),
+  ).map(normalizeSourceEvent);
 
   const activeSources = records
     .filter((source) => !source.isRemoved)
@@ -106,19 +113,30 @@ export async function getSourceManagerData(): Promise<SourceManagerData> {
 function normalizeSourceEvent(
   event: SourceEventRow,
 ): SourceManagerRecord {
-  const eventType = event.event_type ?? "source_updated";
+  const eventType =
+    event.event_type ?? "source_updated";
 
-  const normalizedEventType = eventType.toLowerCase();
+  const normalizedEventType =
+    eventType.toLowerCase();
 
   const isRemoved =
     normalizedEventType === "source_removed" ||
     normalizedEventType === "source_deleted";
 
-  const sourceData = isRemoved
-    ? readObject(event.before_source)
-    : readObject(event.after_source);
+  const afterSource =
+    readObject(event.after_source);
 
-  const sourceId = event.source_id ?? "unknown-source";
+  const beforeSource =
+    readObject(event.before_source);
+
+  const sourceData =
+    isRemoved &&
+    Object.keys(beforeSource).length > 0
+      ? beforeSource
+      : afterSource;
+
+  const sourceId =
+    event.source_id ?? "unknown-source";
 
   const url =
     readString(sourceData.url) ??
@@ -126,22 +144,37 @@ function normalizeSourceEvent(
     readString(sourceData.source_url) ??
     null;
 
+  const organization =
+    readString(sourceData.organization) ??
+    readString(sourceData.organisation) ??
+    null;
+
+  const publisher =
+    readString(sourceData.publisher) ??
+    readString(sourceData.provider) ??
+    null;
+
+  const createdAt =
+    readString(sourceData.createdAt) ??
+    readString(sourceData.created_at) ??
+    event.created_at;
+
+  const updatedAt =
+    readString(sourceData.updatedAt) ??
+    readString(sourceData.updated_at) ??
+    event.created_at;
+
   return {
     id: sourceId,
+
     title:
       readString(sourceData.title) ??
       readString(sourceData.name) ??
       formatSourceId(sourceId),
 
-    organization:
-      readString(sourceData.organization) ??
-      readString(sourceData.organisation) ??
-      null,
+    organization,
 
-    publisher:
-      readString(sourceData.publisher) ??
-      readString(sourceData.provider) ??
-      null,
+    publisher,
 
     url,
 
@@ -158,15 +191,9 @@ function normalizeSourceEvent(
     knowledgeSlug:
       event.knowledge_slug,
 
-    createdAt:
-      readString(sourceData.createdAt) ??
-      readString(sourceData.created_at) ??
-      event.created_at,
+    createdAt,
 
-    updatedAt:
-      readString(sourceData.updatedAt) ??
-      readString(sourceData.updated_at) ??
-      event.created_at,
+    updatedAt,
 
     isRemoved,
 
@@ -178,7 +205,9 @@ function compareSources(
   first: SourceManagerRecord,
   second: SourceManagerRecord,
 ): number {
-  return first.title.localeCompare(second.title);
+  return first.title.localeCompare(
+    second.title,
+  );
 }
 
 function readObject(
