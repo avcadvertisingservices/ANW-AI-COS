@@ -1,6 +1,8 @@
 import Link from "next/link";
 
 import AdminSidebar from "../../components/AdminSidebar";
+import StartMedicalReviewForm from "../../components/StartMedicalReviewForm";
+
 import {
   getMedicalReviewData,
   type MedicalReviewEvent,
@@ -9,8 +11,28 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export default async function MedicalReviewsPage() {
-  const reviewData = await getMedicalReviewData();
+type MedicalReviewsPageProps = {
+  searchParams: Promise<{
+    reviewStarted?: string;
+    reviewError?: string;
+    reviewId?: string;
+  }>;
+};
+
+export default async function MedicalReviewsPage({
+  searchParams,
+}: MedicalReviewsPageProps) {
+  const query = await searchParams;
+  const reviewData =
+    await getMedicalReviewData();
+
+  const showReviewStartedMessage =
+    query.reviewStarted === "1";
+
+  const reviewError =
+    typeof query.reviewError === "string"
+      ? query.reviewError
+      : null;
 
   return (
     <main className="min-h-screen bg-[#f6f2e8] text-slate-900">
@@ -40,6 +62,32 @@ export default async function MedicalReviewsPage() {
           </header>
 
           <div className="mx-auto max-w-7xl px-6 py-8 lg:px-10">
+            {showReviewStartedMessage ? (
+              <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-5 text-emerald-900">
+                <p className="font-semibold">
+                  Medical review started successfully.
+                </p>
+
+                <p className="mt-1 text-sm">
+                  The reviewer was assigned and a
+                  Review Started audit event was
+                  created.
+                </p>
+              </div>
+            ) : null}
+
+            {reviewError ? (
+              <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-5 text-red-900">
+                <p className="font-semibold">
+                  Unable to start medical review
+                </p>
+
+                <p className="mt-1 break-words text-sm">
+                  {reviewError}
+                </p>
+              </div>
+            ) : null}
+
             <section className="rounded-3xl bg-[#0b4d3b] px-7 py-8 text-white shadow-lg lg:px-10">
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-100">
                 Clinical Governance
@@ -50,8 +98,9 @@ export default async function MedicalReviewsPage() {
               </h2>
 
               <p className="mt-4 max-w-3xl leading-7 text-emerald-50">
-                Review medical-approval requests, reviewer assignments,
-                decisions, notes, and complete audit histories.
+                Review medical-approval requests,
+                reviewer assignments, decisions,
+                notes, and complete audit histories.
               </p>
 
               <div className="mt-6 flex flex-wrap gap-3">
@@ -62,27 +111,38 @@ export default async function MedicalReviewsPage() {
 
                 <StatPill
                   label="Submitted"
-                  value={reviewData.counts.submitted}
+                  value={
+                    reviewData.counts.submitted
+                  }
                 />
 
                 <StatPill
                   label="In review"
-                  value={reviewData.counts.inReview}
+                  value={
+                    reviewData.counts.inReview
+                  }
                 />
 
                 <StatPill
                   label="Changes requested"
-                  value={reviewData.counts.changesRequested}
+                  value={
+                    reviewData.counts
+                      .changesRequested
+                  }
                 />
 
                 <StatPill
                   label="Approved"
-                  value={reviewData.counts.approved}
+                  value={
+                    reviewData.counts.approved
+                  }
                 />
 
                 <StatPill
                   label="Rejected"
-                  value={reviewData.counts.rejected}
+                  value={
+                    reviewData.counts.rejected
+                  }
                 />
               </div>
             </section>
@@ -105,7 +165,9 @@ export default async function MedicalReviewsPage() {
                   eyebrow="Action required"
                   title="Active Reviews"
                   badge={`${reviewData.activeReviews.length} active`}
-                  reviews={reviewData.activeReviews}
+                  reviews={
+                    reviewData.activeReviews
+                  }
                   emptyTitle="No active reviews"
                   emptyMessage="There are currently no draft, submitted, in-review, or changes-requested reviews."
                 />
@@ -114,7 +176,9 @@ export default async function MedicalReviewsPage() {
                   eyebrow="Decision history"
                   title="Completed Reviews"
                   badge={`${reviewData.completedReviews.length} completed`}
-                  reviews={reviewData.completedReviews}
+                  reviews={
+                    reviewData.completedReviews
+                  }
                   emptyTitle="No completed reviews"
                   emptyMessage="There are currently no approved, rejected, or cancelled review requests."
                 />
@@ -206,7 +270,9 @@ function ReviewCard({
           </p>
         </div>
 
-        <StatusBadge status={review.status} />
+        <StatusBadge
+          status={review.status}
+        />
       </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
@@ -267,10 +333,27 @@ function ReviewCard({
           </p>
 
           <p className="mt-1 text-sm leading-6 text-red-800">
-            This historical review contains a test or placeholder reviewer
-            identity. It must not be treated as genuine medical approval.
+            This historical review contains a test
+            or placeholder reviewer identity. It
+            must not be treated as genuine medical
+            approval.
           </p>
         </div>
+      ) : null}
+
+      {review.status === "submitted" ? (
+        <StartMedicalReviewForm
+          reviewRequestId={review.id}
+          knowledgeEntryId={
+            review.knowledgeEntryId
+          }
+          knowledgeSlug={
+            review.knowledgeSlug
+          }
+          knowledgeTitle={
+            review.knowledgeTitle
+          }
+        />
       ) : null}
 
       <div className="mt-6">
@@ -286,13 +369,15 @@ function ReviewCard({
 
         {review.events.length > 0 ? (
           <div className="mt-4 space-y-3">
-            {review.events.map((event, index) => (
-              <ReviewEventRow
-                key={event.id}
-                event={event}
-                isLatest={index === 0}
-              />
-            ))}
+            {review.events.map(
+              (event, index) => (
+                <ReviewEventRow
+                  key={event.id}
+                  event={event}
+                  isLatest={index === 0}
+                />
+              ),
+            )}
           </div>
         ) : (
           <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
@@ -307,7 +392,9 @@ function ReviewCard({
         <p className="text-xs text-slate-500">
           Created{" "}
           {review.createdAt
-            ? formatDateTime(review.createdAt)
+            ? formatDateTime(
+                review.createdAt,
+              )
             : "date unavailable"}
         </p>
 
@@ -345,7 +432,9 @@ function ReviewEventRow({
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <p className="font-semibold">
-              {formatStatus(event.eventType)}
+              {formatStatus(
+                event.eventType,
+              )}
             </p>
 
             {isLatest ? (
@@ -357,8 +446,11 @@ function ReviewEventRow({
 
           <p className="mt-1 text-sm text-slate-600">
             {event.actorName}
+
             {event.actorRole
-              ? ` · ${formatStatus(event.actorRole)}`
+              ? ` · ${formatStatus(
+                  event.actorRole,
+                )}`
               : ""}
           </p>
 
@@ -371,7 +463,9 @@ function ReviewEventRow({
 
         <time className="text-xs text-slate-500">
           {event.createdAt
-            ? formatDateTime(event.createdAt)
+            ? formatDateTime(
+                event.createdAt,
+              )
             : "Time unavailable"}
         </time>
       </div>
@@ -410,18 +504,26 @@ function StatusBadge({
 }: {
   status: string;
 }) {
-  let classes = "bg-slate-100 text-slate-700";
+  let classes =
+    "bg-slate-100 text-slate-700";
 
   if (status === "approved") {
-    classes = "bg-emerald-100 text-emerald-800";
+    classes =
+      "bg-emerald-100 text-emerald-800";
   } else if (status === "submitted") {
-    classes = "bg-blue-100 text-blue-800";
+    classes =
+      "bg-blue-100 text-blue-800";
   } else if (status === "in_review") {
-    classes = "bg-violet-100 text-violet-800";
-  } else if (status === "changes_requested") {
-    classes = "bg-amber-100 text-amber-800";
+    classes =
+      "bg-violet-100 text-violet-800";
+  } else if (
+    status === "changes_requested"
+  ) {
+    classes =
+      "bg-amber-100 text-amber-800";
   } else if (status === "rejected") {
-    classes = "bg-red-100 text-red-800";
+    classes =
+      "bg-red-100 text-red-800";
   }
 
   return (
@@ -447,7 +549,9 @@ function StatPill({
   );
 }
 
-function formatStatus(status: string): string {
+function formatStatus(
+  status: string,
+): string {
   return status
     .split("_")
     .filter(Boolean)
@@ -459,18 +563,23 @@ function formatStatus(status: string): string {
     .join(" ");
 }
 
-function formatDateTime(value: string): string {
+function formatDateTime(
+  value: string,
+): string {
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
     return value;
   }
 
-  return new Intl.DateTimeFormat("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(date);
+  return new Intl.DateTimeFormat(
+    "en-US",
+    {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    },
+  ).format(date);
 }
