@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import AdminSidebar from "../../../components/AdminSidebar";
+import SubmitForReviewForm from "../../../components/SubmitForReviewForm";
+
 import {
   getKnowledgeEntryBySlug,
 } from "../../../lib/knowledge-data";
@@ -16,6 +18,8 @@ type KnowledgeEntryPageProps = {
   searchParams: Promise<{
     created?: string;
     updated?: string;
+    reviewSubmitted?: string;
+    reviewError?: string;
   }>;
 };
 
@@ -32,8 +36,19 @@ export default async function KnowledgeEntryPage({
     notFound();
   }
 
-  const showCreatedMessage = query.created === "1";
-  const showUpdatedMessage = query.updated === "1";
+  const showCreatedMessage =
+    query.created === "1";
+
+  const showUpdatedMessage =
+    query.updated === "1";
+
+  const showReviewSubmittedMessage =
+    query.reviewSubmitted === "1";
+
+  const reviewError =
+    typeof query.reviewError === "string"
+      ? query.reviewError
+      : null;
 
   return (
     <main className="min-h-screen bg-[#f6f2e8] text-slate-900">
@@ -86,6 +101,32 @@ export default async function KnowledgeEntryPage({
               <div className="mb-6 rounded-2xl border border-blue-200 bg-blue-50 p-4 text-blue-900">
                 <p className="font-semibold">
                   Knowledge entry updated successfully.
+                </p>
+              </div>
+            ) : null}
+
+            {showReviewSubmittedMessage ? (
+              <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900">
+                <p className="font-semibold">
+                  Knowledge entry submitted for medical
+                  review.
+                </p>
+
+                <p className="mt-1 text-sm">
+                  The review request and its first audit
+                  event were created successfully.
+                </p>
+              </div>
+            ) : null}
+
+            {reviewError ? (
+              <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-red-900">
+                <p className="font-semibold">
+                  Unable to submit for medical review
+                </p>
+
+                <p className="mt-1 break-words text-sm">
+                  {reviewError}
                 </p>
               </div>
             ) : null}
@@ -267,6 +308,12 @@ export default async function KnowledgeEntryPage({
                               ? ` · ${event.actorRole}`
                               : ""}
                           </p>
+
+                          {event.actorEmail ? (
+                            <p className="mt-1 text-xs text-slate-400">
+                              {event.actorEmail}
+                            </p>
+                          ) : null}
                         </div>
 
                         <p className="text-xs text-slate-500">
@@ -294,6 +341,20 @@ export default async function KnowledgeEntryPage({
                 </div>
               )}
             </section>
+
+            <div className="mt-7">
+              <SubmitForReviewForm
+                entryId={entry.id}
+                slug={entry.slug}
+                title={entry.title}
+                knowledgeStatus={
+                  entry.knowledgeStatus
+                }
+                reviewStatus={
+                  entry.reviewStatus
+                }
+              />
+            </div>
 
             <div className="mt-7 flex flex-wrap justify-end gap-3">
               <Link
@@ -352,18 +413,25 @@ function StatusBadge({
   let classes = "bg-white/15 text-white";
 
   if (normalized === "approved") {
-    classes = "bg-emerald-100 text-emerald-800";
+    classes =
+      "bg-emerald-100 text-emerald-800";
   } else if (
     normalized === "submitted" ||
     normalized === "in_review"
   ) {
-    classes = "bg-blue-100 text-blue-800";
+    classes =
+      "bg-blue-100 text-blue-800";
   } else if (
     normalized === "changes_requested"
   ) {
-    classes = "bg-amber-100 text-amber-800";
+    classes =
+      "bg-amber-100 text-amber-800";
   } else if (normalized === "rejected") {
-    classes = "bg-red-100 text-red-800";
+    classes =
+      "bg-red-100 text-red-800";
+  } else if (normalized === "cancelled") {
+    classes =
+      "bg-slate-200 text-slate-700";
   }
 
   return (
@@ -375,7 +443,9 @@ function StatusBadge({
   );
 }
 
-function formatLabel(value: string): string {
+function formatLabel(
+  value: string,
+): string {
   return value
     .replace(/[_-]+/g, " ")
     .split(" ")
@@ -388,18 +458,23 @@ function formatLabel(value: string): string {
     .join(" ");
 }
 
-function formatDateTime(value: string): string {
+function formatDateTime(
+  value: string,
+): string {
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
     return value;
   }
 
-  return new Intl.DateTimeFormat("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(date);
+  return new Intl.DateTimeFormat(
+    "en-US",
+    {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    },
+  ).format(date);
 }
