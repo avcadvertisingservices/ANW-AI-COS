@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import AdminSidebar from "../../components/AdminSidebar";
+import MedicalReviewDecisionForm from "../../components/MedicalReviewDecisionForm";
 import StartMedicalReviewForm from "../../components/StartMedicalReviewForm";
 
 import {
@@ -16,6 +17,9 @@ type MedicalReviewsPageProps = {
     reviewStarted?: string;
     reviewError?: string;
     reviewId?: string;
+    decisionSaved?: string;
+    decisionError?: string;
+    decision?: string;
   }>;
 };
 
@@ -32,6 +36,19 @@ export default async function MedicalReviewsPage({
   const reviewError =
     typeof query.reviewError === "string"
       ? query.reviewError
+      : null;
+
+  const showDecisionSavedMessage =
+    query.decisionSaved === "1";
+
+  const decisionError =
+    typeof query.decisionError === "string"
+      ? query.decisionError
+      : null;
+
+  const savedDecision =
+    typeof query.decision === "string"
+      ? query.decision
       : null;
 
   return (
@@ -84,6 +101,40 @@ export default async function MedicalReviewsPage({
 
                 <p className="mt-1 break-words text-sm">
                   {reviewError}
+                </p>
+              </div>
+            ) : null}
+
+            {showDecisionSavedMessage ? (
+              <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-5 text-emerald-900">
+                <p className="font-semibold">
+                  Medical-review decision saved
+                  successfully.
+                </p>
+
+                <p className="mt-1 text-sm">
+                  Decision:{" "}
+                  <strong>
+                    {formatStatus(
+                      savedDecision ??
+                        "completed",
+                    )}
+                  </strong>
+                  . The knowledge entry and audit
+                  timeline were updated.
+                </p>
+              </div>
+            ) : null}
+
+            {decisionError ? (
+              <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-5 text-red-900">
+                <p className="font-semibold">
+                  Unable to save medical-review
+                  decision
+                </p>
+
+                <p className="mt-1 break-words text-sm">
+                  {decisionError}
                 </p>
               </div>
             ) : null}
@@ -356,6 +407,24 @@ function ReviewCard({
         />
       ) : null}
 
+      {review.status === "in_review" ? (
+        <MedicalReviewDecisionForm
+          reviewRequestId={review.id}
+          knowledgeEntryId={
+            review.knowledgeEntryId
+          }
+          knowledgeSlug={
+            review.knowledgeSlug
+          }
+          knowledgeTitle={
+            review.knowledgeTitle
+          }
+          reviewerName={
+            review.assignedReviewerName
+          }
+        />
+      ) : null}
+
       <div className="mt-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h4 className="font-bold">
@@ -524,6 +593,9 @@ function StatusBadge({
   } else if (status === "rejected") {
     classes =
       "bg-red-100 text-red-800";
+  } else if (status === "cancelled") {
+    classes =
+      "bg-slate-200 text-slate-700";
   }
 
   return (
@@ -553,7 +625,8 @@ function formatStatus(
   status: string,
 ): string {
   return status
-    .split("_")
+    .replace(/[_-]+/g, " ")
+    .split(" ")
     .filter(Boolean)
     .map(
       (word) =>
