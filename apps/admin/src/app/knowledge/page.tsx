@@ -15,7 +15,7 @@ export default async function KnowledgeLibraryPage() {
 
         <section className="min-w-0 flex-1">
           <header className="border-b border-emerald-950/10 bg-white/80 px-6 py-5 lg:px-10">
-            <div className="mx-auto flex max-w-7xl items-center justify-between">
+            <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
               <div>
                 <p className="text-sm font-medium text-[#176b52]">
                   ANW AI Content Operating System
@@ -51,6 +51,13 @@ export default async function KnowledgeLibraryPage() {
               </p>
 
               <div className="mt-6 flex flex-wrap gap-3">
+                <Link
+                  href="/knowledge/new"
+                  className="inline-flex rounded-full bg-[#f5c84b] px-4 py-2 text-sm font-bold text-[#0b4d3b] transition hover:bg-[#ffda68]"
+                >
+                  Create Knowledge Entry
+                </Link>
+
                 <span className="inline-flex rounded-full bg-white/10 px-4 py-2 text-sm font-medium">
                   {libraryData.entries.length} knowledge entries
                 </span>
@@ -93,6 +100,13 @@ export default async function KnowledgeLibraryPage() {
                 <p className="mt-2 text-sm text-slate-500">
                   No records are currently available in Supabase.
                 </p>
+
+                <Link
+                  href="/knowledge/new"
+                  className="mt-5 inline-flex rounded-xl bg-[#0b4d3b] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#176b52]"
+                >
+                  Create the First Entry
+                </Link>
               </div>
             ) : null}
 
@@ -155,21 +169,32 @@ export default async function KnowledgeLibraryPage() {
                     </div>
                   </div>
 
-                  <div className="mt-6 flex items-center justify-between gap-4 border-t border-slate-100 pt-5">
+                  <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-slate-100 pt-5">
                     <p className="text-xs text-slate-500">
                       {entry.updatedAt
                         ? `Updated ${formatDate(entry.updatedAt)}`
                         : "Update date unavailable"}
                     </p>
 
-                    <Link
-                      href={`/knowledge/${encodeURIComponent(
-                        entry.slug,
-                      )}`}
-                      className="rounded-xl bg-[#0b4d3b] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#176b52]"
-                    >
-                      Open Topic
-                    </Link>
+                    <div className="flex flex-wrap gap-2">
+                      <Link
+                        href={`/knowledge/${encodeURIComponent(
+                          entry.slug,
+                        )}/edit`}
+                        className="rounded-xl border border-[#0b4d3b]/20 bg-white px-4 py-2 text-sm font-semibold text-[#0b4d3b] transition hover:bg-emerald-50"
+                      >
+                        Edit
+                      </Link>
+
+                      <Link
+                        href={`/knowledge/${encodeURIComponent(
+                          entry.slug,
+                        )}`}
+                        className="rounded-xl bg-[#0b4d3b] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#176b52]"
+                      >
+                        Open Topic
+                      </Link>
+                    </div>
                   </div>
                 </article>
               ))}
@@ -201,6 +226,8 @@ function StatusBadge({
     classes = "bg-amber-100 text-amber-800";
   } else if (normalized === "rejected") {
     classes = "bg-red-100 text-red-800";
+  } else if (normalized === "archived") {
+    classes = "bg-slate-200 text-slate-700";
   }
 
   return (
