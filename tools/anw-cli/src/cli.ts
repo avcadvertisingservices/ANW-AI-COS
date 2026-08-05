@@ -3,6 +3,10 @@
 import { Command } from "commander";
 
 import {
+  createComponent,
+} from "./commands/component.js";
+
+import {
   createModule,
 } from "./commands/module.js";
 
@@ -51,20 +55,65 @@ program
       try {
         createModule(name, options);
       } catch (error) {
-        const message =
-          error instanceof Error
-            ? error.message
-            : "Unknown CLI error.";
-
-        console.error("");
-        console.error(
-          `Unable to create module: ${message}`,
+        handleCommandError(
+          "create module",
+          error,
         );
-        console.error("");
+      }
+    },
+  );
 
-        process.exitCode = 1;
+program
+  .command("component")
+  .description(
+    "Create a branded ANW React component.",
+  )
+  .argument(
+    "<name>",
+    "Component name, such as EvidenceSummaryCard",
+  )
+  .option(
+    "--force",
+    "Overwrite the existing component",
+    false,
+  )
+  .action(
+    (
+      name: string,
+      options: {
+        force?: boolean;
+      },
+    ) => {
+      try {
+        createComponent(
+          name,
+          options,
+        );
+      } catch (error) {
+        handleCommandError(
+          "create component",
+          error,
+        );
       }
     },
   );
 
 program.parse();
+
+function handleCommandError(
+  action: string,
+  error: unknown,
+): void {
+  const message =
+    error instanceof Error
+      ? error.message
+      : "Unknown CLI error.";
+
+  console.error("");
+  console.error(
+    `Unable to ${action}: ${message}`,
+  );
+  console.error("");
+
+  process.exitCode = 1;
+}
