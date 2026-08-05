@@ -11,7 +11,7 @@ import type {
 } from "../app/knowledge/action-state";
 
 export type KnowledgeEntryFormValues = {
-  id?: string;
+  id: string;
   slug: string;
   title: string;
   summary: string;
@@ -24,23 +24,25 @@ export type KnowledgeEntryFormValues = {
   sources: unknown[];
   medicalReviewRequired: boolean;
   version: string;
-  reviewedBy?: string | null;
-  reviewedAt?: string | null;
+  reviewedBy: string | null;
+  reviewedAt: string | null;
 };
+
+type KnowledgeEntryAction = (
+  previousState: KnowledgeEntryActionState,
+  formData: FormData,
+) => Promise<KnowledgeEntryActionState>;
 
 type KnowledgeEntryFormProps = {
-  mode: "create" | "edit";
-
-  action: (
-    previousState: KnowledgeEntryActionState,
-    formData: FormData,
-  ) => Promise<KnowledgeEntryActionState>;
-
+  action: KnowledgeEntryAction;
   initialState: KnowledgeEntryActionState;
-  initialValues?: KnowledgeEntryFormValues;
+  initialValues?: Partial<KnowledgeEntryFormValues>;
+  mode?: "create" | "edit";
+  submitLabel?: string;
 };
 
-const emptyValues: KnowledgeEntryFormValues = {
+const defaultValues: KnowledgeEntryFormValues = {
+  id: "",
   slug: "",
   title: "",
   summary: "",
@@ -53,18 +55,111 @@ const emptyValues: KnowledgeEntryFormValues = {
   sources: [],
   medicalReviewRequired: true,
   version: "1.0.0",
+  reviewedBy: null,
+  reviewedAt: null,
 };
 
+const categoryOptions = [
+  {
+    value: "medical-fact",
+    label: "Medical Fact",
+  },
+  {
+    value: "symptom",
+    label: "Symptom",
+  },
+  {
+    value: "diagnosis",
+    label: "Diagnosis",
+  },
+  {
+    value: "treatment",
+    label: "Treatment",
+  },
+  {
+    value: "recovery",
+    label: "Recovery",
+  },
+  {
+    value: "faq",
+    label: "FAQ",
+  },
+  {
+    value: "survivor-story",
+    label: "Survivor Story",
+  },
+  {
+    value: "research",
+    label: "Research",
+  },
+  {
+    value: "glossary",
+    label: "Glossary",
+  },
+  {
+    value: "resource",
+    label: "Resource",
+  },
+];
+
+const statusOptions = [
+  {
+    value: "draft",
+    label: "Draft",
+  },
+  {
+    value: "review",
+    label: "Review",
+  },
+  {
+    value: "approved",
+    label: "Approved",
+  },
+  {
+    value: "archived",
+    label: "Archived",
+  },
+];
+
 export default function KnowledgeEntryForm({
-  mode,
   action,
   initialState,
   initialValues,
+  mode = "create",
+  submitLabel,
 }: KnowledgeEntryFormProps) {
-  const values = initialValues ?? emptyValues;
+  const values =
+    useMemo<KnowledgeEntryFormValues>(
+      () => ({
+        ...defaultValues,
+        ...initialValues,
 
-  const [state, formAction, isPending] =
-    useActionState(action, initialState);
+        tags: Array.isArray(
+          initialValues?.tags,
+        )
+          ? initialValues.tags
+          : [],
+
+        keywords: Array.isArray(
+          initialValues?.keywords,
+        )
+          ? initialValues.keywords
+          : [],
+
+        aliases: Array.isArray(
+          initialValues?.aliases,
+        )
+          ? initialValues.aliases
+          : [],
+
+        sources: Array.isArray(
+          initialValues?.sources,
+        )
+          ? initialValues.sources
+          : [],
+      }),
+      [initialValues],
+    );
 
   const [title, setTitle] = useState(
     values.title,
@@ -75,400 +170,524 @@ export default function KnowledgeEntryForm({
   );
 
   const [
-    slugManuallyEdited,
-    setSlugManuallyEdited,
-  ] = useState(mode === "edit");
-
-  const sourcesJson = useMemo(
-    () =>
-      JSON.stringify(
-        values.sources,
-        null,
-        2,
-      ),
-    [values.sources],
+    slugWasEdited,
+    setSlugWasEdited,
+  ] = useState(
+    values.slug.length > 0,
   );
+
+  const [
+    state,
+    formAction,
+    isPending,
+  ] = useActionState(
+    action,
+    initialState,
+  );
+
+  const resolvedSubmitLabel =
+    submitLabel ??
+    (mode === "edit"
+      ? "Save Changes"
+      : "Create Knowledge Entry");
 
   function handleTitleChange(
     event: React.ChangeEvent<HTMLInputElement>,
   ) {
-    const nextTitle = event.target.value;
+    const nextTitle =
+      event.target.value;
 
     setTitle(nextTitle);
 
-    if (!slugManuallyEdited) {
-      setSlug(createSlug(nextTitle));
+    if (!slugWasEdited) {
+      setSlug(
+        createSlug(nextTitle),
+      );
     }
+  }
+
+  function handleSlugChange(
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) {
+    const nextSlug =
+      sanitizeSlug(
+        event.target.value,
+      );
+
+    setSlug(nextSlug);
+    setSlugWasEdited(true);
+  }
+
+  function generateSlugFromTitle() {
+    setSlug(
+      createSlug(title),
+    );
+
+    setSlugWasEdited(true);
   }
 
   return (
     <form
       action={formAction}
-      className="space-y-7"
+      className="rounded-3xl border border-emerald-950/10 bg-white p-6 shadow-sm lg:p-8"
     >
+      {/*
+       * Required by updateKnowledgeEntry.
+       * The edit page must include entry.id
+       * inside initialValues.
+       */}
       {values.id ? (
         <input
           type="hidden"
-          name="entryId"
+          name="id"
           value={values.id}
         />
       ) : null}
 
-      {values.reviewedBy ? (
-        <input
-          type="hidden"
-          name="reviewedBy"
-          value={values.reviewedBy}
-        />
-      ) : null}
-
-      {values.reviewedAt ? (
-        <input
-          type="hidden"
-          name="reviewedAt"
-          value={values.reviewedAt}
-        />
-      ) : null}
-
-      {state.message ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
-          <p className="font-semibold text-red-900">
-            Unable to save entry
+      {state?.message ? (
+        <div
+          className={
+            state.success
+              ? "mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900"
+              : "mb-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-red-900"
+          }
+        >
+          <p className="font-semibold">
+            {state.success
+              ? "Saved successfully"
+              : mode === "edit"
+                ? "Unable to update entry"
+                : "Unable to save entry"}
           </p>
 
-          <p className="mt-1 text-sm text-red-800">
+          <p className="mt-1 break-words text-sm">
             {state.message}
           </p>
         </div>
       ) : null}
 
-      <section className="grid gap-6 rounded-3xl border border-emerald-950/10 bg-white p-6 shadow-sm lg:grid-cols-2">
-        <Field
+      <div className="grid gap-5 lg:grid-cols-2">
+        <FormField
           label="Title"
-          name="title"
-          error={state.fieldErrors.title}
+          htmlFor="title"
+          required
+          error={getFieldError(
+            state,
+            "title",
+          )}
         >
           <input
             id="title"
             name="title"
+            type="text"
             value={title}
-            onChange={handleTitleChange}
-            className={inputClasses}
+            onChange={
+              handleTitleChange
+            }
+            required
+            autoComplete="off"
             placeholder="Example: Understanding Balance Problems"
-          />
-        </Field>
-
-        <Field
-          label="Slug"
-          name="slug"
-          error={state.fieldErrors.slug}
-          description="Used in the page URL. Lowercase letters, numbers, and hyphens only."
-        >
-          <input
-            id="slug"
-            name="slug"
-            value={slug}
-            onChange={(event) => {
-              setSlugManuallyEdited(true);
-
-              setSlug(
-                createSlug(
-                  event.target.value,
-                ),
-              );
-            }}
             className={inputClasses}
-            placeholder="understanding-balance-problems"
           />
-        </Field>
+        </FormField>
 
-        <Field
+        <FormField
+          label="Slug"
+          htmlFor="slug"
+          required
+          helperText="Used in the page URL. Lowercase letters, numbers, and hyphens only."
+          error={getFieldError(
+            state,
+            "slug",
+          )}
+        >
+          <div className="flex gap-2">
+            <input
+              id="slug"
+              name="slug"
+              type="text"
+              value={slug}
+              onChange={
+                handleSlugChange
+              }
+              required
+              autoComplete="off"
+              pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
+              placeholder="understanding-balance-problems"
+              className={inputClasses}
+            />
+
+            <button
+              type="button"
+              onClick={
+                generateSlugFromTitle
+              }
+              className="shrink-0 rounded-xl border border-emerald-900/15 bg-white px-4 py-3 text-sm font-semibold text-[#0b4d3b] transition hover:bg-emerald-50"
+            >
+              Generate
+            </button>
+          </div>
+        </FormField>
+
+        <FormField
           label="Category"
-          name="category"
-          error={state.fieldErrors.category}
+          htmlFor="category"
+          required
+          error={getFieldError(
+            state,
+            "category",
+          )}
         >
           <select
             id="category"
             name="category"
-            defaultValue={values.category}
+            defaultValue={
+              values.category
+            }
+            required
             className={inputClasses}
           >
-            <option value="medical-fact">
-              Medical Fact
-            </option>
-
-            <option value="symptom">
-              Symptom
-            </option>
-
-            <option value="diagnosis">
-              Diagnosis
-            </option>
-
-            <option value="treatment">
-              Treatment
-            </option>
-
-            <option value="recovery">
-              Recovery
-            </option>
-
-            <option value="faq">
-              FAQ
-            </option>
-
-            <option value="survivor-story">
-              Survivor Story
-            </option>
-
-            <option value="research">
-              Research
-            </option>
-
-            <option value="glossary">
-              Glossary
-            </option>
-
-            <option value="resource">
-              Resource
-            </option>
+            {categoryOptions.map(
+              (option) => (
+                <option
+                  key={option.value}
+                  value={
+                    option.value
+                  }
+                >
+                  {option.label}
+                </option>
+              ),
+            )}
           </select>
-        </Field>
+        </FormField>
 
-        <Field
+        <FormField
           label="Status"
-          name="status"
-          error={state.fieldErrors.status}
+          htmlFor="status"
+          required
+          error={getFieldError(
+            state,
+            "status",
+          )}
         >
           <select
             id="status"
             name="status"
-            defaultValue={values.status}
+            defaultValue={
+              values.status
+            }
+            required
             className={inputClasses}
           >
-            <option value="draft">
-              Draft
-            </option>
-
-            <option value="submitted">
-              Submitted
-            </option>
-
-            <option value="in_review">
-              In Review
-            </option>
-
-            <option value="changes_requested">
-              Changes Requested
-            </option>
-
-            <option value="approved">
-              Approved
-            </option>
-
-            <option value="rejected">
-              Rejected
-            </option>
-
-            <option value="archived">
-              Archived
-            </option>
+            {statusOptions.map(
+              (option) => (
+                <option
+                  key={option.value}
+                  value={
+                    option.value
+                  }
+                >
+                  {option.label}
+                </option>
+              ),
+            )}
           </select>
-        </Field>
+        </FormField>
 
-        <Field
+        <FormField
           label="Version"
-          name="version"
-          error={state.fieldErrors.version}
-          description="Use semantic versioning, such as 1.0.0."
+          htmlFor="version"
+          required
+          helperText="Use semantic versioning, such as 1.0.0."
+          error={getFieldError(
+            state,
+            "version",
+          )}
         >
           <input
             id="version"
             name="version"
-            defaultValue={values.version}
-            className={inputClasses}
-            placeholder="1.0.0"
-          />
-        </Field>
-
-        <div className="flex items-center rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
-          <input
-            id="medicalReviewRequired"
-            name="medicalReviewRequired"
-            type="checkbox"
-            defaultChecked={
-              values.medicalReviewRequired
+            type="text"
+            defaultValue={
+              values.version
             }
-            className="h-5 w-5 rounded border-slate-300 text-[#0b4d3b]"
+            required
+            autoComplete="off"
+            placeholder="1.0.0"
+            className={inputClasses}
           />
+        </FormField>
 
-          <label
-            htmlFor="medicalReviewRequired"
-            className="ml-3"
-          >
-            <span className="block font-semibold text-slate-900">
-              Medical review required
-            </span>
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <label className="flex cursor-pointer items-start gap-3">
+            <input
+              type="checkbox"
+              name="medicalReviewRequired"
+              value="true"
+              defaultChecked={
+                values.medicalReviewRequired
+              }
+              className="mt-1 h-4 w-4 rounded border-slate-300 text-[#0b4d3b] focus:ring-[#176b52]"
+            />
 
-            <span className="block text-sm text-slate-500">
-              Keep enabled for medically
-              sensitive content.
+            <span>
+              <span className="block text-sm font-semibold text-slate-900">
+                Medical review
+                required
+              </span>
+
+              <span className="mt-1 block text-xs leading-5 text-slate-500">
+                Keep enabled for
+                medically sensitive
+                content.
+              </span>
             </span>
           </label>
         </div>
+      </div>
 
-        <div className="lg:col-span-2">
-          <Field
-            label="Summary"
+      <div className="mt-5">
+        <FormField
+          label="Summary"
+          htmlFor="summary"
+          required
+          error={getFieldError(
+            state,
+            "summary",
+          )}
+        >
+          <textarea
+            id="summary"
             name="summary"
-            error={state.fieldErrors.summary}
-          >
-            <textarea
-              id="summary"
-              name="summary"
-              defaultValue={values.summary}
-              rows={4}
-              className={inputClasses}
-              placeholder="A concise educational summary."
-            />
-          </Field>
-        </div>
+            rows={4}
+            defaultValue={
+              values.summary
+            }
+            required
+            placeholder="A concise educational summary."
+            className={
+              textareaClasses
+            }
+          />
+        </FormField>
+      </div>
 
-        <div className="lg:col-span-2">
-          <Field
-            label="Body"
+      <div className="mt-5">
+        <FormField
+          label="Body"
+          htmlFor="body"
+          required
+          helperText="Enter the full structured knowledge content."
+          error={getFieldError(
+            state,
+            "body",
+          )}
+        >
+          {/*
+           * Keep this field uncontrolled.
+           * defaultValue prevents text from
+           * disappearing during rerenders.
+           */}
+          <textarea
+            id="body"
             name="body"
-            error={state.fieldErrors.body}
-          >
-            <textarea
-              id="body"
-              name="body"
-              defaultValue={values.body}
-              rows={14}
-              className={inputClasses}
-              placeholder="Enter the full structured knowledge content."
-            />
-          </Field>
-        </div>
+            rows={14}
+            defaultValue={
+              values.body
+            }
+            required
+            placeholder="Enter the full structured knowledge content."
+            className={
+              textareaClasses
+            }
+          />
+        </FormField>
+      </div>
 
-        <Field
+      <div className="mt-5 grid gap-5 lg:grid-cols-3">
+        <FormField
           label="Tags"
-          name="tags"
-          description="Separate multiple values with commas."
+          htmlFor="tags"
+          helperText="Separate values with commas."
+          error={getFieldError(
+            state,
+            "tags",
+          )}
         >
           <input
             id="tags"
             name="tags"
-            defaultValue={
-              values.tags.join(", ")
-            }
+            type="text"
+            defaultValue={values.tags.join(
+              ", ",
+            )}
+            autoComplete="off"
+            placeholder="hearing loss, balance, recovery"
             className={inputClasses}
-            placeholder="hearing loss, symptom, diagnosis"
           />
-        </Field>
+        </FormField>
 
-        <Field
+        <FormField
           label="Keywords"
-          name="keywords"
-          description="Separate multiple values with commas."
+          htmlFor="keywords"
+          helperText="Separate values with commas."
+          error={getFieldError(
+            state,
+            "keywords",
+          )}
         >
           <input
             id="keywords"
             name="keywords"
-            defaultValue={
-              values.keywords.join(", ")
-            }
+            type="text"
+            defaultValue={values.keywords.join(
+              ", ",
+            )}
+            autoComplete="off"
+            placeholder="acoustic neuroma, vestibular schwannoma"
             className={inputClasses}
-            placeholder="unilateral hearing loss, acoustic neuroma"
           />
-        </Field>
+        </FormField>
 
-        <div className="lg:col-span-2">
-          <Field
-            label="Aliases"
-            name="aliases"
-            description="Alternative names, separated with commas."
-          >
-            <input
-              id="aliases"
-              name="aliases"
-              defaultValue={
-                values.aliases.join(", ")
-              }
-              className={inputClasses}
-              placeholder="vestibular schwannoma, AN"
-            />
-          </Field>
-        </div>
-
-        <div className="lg:col-span-2">
-          <Field
-            label="Embedded sources JSON"
-            name="sources"
-            error={state.fieldErrors.sources}
-            description='Use a JSON array. Example: [{"title":"NHS","url":"https://..."}]'
-          >
-            <textarea
-              id="sources"
-              name="sources"
-              defaultValue={sourcesJson}
-              rows={8}
-              spellCheck={false}
-              className={`${inputClasses} font-mono text-sm`}
-            />
-          </Field>
-        </div>
-      </section>
-
-      <div className="flex flex-wrap items-center justify-end gap-3">
-        <a
-          href="/knowledge"
-          className="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+        <FormField
+          label="Aliases"
+          htmlFor="aliases"
+          helperText="Separate values with commas."
+          error={getFieldError(
+            state,
+            "aliases",
+          )}
         >
-          Cancel
-        </a>
+          <input
+            id="aliases"
+            name="aliases"
+            type="text"
+            defaultValue={values.aliases.join(
+              ", ",
+            )}
+            autoComplete="off"
+            placeholder="AN, vestibular schwannoma"
+            className={inputClasses}
+          />
+        </FormField>
+      </div>
+
+      <div className="mt-5">
+        <FormField
+          label="Sources"
+          htmlFor="sources"
+          helperText="Enter a valid JSON array. Leave [] when no sources are linked."
+          error={getFieldError(
+            state,
+            "sources",
+          )}
+        >
+          <textarea
+            id="sources"
+            name="sources"
+            rows={8}
+            defaultValue={formatSources(
+              values.sources,
+            )}
+            spellCheck={false}
+            className={`${textareaClasses} font-mono text-sm`}
+          />
+        </FormField>
+      </div>
+
+      {mode === "edit" &&
+      values.reviewedBy ? (
+        <section className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
+            Medical Review Record
+          </p>
+
+          <div className="mt-3 grid gap-4 md:grid-cols-2">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Reviewed by
+              </p>
+
+              <p className="mt-1 font-semibold text-slate-900">
+                {
+                  values.reviewedBy
+                }
+              </p>
+            </div>
+
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Reviewed at
+              </p>
+
+              <p className="mt-1 font-semibold text-slate-900">
+                {values.reviewedAt
+                  ? formatDateTime(
+                      values.reviewedAt,
+                    )
+                  : "Date unavailable"}
+              </p>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <div className="mt-7 flex flex-wrap items-center justify-between gap-4 border-t border-slate-100 pt-6">
+        <p className="text-xs leading-5 text-slate-500">
+          Required fields are marked
+          with an asterisk. New
+          records should begin as
+          Draft.
+        </p>
 
         <button
           type="submit"
           disabled={isPending}
-          className="rounded-xl bg-[#0b4d3b] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#176b52] disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-xl bg-[#0b4d3b] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#176b52] disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isPending
-            ? "Saving..."
-            : mode === "create"
-              ? "Create Knowledge Entry"
-              : "Save Changes"}
+            ? "Saving…"
+            : resolvedSubmitLabel}
         </button>
       </div>
     </form>
   );
 }
 
-function Field({
+function FormField({
   label,
-  name,
-  description,
+  htmlFor,
+  required = false,
+  helperText,
   error,
   children,
 }: {
   label: string;
-  name: string;
-  description?: string;
-  error?: string;
+  htmlFor: string;
+  required?: boolean;
+  helperText?: string;
+  error?: string | null;
   children: React.ReactNode;
 }) {
   return (
     <div>
       <label
-        htmlFor={name}
-        className="text-sm font-semibold text-slate-800"
+        htmlFor={htmlFor}
+        className="block text-sm font-semibold text-slate-800"
       >
         {label}
+
+        {required ? (
+          <span className="ml-1 text-red-700">
+            *
+          </span>
+        ) : null}
       </label>
 
-      {description ? (
-        <p className="mt-1 text-xs text-slate-500">
-          {description}
+      {helperText ? (
+        <p className="mt-1 text-xs leading-5 text-slate-500">
+          {helperText}
         </p>
       ) : null}
 
@@ -485,16 +704,129 @@ function Field({
   );
 }
 
-const inputClasses =
-  "w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#176b52] focus:ring-4 focus:ring-emerald-100";
+function getFieldError(
+  state: KnowledgeEntryActionState,
+  fieldName: string,
+): string | null {
+  const fieldErrors =
+    "fieldErrors" in state
+      ? state.fieldErrors
+      : null;
+
+  if (
+    !fieldErrors ||
+    typeof fieldErrors !==
+      "object"
+  ) {
+    return null;
+  }
+
+  const error = (
+    fieldErrors as Record<
+      string,
+      unknown
+    >
+  )[fieldName];
+
+  if (typeof error === "string") {
+    return error;
+  }
+
+  if (
+    Array.isArray(error) &&
+    typeof error[0] === "string"
+  ) {
+    return error[0];
+  }
+
+  return null;
+}
 
 function createSlug(
   value: string,
 ): string {
   return value
-    .trim()
+    .normalize("NFKD")
+    .replace(
+      /[\u0300-\u036f]/g,
+      "",
+    )
     .toLowerCase()
-    .replace(/['’]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+    .trim()
+    .replace(
+      /[^a-z0-9]+/g,
+      "-",
+    )
+    .replace(
+      /^-+|-+$/g,
+      "",
+    )
+    .replace(
+      /-{2,}/g,
+      "-",
+    );
 }
+
+function sanitizeSlug(
+  value: string,
+): string {
+  return value
+    .toLowerCase()
+    .replace(
+      /[^a-z0-9-]/g,
+      "-",
+    )
+    .replace(
+      /-{2,}/g,
+      "-",
+    )
+    .replace(
+      /^-+/g,
+      "",
+    );
+}
+
+function formatSources(
+  sources: unknown[],
+): string {
+  try {
+    return JSON.stringify(
+      sources,
+      null,
+      2,
+    );
+  } catch {
+    return "[]";
+  }
+}
+
+function formatDateTime(
+  value: string,
+): string {
+  const date = new Date(value);
+
+  if (
+    Number.isNaN(
+      date.getTime(),
+    )
+  ) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat(
+    "en-US",
+    {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    },
+  ).format(date);
+}
+
+const inputClasses =
+  "w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#176b52] focus:ring-4 focus:ring-emerald-100";
+
+const textareaClasses =
+  "w-full resize-y rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#176b52] focus:ring-4 focus:ring-emerald-100";

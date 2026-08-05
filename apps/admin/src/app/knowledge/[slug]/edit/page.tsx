@@ -4,17 +4,11 @@ import { notFound } from "next/navigation";
 import AdminSidebar from "../../../../components/AdminSidebar";
 import KnowledgeEntryForm from "../../../../components/KnowledgeEntryForm";
 
-import {
-  getKnowledgeLibraryData,
-} from "../../../../lib/knowledge-data";
+import { getKnowledgeEntryBySlug } from "../../../../lib/knowledge-data";
 
-import {
-  initialKnowledgeEntryActionState,
-} from "../../action-state";
+import { updateKnowledgeEntry } from "../../actions";
 
-import {
-  updateKnowledgeEntry,
-} from "../../actions";
+import { initialKnowledgeEntryActionState } from "../../action-state";
 
 export const dynamic = "force-dynamic";
 
@@ -24,26 +18,37 @@ type EditKnowledgeEntryPageProps = {
   }>;
 };
 
+type EditableKnowledgeFields = {
+  medicalReviewRequired?: boolean | null;
+  version?: string | null;
+  reviewedBy?: string | null;
+  reviewedAt?: string | null;
+};
+
 export default async function EditKnowledgeEntryPage({
   params,
 }: EditKnowledgeEntryPageProps) {
   const { slug } = await params;
 
-  const decodedSlug = decodeURIComponent(slug)
-    .trim()
-    .toLowerCase();
+  const decodedSlug = decodeURIComponent(slug);
 
-  const libraryData = await getKnowledgeLibraryData();
-
-  const entry =
-    libraryData.entries.find(
-      (item) =>
-        item.slug.trim().toLowerCase() === decodedSlug,
-    ) ?? null;
+  const entry = await getKnowledgeEntryBySlug(
+    decodedSlug,
+  );
 
   if (!entry) {
     notFound();
   }
+
+  /*
+   * KnowledgeLibraryEntry currently exposes the
+   * fields needed by the public topic page, but
+   * some edit-only fields may not yet be included
+   * in its TypeScript type.
+   */
+  const editableEntry =
+    entry as typeof entry &
+      EditableKnowledgeFields;
 
   return (
     <main className="min-h-screen bg-[#f6f2e8] text-slate-900">
@@ -52,7 +57,7 @@ export default async function EditKnowledgeEntryPage({
 
         <section className="min-w-0 flex-1">
           <header className="border-b border-emerald-950/10 bg-white/80 px-6 py-5 lg:px-10">
-            <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
+            <div className="mx-auto flex max-w-5xl items-center justify-between gap-4">
               <div>
                 <p className="text-sm font-medium text-[#176b52]">
                   Knowledge Governance
@@ -74,8 +79,8 @@ export default async function EditKnowledgeEntryPage({
             </div>
           </header>
 
-          <div className="mx-auto max-w-6xl px-6 py-8 lg:px-10">
-            <section className="mb-7 rounded-3xl bg-[#0b4d3b] px-7 py-8 text-white shadow-lg">
+          <div className="mx-auto max-w-5xl px-6 py-8 lg:px-10">
+            <section className="mb-6 rounded-3xl bg-[#0b4d3b] px-7 py-7 text-white shadow-lg lg:px-9">
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-100">
                 Edit Record
               </p>
@@ -84,31 +89,66 @@ export default async function EditKnowledgeEntryPage({
                 {entry.title}
               </h2>
 
-              <p className="mt-3 break-all text-emerald-50">
+              <p className="mt-3 break-all text-sm text-emerald-100">
                 {entry.slug}
               </p>
             </section>
 
             <KnowledgeEntryForm
-              mode="edit"
               action={updateKnowledgeEntry}
-              initialState={initialKnowledgeEntryActionState}
+              initialState={
+                initialKnowledgeEntryActionState
+              }
+              mode="edit"
+              submitLabel="Save Changes"
               initialValues={{
+                /*
+                 * Required hidden identifier for
+                 * updateKnowledgeEntry.
+                 */
                 id: entry.id,
+
                 slug: entry.slug,
                 title: entry.title,
+
                 summary: entry.summary ?? "",
                 body: entry.body ?? "",
-                category: entry.category,
-                status: entry.knowledgeStatus,
+
+                category:
+                  entry.category ?? "resource",
+
+                status:
+                  entry.knowledgeStatus ??
+                  "draft",
+
+                /*
+                 * KnowledgeLibraryEntry does not
+                 * currently expose these raw arrays.
+                 * Empty arrays prevent TypeScript
+                 * errors until the data model is
+                 * expanded.
+                 */
                 tags: [],
                 keywords: [],
                 aliases: [],
-                sources: entry.sources,
-                medicalReviewRequired: true,
-                version: "1.0.0",
-                reviewedBy: entry.reviewerName,
-                reviewedAt: null,
+                sources: [],
+
+                medicalReviewRequired:
+                  editableEntry
+                    .medicalReviewRequired ??
+                  true,
+
+                version:
+                  editableEntry.version ??
+                  "1.0.0",
+
+                reviewedBy:
+                  editableEntry.reviewedBy ??
+                  null,
+
+                reviewedAt:
+                  editableEntry.reviewedAt ??
+                  null,
               }}
             />
           </div>

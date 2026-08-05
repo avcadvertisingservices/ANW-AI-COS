@@ -4,200 +4,275 @@ import { createAdminClient } from "./supabase/admin";
 
 export type SourceManagerRecord = {
   id: string;
-  title: string;
-  organization: string | null;
-  publisher: string | null;
-  url: string | null;
-  status: string;
-  eventType: string;
   knowledgeEntryId: string;
   knowledgeSlug: string | null;
+  knowledgeTitle: string | null;
+
+  sourceType: string;
+  title: string;
+  authors: string | null;
+  organization: string | null;
+  publicationDate: string | null;
+  journal: string | null;
+  doi: string | null;
+  pmid: string | null;
+  url: string | null;
+  citation: string | null;
+  evidenceLevel: string | null;
+  notes: string | null;
+
+  verified: boolean;
   createdAt: string | null;
   updatedAt: string | null;
-  isRemoved: boolean;
   hasValidUrl: boolean;
 };
 
 export type SourceManagerData = {
-  activeSources: SourceManagerRecord[];
-  removedSources: SourceManagerRecord[];
-  totalEvents: number;
+  allSources: SourceManagerRecord[];
+  verifiedSources: SourceManagerRecord[];
+  unverifiedSources: SourceManagerRecord[];
+  linkedKnowledgeEntries: number;
   errorMessage: string | null;
 };
 
-type SourceEventRow = {
+type KnowledgeSourceRow = {
   id: string;
-  knowledge_entry_id: string | null;
-  knowledge_slug: string | null;
-  source_id: string | null;
-  event_type: string | null;
-  after_source: unknown;
-  before_source: unknown;
+  knowledge_entry_id: string;
+  source_type: string;
+  title: string;
+  authors: string | null;
+  organization: string | null;
+  publication_date: string | null;
+  journal: string | null;
+  doi: string | null;
+  pmid: string | null;
+  url: string | null;
+  citation: string | null;
+  evidence_level: string | null;
+  notes: string | null;
+  verified: boolean | null;
   created_at: string | null;
+  updated_at: string | null;
+};
+
+type KnowledgeEntryRow = {
+  id: string;
+  slug: string | null;
+  title: string | null;
 };
 
 export async function getSourceManagerData(): Promise<SourceManagerData> {
   const supabase = createAdminClient();
 
-  const result = await supabase
-    .from("knowledge_source_events")
+  const sourceResult = await supabase
+    .from("knowledge_sources")
     .select(
-      [
-        "id",
-        "knowledge_entry_id",
-        "knowledge_slug",
-        "source_id",
-        "event_type",
-        "after_source",
-        "before_source",
-        "created_at",
-      ].join(","),
+      "id,knowledge_entry_id,source_type,title,authors,organization,publication_date,journal,doi,pmid,url,citation,evidence_level,notes,verified,created_at,updated_at",
     )
-    .order("created_at", {
+    .order("updated_at", {
       ascending: false,
     });
 
-  if (result.error) {
-    return {
-      activeSources: [],
-      removedSources: [],
-      totalEvents: 0,
-      errorMessage: result.error.message,
-    };
+  if (sourceResult.error) {
+    return createErrorResult(
+      sourceResult.error.message,
+    );
   }
 
-  const events =
-    (result.data ?? []) as unknown as SourceEventRow[];
+  const sourceRows =
+    (sourceResult.data ??
+      []) as unknown as KnowledgeSourceRow[];
 
-  const latestEventBySource =
-    new Map<string, SourceEventRow>();
+  const knowledgeEntryIds = Array.from(
+    new Set(
+      sourceRows
+        .map(
+          (source) =>
+            source.knowledge_entry_id,
+        )
+        .filter(Boolean),
+    ),
+  );
 
-  for (const event of events) {
-    if (!event.source_id) {
-      continue;
+  const knowledgeEntryMap = new Map<
+    string,
+    KnowledgeEntryRow
+  >();
+
+  if (knowledgeEntryIds.length > 0) {
+    const knowledgeResult = await supabase
+      .from("knowledge_entries")
+      .select("id,slug,title")
+      .in("id", knowledgeEntryIds);
+
+    if (knowledgeResult.error) {
+      return createErrorResult(
+        knowledgeResult.error.message,
+      );
     }
 
-    const compositeKey =
-      (event.knowledge_entry_id ?? "unknown-entry") +
-      "::" +
-      event.source_id;
+    const knowledgeRows =
+      (knowledgeResult.data ??
+        []) as unknown as KnowledgeEntryRow[];
 
-    if (!latestEventBySource.has(compositeKey)) {
-      latestEventBySource.set(
-        compositeKey,
-        event,
+    for (const entry of knowledgeRows) {
+      knowledgeEntryMap.set(
+        entry.id,
+        entry,
       );
     }
   }
 
-  const records = Array.from(
-    latestEventBySource.values(),
-  ).map(normalizeSourceEvent);
+  const allSources = sourceRows
+    .map((source) => {
+      const knowledgeEntry =
+        knowledgeEntryMap.get(
+          source.knowledge_entry_id,
+        );
 
-  const activeSources = records
-    .filter((source) => !source.isRemoved)
+      return normalizeSource(
+        source,
+        knowledgeEntry,
+      );
+    })
     .sort(compareSources);
 
-  const removedSources = records
-    .filter((source) => source.isRemoved)
-    .sort(compareSources);
+  const verifiedSources =
+    allSources.filter(
+      (source) => source.verified,
+    );
+
+  const unverifiedSources =
+    allSources.filter(
+      (source) => !source.verified,
+    );
+
+  const linkedKnowledgeEntries =
+    new Set(
+      allSources.map(
+        (source) =>
+          source.knowledgeEntryId,
+      ),
+    ).size;
 
   return {
-    activeSources,
-    removedSources,
-    totalEvents: events.length,
+    allSources,
+    verifiedSources,
+    unverifiedSources,
+    linkedKnowledgeEntries,
     errorMessage: null,
   };
 }
 
-function normalizeSourceEvent(
-  event: SourceEventRow,
+function normalizeSource(
+  source: KnowledgeSourceRow,
+  knowledgeEntry:
+    | KnowledgeEntryRow
+    | undefined,
 ): SourceManagerRecord {
-  const eventType =
-    event.event_type ?? "source_updated";
-
-  const normalizedEventType =
-    eventType.toLowerCase();
-
-  const isRemoved =
-    normalizedEventType === "source_removed" ||
-    normalizedEventType === "source_deleted";
-
-  const afterSource =
-    readObject(event.after_source);
-
-  const beforeSource =
-    readObject(event.before_source);
-
-  const sourceData =
-    isRemoved &&
-    Object.keys(beforeSource).length > 0
-      ? beforeSource
-      : afterSource;
-
-  const sourceId =
-    event.source_id ?? "unknown-source";
-
   const url =
-    readString(sourceData.url) ??
-    readString(sourceData.sourceUrl) ??
-    readString(sourceData.source_url) ??
-    null;
-
-  const organization =
-    readString(sourceData.organization) ??
-    readString(sourceData.organisation) ??
-    null;
-
-  const publisher =
-    readString(sourceData.publisher) ??
-    readString(sourceData.provider) ??
-    null;
-
-  const createdAt =
-    readString(sourceData.createdAt) ??
-    readString(sourceData.created_at) ??
-    event.created_at;
-
-  const updatedAt =
-    readString(sourceData.updatedAt) ??
-    readString(sourceData.updated_at) ??
-    event.created_at;
+    readNullableString(source.url);
 
   return {
-    id: sourceId,
+    id: source.id,
+
+    knowledgeEntryId:
+      source.knowledge_entry_id,
+
+    knowledgeSlug:
+      readNullableString(
+        knowledgeEntry?.slug,
+      ),
+
+    knowledgeTitle:
+      readNullableString(
+        knowledgeEntry?.title,
+      ),
+
+    sourceType:
+      readNullableString(
+        source.source_type,
+      ) ?? "Other",
 
     title:
-      readString(sourceData.title) ??
-      readString(sourceData.name) ??
-      formatSourceId(sourceId),
+      readNullableString(
+        source.title,
+      ) ?? "Untitled evidence source",
 
-    organization,
+    authors:
+      readNullableString(
+        source.authors,
+      ),
 
-    publisher,
+    organization:
+      readNullableString(
+        source.organization,
+      ),
+
+    publicationDate:
+      readNullableString(
+        source.publication_date,
+      ),
+
+    journal:
+      readNullableString(
+        source.journal,
+      ),
+
+    doi:
+      readNullableString(
+        source.doi,
+      ),
+
+    pmid:
+      readNullableString(
+        source.pmid,
+      ),
 
     url,
 
-    status:
-      readString(sourceData.status) ??
-      (isRemoved ? "removed" : "active"),
+    citation:
+      readNullableString(
+        source.citation,
+      ),
 
-    eventType,
+    evidenceLevel:
+      readNullableString(
+        source.evidence_level,
+      ),
 
-    knowledgeEntryId:
-      event.knowledge_entry_id ??
-      "Unknown knowledge entry",
+    notes:
+      readNullableString(
+        source.notes,
+      ),
 
-    knowledgeSlug:
-      event.knowledge_slug,
+    verified:
+      source.verified === true,
 
-    createdAt,
+    createdAt:
+      readNullableString(
+        source.created_at,
+      ),
 
-    updatedAt,
+    updatedAt:
+      readNullableString(
+        source.updated_at,
+      ),
 
-    isRemoved,
+    hasValidUrl:
+      isValidHttpUrl(url),
+  };
+}
 
-    hasValidUrl: isValidHttpUrl(url),
+function createErrorResult(
+  message: string,
+): SourceManagerData {
+  return {
+    allSources: [],
+    verifiedSources: [],
+    unverifiedSources: [],
+    linkedKnowledgeEntries: 0,
+    errorMessage: message,
   };
 }
 
@@ -205,26 +280,18 @@ function compareSources(
   first: SourceManagerRecord,
   second: SourceManagerRecord,
 ): number {
+  if (
+    first.verified !== second.verified
+  ) {
+    return first.verified ? -1 : 1;
+  }
+
   return first.title.localeCompare(
     second.title,
   );
 }
 
-function readObject(
-  value: unknown,
-): Record<string, unknown> {
-  if (
-    typeof value === "object" &&
-    value !== null &&
-    !Array.isArray(value)
-  ) {
-    return value as Record<string, unknown>;
-  }
-
-  return {};
-}
-
-function readString(
+function readNullableString(
   value: unknown,
 ): string | null {
   if (
@@ -254,20 +321,4 @@ function isValidHttpUrl(
   } catch {
     return false;
   }
-}
-
-function formatSourceId(
-  sourceId: string,
-): string {
-  return sourceId
-    .replace(/^source\./, "")
-    .split(/[._-]/)
-    .filter(Boolean)
-    .map((word) => {
-      return (
-        word.charAt(0).toUpperCase() +
-        word.slice(1)
-      );
-    })
-    .join(" ");
 }

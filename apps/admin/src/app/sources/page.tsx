@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import AdminSidebar from "../../components/AdminSidebar";
+
 import {
   getSourceManagerData,
   type SourceManagerRecord,
@@ -9,7 +10,8 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function SourceManagerPage() {
-  const sourceData = await getSourceManagerData();
+  const sourceData =
+    await getSourceManagerData();
 
   return (
     <main className="min-h-screen bg-[#f6f2e8] text-slate-900">
@@ -18,74 +20,100 @@ export default async function SourceManagerPage() {
 
         <section className="min-w-0 flex-1">
           <header className="border-b border-emerald-950/10 bg-white/80 px-6 py-5 lg:px-10">
-            <div className="mx-auto flex max-w-7xl items-center justify-between">
+            <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
               <div>
                 <p className="text-sm font-medium text-[#176b52]">
                   ANW AI Content Operating System
                 </p>
 
                 <h1 className="mt-1 text-2xl font-bold">
-                  Source Manager
+                  Evidence Library
                 </h1>
               </div>
 
-              <Link
-                href="/"
-                className="rounded-xl border border-emerald-900/15 bg-white px-4 py-2 text-sm font-semibold text-[#0b4d3b] shadow-sm transition hover:bg-emerald-50"
-              >
-                Dashboard
-              </Link>
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  href="/knowledge"
+                  className="rounded-xl border border-emerald-900/15 bg-white px-4 py-2 text-sm font-semibold text-[#0b4d3b] shadow-sm transition hover:bg-emerald-50"
+                >
+                  Knowledge Library
+                </Link>
+
+                <Link
+                  href="/"
+                  className="rounded-xl bg-[#0b4d3b] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#176b52]"
+                >
+                  Dashboard
+                </Link>
+              </div>
             </div>
           </header>
 
           <div className="mx-auto max-w-7xl px-6 py-8 lg:px-10">
             <section className="rounded-3xl bg-[#0b4d3b] px-7 py-8 text-white shadow-lg lg:px-10">
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-100">
-                Evidence Registry
+                Clinical Governance
               </p>
 
               <h2 className="mt-3 text-3xl font-bold">
-                Knowledge Source Manager
+                Medical Evidence Registry
               </h2>
 
               <p className="mt-4 max-w-3xl leading-7 text-emerald-50">
-                Review active medical references, linked knowledge topics,
-                source URLs, and historical removals.
+                Manage research papers, medical
+                guidance, hospital references,
+                government sources, citations, and
+                verification records connected to
+                the ANW knowledge library.
               </p>
 
               <div className="mt-6 flex flex-wrap gap-3">
                 <StatPill
-                  label="Active sources"
-                  value={sourceData.activeSources.length}
+                  label="Total evidence"
+                  value={
+                    sourceData.allSources
+                      .length
+                  }
                 />
 
                 <StatPill
-                  label="Removed sources"
-                  value={sourceData.removedSources.length}
+                  label="Verified"
+                  value={
+                    sourceData
+                      .verifiedSources
+                      .length
+                  }
                 />
 
                 <StatPill
-                  label="Source events"
-                  value={sourceData.totalEvents}
+                  label="Needs verification"
+                  value={
+                    sourceData
+                      .unverifiedSources
+                      .length
+                  }
                 />
 
-                <Link
-                  href="/medical-reviews"
-                  className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#0b4d3b] transition hover:bg-emerald-50"
-                >
-                  Open Medical Reviews
-                </Link>
+                <StatPill
+                  label="Linked topics"
+                  value={
+                    sourceData
+                      .linkedKnowledgeEntries
+                  }
+                />
               </div>
             </section>
 
             {sourceData.errorMessage ? (
               <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-5">
                 <p className="font-semibold text-red-900">
-                  Source Manager error
+                  Evidence Library error
                 </p>
 
                 <p className="mt-2 break-words text-sm text-red-800">
-                  {sourceData.errorMessage}
+                  {
+                    sourceData.errorMessage
+                  }
                 </p>
               </div>
             ) : null}
@@ -93,21 +121,25 @@ export default async function SourceManagerPage() {
             {!sourceData.errorMessage ? (
               <>
                 <SourceSection
-                  eyebrow="Current evidence"
-                  title="Active Sources"
-                  badge={`${sourceData.activeSources.length} active`}
-                  sources={sourceData.activeSources}
-                  emptyTitle="No active sources"
-                  emptyMessage="No active source records were found."
+                  eyebrow="Trusted evidence"
+                  title="Verified Evidence"
+                  badge={`${sourceData.verifiedSources.length} verified`}
+                  sources={
+                    sourceData.verifiedSources
+                  }
+                  emptyTitle="No verified evidence yet"
+                  emptyMessage="Evidence records will appear here after they are verified."
                 />
 
                 <SourceSection
-                  eyebrow="Historical audit"
-                  title="Removed Sources"
-                  badge={`${sourceData.removedSources.length} removed`}
-                  sources={sourceData.removedSources}
-                  emptyTitle="No removed sources"
-                  emptyMessage="There are currently no removed source records."
+                  eyebrow="Governance queue"
+                  title="Needs Verification"
+                  badge={`${sourceData.unverifiedSources.length} pending`}
+                  sources={
+                    sourceData.unverifiedSources
+                  }
+                  emptyTitle="No evidence awaiting verification"
+                  emptyMessage="All registered evidence sources are currently verified."
                 />
               </>
             ) : null}
@@ -155,13 +187,13 @@ function SourceSection({
         <div className="mt-5 grid gap-5 xl:grid-cols-2">
           {sources.map((source) => (
             <SourceCard
-              key={`${source.knowledgeEntryId}::${source.id}`}
+              key={source.id}
               source={source}
             />
           ))}
         </div>
       ) : (
-        <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-8 text-center">
+        <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
           <p className="font-semibold text-slate-800">
             {emptyTitle}
           </p>
@@ -181,58 +213,126 @@ function SourceCard({
   source: SourceManagerRecord;
 }) {
   return (
-    <article
-      className={
-        source.isRemoved
-          ? "rounded-2xl border border-slate-200 bg-slate-100 p-6 shadow-sm"
-          : "rounded-2xl border border-emerald-950/10 bg-white p-6 shadow-sm"
-      }
-    >
+    <article className="rounded-2xl border border-emerald-950/10 bg-white p-6 shadow-sm">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#176b52]">
-            {source.organization ??
-              source.publisher ??
-              "Registered source"}
-          </p>
+          <div className="flex flex-wrap gap-2">
+            <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-800">
+              {formatLabel(
+                source.sourceType,
+              )}
+            </span>
 
-          <h3 className="mt-2 text-lg font-bold leading-7">
+            {source.evidenceLevel ? (
+              <span className="rounded-full bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-800">
+                {source.evidenceLevel}
+              </span>
+            ) : null}
+          </div>
+
+          <h3 className="mt-3 text-lg font-bold leading-7 text-slate-900">
             {source.title}
           </h3>
 
-          <p className="mt-2 break-all text-xs text-slate-500">
-            {source.id}
+          <p className="mt-2 text-sm text-slate-500">
+            {source.organization ??
+              source.journal ??
+              "Organization unavailable"}
           </p>
         </div>
 
-        <StatusBadge source={source} />
+        <VerificationBadge
+          verified={source.verified}
+        />
       </div>
 
       <dl className="mt-6 space-y-4 rounded-xl bg-slate-50 p-4">
         <DetailRow
-          label="Knowledge Entry"
-          value={source.knowledgeEntryId}
+          label="Knowledge Topic"
+          value={
+            source.knowledgeTitle ??
+            source.knowledgeEntryId
+          }
         />
 
         <DetailRow
-          label="Latest Event"
-          value={formatStatus(source.eventType)}
+          label="Authors"
+          value={
+            source.authors ??
+            "Not provided"
+          }
         />
 
         <DetailRow
-          label="Status"
-          value={formatStatus(source.status)}
+          label="Journal"
+          value={
+            source.journal ??
+            "Not provided"
+          }
+        />
+
+        <DetailRow
+          label="Publication"
+          value={
+            source.publicationDate
+              ? formatDate(
+                  source.publicationDate,
+                )
+              : "Not provided"
+          }
+        />
+
+        <DetailRow
+          label="DOI"
+          value={
+            source.doi ??
+            "Not provided"
+          }
+        />
+
+        <DetailRow
+          label="PMID"
+          value={
+            source.pmid ??
+            "Not provided"
+          }
         />
 
         <DetailRow
           label="Updated"
           value={
             source.updatedAt
-              ? formatDateTime(source.updatedAt)
+              ? formatDateTime(
+                  source.updatedAt,
+                )
               : "Unavailable"
           }
         />
       </dl>
+
+      {source.citation ? (
+        <div className="mt-5 rounded-xl border border-slate-200 bg-white p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Citation
+          </p>
+
+          <p className="mt-2 text-sm leading-6 text-slate-700">
+            {source.citation}
+          </p>
+        </div>
+      ) : null}
+
+      {source.notes ? (
+        <div className="mt-5 rounded-xl border border-blue-100 bg-blue-50 p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">
+            Evidence Notes
+          </p>
+
+          <p className="mt-2 text-sm leading-6 text-blue-900">
+            {source.notes}
+          </p>
+        </div>
+      ) : null}
 
       {!source.hasValidUrl ? (
         <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4">
@@ -241,20 +341,23 @@ function SourceCard({
           </p>
 
           <p className="mt-1 text-sm leading-6 text-amber-800">
-            This source requires a valid HTTP or HTTPS URL.
+            Add a valid HTTP or HTTPS URL
+            before final evidence
+            verification.
           </p>
         </div>
       ) : null}
 
       <div className="mt-5 flex flex-wrap gap-3">
-        {source.hasValidUrl && source.url ? (
+        {source.hasValidUrl &&
+        source.url ? (
           <a
             href={source.url}
             target="_blank"
             rel="noreferrer"
             className="rounded-xl bg-[#0b4d3b] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#176b52]"
           >
-            Open Source
+            Open Evidence
           </a>
         ) : null}
 
@@ -265,7 +368,7 @@ function SourceCard({
             )}`}
             className="rounded-xl border border-emerald-900/15 bg-white px-4 py-2 text-sm font-semibold text-[#0b4d3b] transition hover:bg-emerald-50"
           >
-            Open Topic
+            Open Knowledge Topic
           </Link>
         ) : null}
       </div>
@@ -273,30 +376,22 @@ function SourceCard({
   );
 }
 
-function StatusBadge({
-  source,
+function VerificationBadge({
+  verified,
 }: {
-  source: SourceManagerRecord;
+  verified: boolean;
 }) {
-  if (source.isRemoved) {
+  if (verified) {
     return (
-      <span className="rounded-full bg-slate-300 px-3 py-1 text-xs font-semibold text-slate-800">
-        Removed
-      </span>
-    );
-  }
-
-  if (!source.hasValidUrl) {
-    return (
-      <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
-        Needs Attention
+      <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800">
+        Verified
       </span>
     );
   }
 
   return (
-    <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800">
-      Active
+    <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
+      Needs Verification
     </span>
   );
 }
@@ -328,16 +423,19 @@ function DetailRow({
         {label}
       </dt>
 
-      <dd className="break-all text-sm font-medium text-slate-800">
+      <dd className="break-words text-sm font-medium text-slate-800">
         {value}
       </dd>
     </div>
   );
 }
 
-function formatStatus(status: string): string {
-  return status
-    .split("_")
+function formatLabel(
+  value: string,
+): string {
+  return value
+    .replace(/[_-]+/g, " ")
+    .split(" ")
     .filter(Boolean)
     .map(
       (word) =>
@@ -347,18 +445,42 @@ function formatStatus(status: string): string {
     .join(" ");
 }
 
-function formatDateTime(value: string): string {
+function formatDate(
+  value: string,
+): string {
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
     return value;
   }
 
-  return new Intl.DateTimeFormat("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(date);
+  return new Intl.DateTimeFormat(
+    "en-US",
+    {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    },
+  ).format(date);
+}
+
+function formatDateTime(
+  value: string,
+): string {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat(
+    "en-US",
+    {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    },
+  ).format(date);
 }

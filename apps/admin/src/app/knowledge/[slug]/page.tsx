@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import AdminSidebar from "../../../components/AdminSidebar";
+import ResubmitForReviewForm from "../../../components/ResubmitForReviewForm";
 import SubmitForReviewForm from "../../../components/SubmitForReviewForm";
 
 import {
@@ -19,7 +20,9 @@ type KnowledgeEntryPageProps = {
     created?: string;
     updated?: string;
     reviewSubmitted?: string;
+    reviewResubmitted?: string;
     reviewError?: string;
+    resubmitError?: string;
   }>;
 };
 
@@ -30,7 +33,8 @@ export default async function KnowledgeEntryPage({
   const { slug } = await params;
   const query = await searchParams;
 
-  const entry = await getKnowledgeEntryBySlug(slug);
+  const entry =
+    await getKnowledgeEntryBySlug(slug);
 
   if (!entry) {
     notFound();
@@ -45,9 +49,17 @@ export default async function KnowledgeEntryPage({
   const showReviewSubmittedMessage =
     query.reviewSubmitted === "1";
 
+  const showReviewResubmittedMessage =
+    query.reviewResubmitted === "1";
+
   const reviewError =
     typeof query.reviewError === "string"
       ? query.reviewError
+      : null;
+
+  const resubmitError =
+    typeof query.resubmitError === "string"
+      ? query.resubmitError
       : null;
 
   return (
@@ -92,7 +104,8 @@ export default async function KnowledgeEntryPage({
             {showCreatedMessage ? (
               <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900">
                 <p className="font-semibold">
-                  Knowledge entry created successfully.
+                  Knowledge entry created
+                  successfully.
                 </p>
               </div>
             ) : null}
@@ -100,7 +113,8 @@ export default async function KnowledgeEntryPage({
             {showUpdatedMessage ? (
               <div className="mb-6 rounded-2xl border border-blue-200 bg-blue-50 p-4 text-blue-900">
                 <p className="font-semibold">
-                  Knowledge entry updated successfully.
+                  Knowledge entry updated
+                  successfully.
                 </p>
               </div>
             ) : null}
@@ -108,13 +122,30 @@ export default async function KnowledgeEntryPage({
             {showReviewSubmittedMessage ? (
               <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900">
                 <p className="font-semibold">
-                  Knowledge entry submitted for medical
-                  review.
+                  Knowledge entry submitted for
+                  medical review.
                 </p>
 
                 <p className="mt-1 text-sm">
-                  The review request and its first audit
-                  event were created successfully.
+                  The review request and its first
+                  audit event were created
+                  successfully.
+                </p>
+              </div>
+            ) : null}
+
+            {showReviewResubmittedMessage ? (
+              <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900">
+                <p className="font-semibold">
+                  Knowledge entry resubmitted
+                  successfully.
+                </p>
+
+                <p className="mt-1 text-sm">
+                  The existing medical-review
+                  request was returned to Submitted
+                  and a Resubmitted audit event was
+                  created.
                 </p>
               </div>
             ) : null}
@@ -122,7 +153,8 @@ export default async function KnowledgeEntryPage({
             {reviewError ? (
               <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-red-900">
                 <p className="font-semibold">
-                  Unable to submit for medical review
+                  Unable to submit for medical
+                  review
                 </p>
 
                 <p className="mt-1 break-words text-sm">
@@ -131,11 +163,26 @@ export default async function KnowledgeEntryPage({
               </div>
             ) : null}
 
+            {resubmitError ? (
+              <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-red-900">
+                <p className="font-semibold">
+                  Unable to resubmit for medical
+                  review
+                </p>
+
+                <p className="mt-1 break-words text-sm">
+                  {resubmitError}
+                </p>
+              </div>
+            ) : null}
+
             <section className="rounded-3xl bg-[#0b4d3b] px-7 py-8 text-white shadow-lg lg:px-10">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
                   <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-100">
-                    {formatLabel(entry.category)}
+                    {formatLabel(
+                      entry.category,
+                    )}
                   </p>
 
                   <h2 className="mt-3 text-3xl font-bold lg:text-4xl">
@@ -179,7 +226,9 @@ export default async function KnowledgeEntryPage({
 
               <InfoCard
                 label="Sources"
-                value={String(entry.sourceCount)}
+                value={String(
+                  entry.sourceCount,
+                )}
               />
 
               <InfoCard
@@ -223,42 +272,45 @@ export default async function KnowledgeEntryPage({
                 </span>
               </div>
 
-              {entry.sources.length === 0 ? (
+              {entry.sources.length ===
+              0 ? (
                 <div className="mt-6 rounded-2xl bg-slate-50 p-5">
                   <p className="text-sm text-slate-600">
-                    No active sources are linked to this
-                    entry yet.
+                    No active sources are linked
+                    to this entry yet.
                   </p>
                 </div>
               ) : (
                 <div className="mt-6 grid gap-4 lg:grid-cols-2">
-                  {entry.sources.map((source) => (
-                    <article
-                      key={source.id}
-                      className="rounded-2xl border border-slate-200 p-5"
-                    >
-                      <p className="font-semibold text-slate-900">
-                        {source.title}
-                      </p>
+                  {entry.sources.map(
+                    (source) => (
+                      <article
+                        key={source.id}
+                        className="rounded-2xl border border-slate-200 p-5"
+                      >
+                        <p className="font-semibold text-slate-900">
+                          {source.title}
+                        </p>
 
-                      <p className="mt-2 text-sm text-slate-500">
-                        {source.organization ??
-                          source.publisher ??
-                          "Organization unavailable"}
-                      </p>
+                        <p className="mt-2 text-sm text-slate-500">
+                          {source.organization ??
+                            source.publisher ??
+                            "Organization unavailable"}
+                        </p>
 
-                      {source.url ? (
-                        <a
-                          href={source.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="mt-4 inline-flex text-sm font-semibold text-[#176b52] hover:underline"
-                        >
-                          Open Source
-                        </a>
-                      ) : null}
-                    </article>
-                  ))}
+                        {source.url ? (
+                          <a
+                            href={source.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="mt-4 inline-flex text-sm font-semibold text-[#176b52] hover:underline"
+                          >
+                            Open Source
+                          </a>
+                        ) : null}
+                      </article>
+                    ),
+                  )}
                 </div>
               )}
             </section>
@@ -276,74 +328,97 @@ export default async function KnowledgeEntryPage({
                 </div>
 
                 <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-700">
-                  {entry.reviewTimeline.length} events
+                  {
+                    entry.reviewTimeline
+                      .length
+                  }{" "}
+                  events
                 </span>
               </div>
 
-              {entry.reviewTimeline.length === 0 ? (
+              {entry.reviewTimeline
+                .length === 0 ? (
                 <div className="mt-6 rounded-2xl bg-slate-50 p-5">
                   <p className="text-sm text-slate-600">
-                    This entry has not yet entered the
-                    medical-review workflow.
+                    This entry has not yet entered
+                    the medical-review workflow.
                   </p>
                 </div>
               ) : (
                 <div className="mt-6 space-y-4">
-                  {entry.reviewTimeline.map((event) => (
-                    <article
-                      key={event.id}
-                      className="rounded-2xl border border-slate-200 p-5"
-                    >
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div>
-                          <p className="font-semibold text-slate-900">
-                            {formatLabel(
-                              event.eventType,
-                            )}
-                          </p>
-
-                          <p className="mt-1 text-sm text-slate-500">
-                            {event.actorName}
-                            {event.actorRole
-                              ? ` · ${event.actorRole}`
-                              : ""}
-                          </p>
-
-                          {event.actorEmail ? (
-                            <p className="mt-1 text-xs text-slate-400">
-                              {event.actorEmail}
+                  {entry.reviewTimeline.map(
+                    (event) => (
+                      <article
+                        key={event.id}
+                        className="rounded-2xl border border-slate-200 p-5"
+                      >
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <div>
+                            <p className="font-semibold text-slate-900">
+                              {formatLabel(
+                                event.eventType,
+                              )}
                             </p>
-                          ) : null}
+
+                            <p className="mt-1 text-sm text-slate-500">
+                              {event.actorName}
+
+                              {event.actorRole
+                                ? ` · ${event.actorRole}`
+                                : ""}
+                            </p>
+
+                            {event.actorEmail ? (
+                              <p className="mt-1 text-xs text-slate-400">
+                                {
+                                  event.actorEmail
+                                }
+                              </p>
+                            ) : null}
+                          </div>
+
+                          <p className="text-xs text-slate-500">
+                            {event.createdAt
+                              ? formatDateTime(
+                                  event.createdAt,
+                                )
+                              : "Date unavailable"}
+                          </p>
                         </div>
 
-                        <p className="text-xs text-slate-500">
-                          {event.createdAt
-                            ? formatDateTime(
-                                event.createdAt,
-                              )
-                            : "Date unavailable"}
-                        </p>
-                      </div>
+                        {event.notes ? (
+                          <p className="mt-4 text-sm leading-6 text-slate-600">
+                            {event.notes}
+                          </p>
+                        ) : null}
 
-                      {event.notes ? (
-                        <p className="mt-4 text-sm leading-6 text-slate-600">
-                          {event.notes}
-                        </p>
-                      ) : null}
-
-                      {event.isPlaceholderActor ? (
-                        <p className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
-                          Placeholder reviewer detected.
-                        </p>
-                      ) : null}
-                    </article>
-                  ))}
+                        {event.isPlaceholderActor ? (
+                          <p className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
+                            Placeholder reviewer
+                            detected.
+                          </p>
+                        ) : null}
+                      </article>
+                    ),
+                  )}
                 </div>
               )}
             </section>
 
-            <div className="mt-7">
+            <div className="mt-7 space-y-6">
               <SubmitForReviewForm
+                entryId={entry.id}
+                slug={entry.slug}
+                title={entry.title}
+                knowledgeStatus={
+                  entry.knowledgeStatus
+                }
+                reviewStatus={
+                  entry.reviewStatus
+                }
+              />
+
+              <ResubmitForReviewForm
                 entryId={entry.id}
                 slug={entry.slug}
                 title={entry.title}
@@ -410,7 +485,8 @@ function StatusBadge({
     .toLowerCase()
     .replace(/[\s-]+/g, "_");
 
-  let classes = "bg-white/15 text-white";
+  let classes =
+    "bg-white/15 text-white";
 
   if (normalized === "approved") {
     classes =
@@ -422,14 +498,19 @@ function StatusBadge({
     classes =
       "bg-blue-100 text-blue-800";
   } else if (
-    normalized === "changes_requested"
+    normalized ===
+    "changes_requested"
   ) {
     classes =
       "bg-amber-100 text-amber-800";
-  } else if (normalized === "rejected") {
+  } else if (
+    normalized === "rejected"
+  ) {
     classes =
       "bg-red-100 text-red-800";
-  } else if (normalized === "cancelled") {
+  } else if (
+    normalized === "cancelled"
+  ) {
     classes =
       "bg-slate-200 text-slate-700";
   }
