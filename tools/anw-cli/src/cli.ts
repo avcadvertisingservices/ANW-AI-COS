@@ -7,6 +7,10 @@ import {
 } from "./commands/component.js";
 
 import {
+  createFeature,
+} from "./commands/feature.js";
+
+import {
   createModule,
 } from "./commands/module.js";
 
@@ -92,6 +96,41 @@ program
       } catch (error) {
         handleCommandError(
           "create component",
+          error,
+        );
+      }
+    },
+  );
+
+program
+  .command("feature")
+  .description(
+    "Create a complete ANW feature.",
+  )
+  .argument(
+    "<name>",
+    "Feature name, such as recovery-tracker",
+  )
+  .option(
+    "--force",
+    "Overwrite generated feature files",
+    false,
+  )
+  .action(
+    (
+      name: string,
+      options: {
+        force?: boolean;
+      },
+    ) => {
+      try {
+        createFeature(
+          name,
+          options,
+        );
+      } catch (error) {
+        handleCommandError(
+          "create feature",
           error,
         );
       }

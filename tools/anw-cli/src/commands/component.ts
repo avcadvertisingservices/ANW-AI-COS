@@ -9,7 +9,7 @@ import {
   resolve,
 } from "node:path";
 
-type CreateComponentOptions = {
+export type CreateComponentOptions = {
   force?: boolean;
 };
 
@@ -44,7 +44,7 @@ export function createComponent(
 
   if (
     existsSync(componentPath) &&
-    !options.force
+    options.force !== true
   ) {
     throw new Error(
       `Component already exists: ${componentPath}`,
@@ -58,7 +58,9 @@ export function createComponent(
   writeFileSync(
     componentPath,
     createComponentCode(componentName),
-    "utf8",
+    {
+      encoding: "utf8",
+    },
   );
 
   console.log("");
@@ -88,8 +90,15 @@ function findProjectRoot(
       "components",
     );
 
+    const cliPath = join(
+      currentDirectory,
+      "tools",
+      "anw-cli",
+    );
+
     if (
-      existsSync(adminComponentsPath)
+      existsSync(adminComponentsPath) &&
+      existsSync(cliPath)
     ) {
       return currentDirectory;
     }
@@ -126,11 +135,12 @@ function toPascalCase(
     )
     .split(/[^A-Za-z0-9]+/)
     .filter(Boolean)
-    .map(
-      (part) =>
+    .map((part) => {
+      return (
         part.charAt(0).toUpperCase() +
-        part.slice(1).toLowerCase(),
-    )
+        part.slice(1).toLowerCase()
+      );
+    })
     .join("");
 }
 
