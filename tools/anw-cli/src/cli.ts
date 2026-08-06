@@ -7,6 +7,10 @@ import {
 } from "./commands/component.js";
 
 import {
+  runDoctor,
+} from "./commands/doctor.js";
+
+import {
   createFeature,
 } from "./commands/feature.js";
 
@@ -35,7 +39,9 @@ program
     console.log(
       "Welcome to the ANW AI-COS CLI!",
     );
-    console.log("You Are Not Alone.");
+    console.log(
+      "You Are Not Alone.",
+    );
     console.log("");
   });
 
@@ -178,6 +184,22 @@ program
       }
     },
   );
+
+program
+  .command("doctor")
+  .description(
+    "Inspect the ANW repository for common development problems.",
+  )
+  .action(() => {
+    try {
+      runDoctor();
+    } catch (error) {
+      handleCommandError(
+        "run repository doctor",
+        error,
+      );
+    }
+  });
 
 program.parse();
 
