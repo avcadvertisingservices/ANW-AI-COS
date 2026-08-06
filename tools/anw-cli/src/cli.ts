@@ -22,6 +22,10 @@ import {
   createPage,
 } from "./commands/page.js";
 
+import {
+  repairRepository,
+} from "./commands/repair.js";
+
 const program = new Command();
 
 program
@@ -29,7 +33,7 @@ program
   .description(
     "Developer CLI for the ANW AI Content Operating System.",
   )
-  .version("0.1.0");
+  .version("0.2.0");
 
 program
   .command("hello")
@@ -200,6 +204,35 @@ program
       );
     }
   });
+
+program
+  .command("repair")
+  .description(
+    "Safely detect and repair common ANW App Router problems.",
+  )
+  .option(
+    "--write",
+    "Apply safe repairs to route files",
+    false,
+  )
+  .action(
+    (
+      options: {
+        write?: boolean;
+      },
+    ) => {
+      try {
+        repairRepository(
+          options,
+        );
+      } catch (error) {
+        handleCommandError(
+          "repair repository routes",
+          error,
+        );
+      }
+    },
+  );
 
 program.parse();
 
