@@ -1,19 +1,19 @@
 {
   "name": "@anw/anw-cli",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "Developer CLI for the ANW AI Content Operating System.",
   "type": "module",
   "bin": {
     "anw": "./dist/cli.js"
   },
- "scripts": {
-  "build": "tsc",
-  "dev": "tsx src/cli.ts",
-  "typecheck": "tsc --noEmit",
-  "test": "npm run build && node --test dist/tests/generators.test.js dist/tests/repair.test.js",
-  "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\""
-},
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/cli.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "npm run build && node --test dist/tests/generators.test.js dist/tests/repair.test.js",
+    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\""
+  },
   "dependencies": {
     "commander": "^14.0.0"
   },

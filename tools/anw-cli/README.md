@@ -11,11 +11,12 @@ The ANW CLI helps developers create consistent modules, components, pages, and c
 ## Current Version
 
 ```text
-0.2.0
+0.3.0
 ```
 
 Git tag:
 
 ```text
-anw-cli-v0.2.0
+anw-cli-v0.3.0
 ```
+

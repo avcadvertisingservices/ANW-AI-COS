@@ -4,6 +4,57 @@ All notable changes to the ANW AI-COS CLI are documented in this file.
 
 The format follows the principles of Keep a Changelog, and the project uses semantic versioning.
 
+## [0.3.0] - 2026-08-07
+
+### Added
+
+- Added the `repair` command for Next.js App Router recovery.
+- Added safe dry-run mode as the default behavior.
+- Added `--write` mode for applying approved automatic repairs.
+- Added detection and replacement of empty `page.tsx` files.
+- Added detection and replacement of empty `layout.tsx` files.
+- Added detection and replacement of empty `loading.tsx` files.
+- Added detection and replacement of empty `error.tsx` files.
+- Added automatic `"use client"` insertion for error boundaries.
+- Added manual-review protection for non-empty route files without default exports.
+- Added automated tests for dry-run and write modes.
+- Added tests confirming healthy files remain unchanged.
+- Added tests confirming manual-review files are never overwritten.
+
+### Commands
+
+ANW CLI v0.3.0 includes:
+
+```text
+hello
+module
+component
+feature
+page
+doctor
+repair
+```
+
+### Certification
+
+Version 0.3.0 was certified using:
+
+```powershell
+npm run typecheck
+npm test
+npm run build
+npm run dev -- doctor
+npm run dev -- repair
+```
+
+### Release
+
+Git tag:
+
+```text
+anw-cli-v0.3.0
+```
+
 ---
 
 ## [0.2.0] - 2026-08-06
