@@ -14,6 +14,10 @@ import {
   createModule,
 } from "./commands/module.js";
 
+import {
+  createPage,
+} from "./commands/page.js";
+
 const program = new Command();
 
 program
@@ -57,7 +61,10 @@ program
       },
     ) => {
       try {
-        createModule(name, options);
+        createModule(
+          name,
+          options,
+        );
       } catch (error) {
         handleCommandError(
           "create module",
@@ -131,6 +138,41 @@ program
       } catch (error) {
         handleCommandError(
           "create feature",
+          error,
+        );
+      }
+    },
+  );
+
+program
+  .command("page")
+  .description(
+    "Create a branded ANW admin page.",
+  )
+  .argument(
+    "<name>",
+    "Route name, such as evidence-dashboard",
+  )
+  .option(
+    "--force",
+    "Overwrite generated page files",
+    false,
+  )
+  .action(
+    (
+      name: string,
+      options: {
+        force?: boolean;
+      },
+    ) => {
+      try {
+        createPage(
+          name,
+          options,
+        );
+      } catch (error) {
+        handleCommandError(
+          "create page",
           error,
         );
       }
