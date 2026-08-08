@@ -1,11 +1,15 @@
 import {
   existsSync,
+  mkdirSync,
   readdirSync,
   readFileSync,
+  writeFileSync,
 } from "node:fs";
 
 import {
   basename,
+  dirname,
+  isAbsolute,
   join,
   relative,
   resolve,
@@ -90,6 +94,7 @@ export type ProjectOptions = {
   inventory?: boolean;
   report?: boolean;
   json?: boolean;
+  output?: string;
 };
 
 export function runProject(
@@ -120,6 +125,24 @@ export function runProject(
   }
 
   if (
+    options.output !== undefined &&
+    options.report !== true
+  ) {
+    throw new Error(
+      "--output can only be used together with --report.",
+    );
+  }
+
+  if (
+    options.output !== undefined &&
+    options.output.trim().length === 0
+  ) {
+    throw new Error(
+      "--output requires a non-empty file path.",
+    );
+  }
+
+  if (
     options.status === true
   ) {
     runProjectStatus();
@@ -136,14 +159,9 @@ export function runProject(
   if (
     options.report === true
   ) {
-    if (
-      options.json === true
-    ) {
-      runProjectJsonReport();
-      return;
-    }
-
-    runProjectReport();
+    runProjectReportMode(
+      options,
+    );
     return;
   }
 
@@ -160,7 +178,6 @@ function printProjectHelp(): void {
   console.log(
     "Available commands:",
   );
-
   console.log("");
 
   console.log(
@@ -179,12 +196,18 @@ function printProjectHelp(): void {
     "npm run dev -- project --report --json",
   );
 
-  console.log("");
+  console.log(
+    "npm run dev -- project --report --output docs/project-report.md",
+  );
 
+  console.log(
+    "npm run dev -- project --report --json --output docs/project-report.json",
+  );
+
+  console.log("");
   console.log(
     "No project changes were made.",
   );
-
   console.log("");
 }
 
@@ -208,7 +231,6 @@ function runProjectStatus(): void {
   console.log(
     `Repository: ${status.projectRoot}`,
   );
-
   console.log("");
 
   console.log(
@@ -220,27 +242,15 @@ function runProjectStatus(): void {
     `Branch: ${status.branch}`,
   );
 
-  if (
-    status.workingTree ===
-    "DIRTY"
-  ) {
-    console.log(
-      `Working tree: DIRTY (${status.workingTreeChanges} ${
-        status.workingTreeChanges === 1
-          ? "change"
-          : "changes"
-      })`,
-    );
-  } else {
-    console.log(
-      `Working tree: ${status.workingTree}`,
-    );
-  }
+  console.log(
+    `Working tree: ${formatWorkingTree(
+      status,
+    )}`,
+  );
 
   console.log(
     `Latest commit: ${status.latestCommit}`,
   );
-
   console.log("");
 
   console.log(
@@ -255,7 +265,6 @@ function runProjectStatus(): void {
   console.log(
     `Latest release tag: ${status.latestReleaseTag}`,
   );
-
   console.log("");
 
   console.log(
@@ -266,7 +275,6 @@ function runProjectStatus(): void {
   console.log(
     `App Router files: ${status.routeCount}`,
   );
-
   console.log("");
 
   console.log(
@@ -285,7 +293,6 @@ function runProjectStatus(): void {
   console.log(
     `Components: ${status.componentCount}`,
   );
-
   console.log("");
 
   console.log(
@@ -296,7 +303,6 @@ function runProjectStatus(): void {
   console.log(
     `Status: ${status.overallStatus}`,
   );
-
   console.log("");
 
   console.log(
@@ -306,7 +312,6 @@ function runProjectStatus(): void {
   console.log(
     "No changes were made.",
   );
-
   console.log("");
 }
 
@@ -345,7 +350,6 @@ function runProjectInventory(): void {
   console.log(
     `Repository: ${projectRoot}`,
   );
-
   console.log("");
 
   printInventorySection(
@@ -375,11 +379,12 @@ function runProjectInventory(): void {
   console.log(
     "No files were changed.",
   );
-
   console.log("");
 }
 
-function runProjectReport(): void {
+function runProjectReportMode(
+  options: ProjectOptions,
+): void {
   const projectRoot =
     findProjectRoot(
       process.cwd(),
@@ -390,125 +395,82 @@ function runProjectReport(): void {
       projectRoot,
     );
 
-  console.log("");
-  console.log(
-    "# ANW AI-COS Project Report",
-  );
-  console.log("");
-
-  console.log(
-    `Repository: ${status.projectRoot}`,
-  );
-
-  console.log("");
-
-  console.log(
-    "## Repository",
-  );
-  console.log("");
-
-  console.log(
-    `Branch: ${status.branch}`,
-  );
-
-  console.log(
-    `Working tree: ${formatWorkingTree(
-      status,
-    )}`,
-  );
-
-  console.log(
-    `Latest commit: ${status.latestCommit}`,
-  );
-
-  console.log("");
-
-  console.log(
-    "## CLI Release",
-  );
-  console.log("");
-
-  console.log(
-    `Version: ${status.cliVersion}`,
-  );
-
-  console.log(
-    `Latest release tag: ${status.latestReleaseTag}`,
-  );
-
-  console.log("");
-
-  console.log(
-    "## Architecture",
-  );
-  console.log("");
-
-  console.log(
-    `Modules: ${status.moduleCount}`,
-  );
-
-  console.log(
-    `Features: ${status.featureCount}`,
-  );
-
-  console.log(
-    `Components: ${status.componentCount}`,
-  );
-
-  console.log(
-    `Routes: ${status.routeCount}`,
-  );
-
-  console.log("");
-
-  console.log(
-    "## Health",
-  );
-  console.log("");
-
-  console.log(
-    `Overall status: ${status.overallStatus}`,
-  );
-
-  console.log("");
+  const content =
+    options.json === true
+      ? buildJsonReport(
+          status,
+        )
+      : buildMarkdownReport(
+          status,
+        );
 
   if (
-    status.overallStatus ===
-    "HEALTHY"
+    options.output !== undefined
   ) {
-    console.log(
-      "The ANW AI-COS repository structure is available and readable.",
+    writeReportFile(
+      projectRoot,
+      options.output,
+      content,
+      options.json === true
+        ? "JSON"
+        : "Markdown",
     );
-  } else {
-    console.log(
-      "One or more project status checks require attention.",
-    );
+
+    return;
   }
 
-  console.log("");
-
   console.log(
-    "Project report generation complete.",
+    content,
   );
-
-  console.log(
-    "No files were changed.",
-  );
-
-  console.log("");
 }
 
-function runProjectJsonReport(): void {
-  const projectRoot =
-    findProjectRoot(
-      process.cwd(),
-    );
+function buildMarkdownReport(
+  status: ProjectStatus,
+): string {
+  const lines = [
+    "# ANW AI-COS Project Report",
+    "",
+    `Repository: ${status.projectRoot}`,
+    "",
+    "## Repository",
+    "",
+    `Branch: ${status.branch}`,
+    `Working tree: ${formatWorkingTree(status)}`,
+    `Latest commit: ${status.latestCommit}`,
+    "",
+    "## CLI Release",
+    "",
+    `Version: ${status.cliVersion}`,
+    `Latest release tag: ${status.latestReleaseTag}`,
+    "",
+    "## Architecture",
+    "",
+    `Modules: ${status.moduleCount}`,
+    `Features: ${status.featureCount}`,
+    `Components: ${status.componentCount}`,
+    `Routes: ${status.routeCount}`,
+    "",
+    "## Health",
+    "",
+    `Overall status: ${status.overallStatus}`,
+    "",
+    status.overallStatus ===
+    "HEALTHY"
+      ? "The ANW AI-COS repository structure is available and readable."
+      : "One or more project status checks require attention.",
+    "",
+    "Project report generation complete.",
+    "No files were changed.",
+  ];
 
-  const status =
-    collectProjectStatus(
-      projectRoot,
-    );
+  return lines.join(
+    "\n",
+  );
+}
 
+function buildJsonReport(
+  status: ProjectStatus,
+): string {
   const report:
     ProjectJsonReport = {
       repository:
@@ -554,13 +516,73 @@ function runProjectJsonReport(): void {
         status.overallStatus,
     };
 
-  console.log(
-    JSON.stringify(
-      report,
-      null,
-      2,
-    ),
+  return JSON.stringify(
+    report,
+    null,
+    2,
   );
+}
+
+function writeReportFile(
+  projectRoot: string,
+  requestedPath: string,
+  content: string,
+  format: "Markdown" | "JSON",
+): void {
+  const trimmedPath =
+    requestedPath.trim();
+
+  const outputPath =
+    isAbsolute(
+      trimmedPath,
+    )
+      ? resolve(
+          trimmedPath,
+        )
+      : resolve(
+          projectRoot,
+          trimmedPath,
+        );
+
+  const outputDirectory =
+    dirname(
+      outputPath,
+    );
+
+  mkdirSync(
+    outputDirectory,
+    {
+      recursive: true,
+    },
+  );
+
+  writeFileSync(
+    outputPath,
+    `${content}\n`,
+    "utf8",
+  );
+
+  console.log("");
+  console.log(
+    "# ANW AI-COS Project Report",
+  );
+  console.log("");
+
+  console.log(
+    `Format: ${format}`,
+  );
+
+  console.log(
+    `Output: ${outputPath}`,
+  );
+
+  console.log("");
+
+  console.log(
+    "Project report written successfully.",
+  );
+
+  console.log("");
 }
 
 function formatWorkingTree(
@@ -587,13 +609,11 @@ function printInventorySection(
   console.log(
     `## ${title}`,
   );
-
   console.log("");
 
   console.log(
     `${title} found: ${items.length}`,
   );
-
   console.log("");
 
   if (
@@ -604,7 +624,6 @@ function printInventorySection(
     );
 
     console.log("");
-
     return;
   }
 
@@ -820,8 +839,7 @@ function getCurrentBranch(
     gitCommandSucceeded(
       result,
     ) &&
-    result.stdout.length >
-      0
+    result.stdout.length > 0
   ) {
     return result.stdout;
   }
@@ -849,6 +867,7 @@ function getWorkingTreeStatus(
     return {
       state:
         "UNKNOWN",
+
       changes:
         0,
     };
@@ -861,8 +880,7 @@ function getWorkingTreeStatus(
 
   return {
     state:
-      changes.length ===
-      0
+      changes.length === 0
         ? "CLEAN"
         : "DIRTY",
 
@@ -888,8 +906,7 @@ function getLatestCommit(
     gitCommandSucceeded(
       result,
     ) &&
-    result.stdout.length >
-      0
+    result.stdout.length > 0
   ) {
     return result.stdout;
   }
@@ -1162,8 +1179,7 @@ function getRouteDisplayName(
       ),
     );
 
-  return routePath.length >
-    0
+  return routePath.length > 0
     ? routePath
     : basename(
         filePath,
@@ -1286,8 +1302,7 @@ function splitLines(
     )
     .filter(
       (line) =>
-        line.length >
-        0,
+        line.length > 0,
     );
 }
 

@@ -17,7 +17,7 @@ The ANW CLI helps developers create consistent modules, components, pages, and c
 Git tag:
 
 ```text
-anw-cli-v0.19.0
+anw-cli-v0.20.0
 ```
 ## `repair`
 
@@ -141,6 +141,7 @@ It does not:
 - create Git tags
 - push to remotes
 ```
+
 
 
 

@@ -377,13 +377,17 @@ program
   )
   .option(
     "--report",
-    "Show a consolidated ANW AI-COS project report without changing anything.",
+    "Show a consolidated ANW AI-COS project report.",
     false,
   )
   .option(
     "--json",
     "Output the project report as structured JSON. Requires --report.",
     false,
+  )
+  .option(
+    "--output <path>",
+    "Write the project report to a file. Requires --report.",
   )
   .action(
     (
@@ -392,6 +396,7 @@ program
         inventory?: boolean;
         report?: boolean;
         json?: boolean;
+        output?: string;
       },
     ) => {
       try {
