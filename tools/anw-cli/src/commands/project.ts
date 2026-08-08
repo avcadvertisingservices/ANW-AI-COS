@@ -64,10 +64,32 @@ type ProjectStatus = {
   overallStatus: ProjectHealth;
 };
 
+type ProjectJsonReport = {
+  repository: string;
+  branch: string;
+  workingTree: {
+    status: WorkingTreeState;
+    changes: number;
+  };
+  latestCommit: string;
+  cli: {
+    version: string;
+    latestReleaseTag: string;
+  };
+  architecture: {
+    modules: number;
+    features: number;
+    components: number;
+    routes: number;
+  };
+  health: ProjectHealth;
+};
+
 export type ProjectOptions = {
   status?: boolean;
   inventory?: boolean;
   report?: boolean;
+  json?: boolean;
 };
 
 export function runProject(
@@ -89,6 +111,15 @@ export function runProject(
   }
 
   if (
+    options.json === true &&
+    options.report !== true
+  ) {
+    throw new Error(
+      "--json can only be used together with --report.",
+    );
+  }
+
+  if (
     options.status === true
   ) {
     runProjectStatus();
@@ -105,6 +136,13 @@ export function runProject(
   if (
     options.report === true
   ) {
+    if (
+      options.json === true
+    ) {
+      runProjectJsonReport();
+      return;
+    }
+
     runProjectReport();
     return;
   }
@@ -135,6 +173,10 @@ function printProjectHelp(): void {
 
   console.log(
     "npm run dev -- project --report",
+  );
+
+  console.log(
+    "npm run dev -- project --report --json",
   );
 
   console.log("");
@@ -370,15 +412,9 @@ function runProjectReport(): void {
   );
 
   console.log(
-    `Working tree: ${
-      status.workingTree === "DIRTY"
-        ? `DIRTY (${status.workingTreeChanges} ${
-            status.workingTreeChanges === 1
-              ? "change"
-              : "changes"
-          })`
-        : status.workingTree
-    }`,
+    `Working tree: ${formatWorkingTree(
+      status,
+    )}`,
   );
 
   console.log(
@@ -460,6 +496,88 @@ function runProjectReport(): void {
   );
 
   console.log("");
+}
+
+function runProjectJsonReport(): void {
+  const projectRoot =
+    findProjectRoot(
+      process.cwd(),
+    );
+
+  const status =
+    collectProjectStatus(
+      projectRoot,
+    );
+
+  const report:
+    ProjectJsonReport = {
+      repository:
+        status.projectRoot,
+
+      branch:
+        status.branch,
+
+      workingTree: {
+        status:
+          status.workingTree,
+
+        changes:
+          status.workingTreeChanges,
+      },
+
+      latestCommit:
+        status.latestCommit,
+
+      cli: {
+        version:
+          status.cliVersion,
+
+        latestReleaseTag:
+          status.latestReleaseTag,
+      },
+
+      architecture: {
+        modules:
+          status.moduleCount,
+
+        features:
+          status.featureCount,
+
+        components:
+          status.componentCount,
+
+        routes:
+          status.routeCount,
+      },
+
+      health:
+        status.overallStatus,
+    };
+
+  console.log(
+    JSON.stringify(
+      report,
+      null,
+      2,
+    ),
+  );
+}
+
+function formatWorkingTree(
+  status: ProjectStatus,
+): string {
+  if (
+    status.workingTree !==
+    "DIRTY"
+  ) {
+    return status.workingTree;
+  }
+
+  return `DIRTY (${status.workingTreeChanges} ${
+    status.workingTreeChanges === 1
+      ? "change"
+      : "changes"
+  })`;
 }
 
 function printInventorySection(
@@ -567,21 +685,29 @@ function collectProjectStatus(
   return {
     projectRoot,
     branch,
+
     workingTree:
       workingTree.state,
+
     workingTreeChanges:
       workingTree.changes,
+
     latestCommit,
     cliVersion,
     latestReleaseTag,
+
     routeCount:
       routes.length,
+
     moduleCount:
       modules.length,
+
     featureCount:
       features.length,
+
     componentCount:
       components.length,
+
     overallStatus,
   };
 }
@@ -1095,6 +1221,7 @@ function walkFiles(
         {
           withFileTypes:
             true,
+
           encoding:
             "utf8",
         },
@@ -1180,8 +1307,10 @@ function runGit(
       argumentsList,
       {
         cwd,
+
         encoding:
           "utf8",
+
         shell:
           false,
       },

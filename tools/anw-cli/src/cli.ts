@@ -112,10 +112,12 @@ program
     ) => {
       try {
         if (
-          options.list === true
+          options.list ===
+          true
         ) {
           if (
-            name !== undefined
+            name !==
+            undefined
           ) {
             throw new Error(
               "Do not provide a module name when using --list.",
@@ -127,7 +129,8 @@ program
         }
 
         if (
-          name === undefined
+          name ===
+          undefined
         ) {
           throw new Error(
             "Provide a module name or use --list.",
@@ -136,7 +139,8 @@ program
 
         createModule(
           name,
-          options.force === undefined
+          options.force ===
+            undefined
             ? {}
             : {
                 force:
@@ -216,10 +220,12 @@ program
     ) => {
       try {
         if (
-          options.list === true
+          options.list ===
+          true
         ) {
           if (
-            name !== undefined
+            name !==
+            undefined
           ) {
             throw new Error(
               "Do not provide a feature name when using --list.",
@@ -231,7 +237,8 @@ program
         }
 
         if (
-          name === undefined
+          name ===
+          undefined
         ) {
           throw new Error(
             "Provide a feature name or use --list.",
@@ -240,7 +247,8 @@ program
 
         createFeature(
           name,
-          options.force === undefined
+          options.force ===
+            undefined
             ? {}
             : {
                 force:
@@ -372,12 +380,18 @@ program
     "Show a consolidated ANW AI-COS project report without changing anything.",
     false,
   )
+  .option(
+    "--json",
+    "Output the project report as structured JSON. Requires --report.",
+    false,
+  )
   .action(
     (
       options: {
         status?: boolean;
         inventory?: boolean;
         report?: boolean;
+        json?: boolean;
       },
     ) => {
       try {
@@ -471,5 +485,6 @@ function handleCommandError(
 
   console.error("");
 
-  process.exitCode = 1;
+  process.exitCode =
+    1;
 }
