@@ -78,6 +78,11 @@ type ProjectJsonReport = {
   reportType: string;
   generator: string;
   generatorVersion: string;
+  environment: {
+    nodeVersion: string;
+    platform: NodeJS.Platform;
+    architecture: string;
+  };
   repository: string;
   branch: string;
   workingTree: {
@@ -487,6 +492,12 @@ function buildMarkdownReport(
     `Generator Version: ${status.cliVersion}`,
     `Repository: ${status.projectRoot}`,
     "",
+    "## Environment",
+    "",
+    `Node Version: ${process.version}`,
+    `Platform: ${process.platform}`,
+    `Architecture: ${process.arch}`,
+    "",
     "## Repository",
     "",
     `Branch: ${status.branch}`,
@@ -541,6 +552,17 @@ function buildJsonReport(
 
       generatorVersion:
         status.cliVersion,
+
+      environment: {
+        nodeVersion:
+          process.version,
+
+        platform:
+          process.platform,
+
+        architecture:
+          process.arch,
+      },
 
       repository:
         status.projectRoot,
