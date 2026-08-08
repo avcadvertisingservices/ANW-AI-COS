@@ -44,7 +44,7 @@ program
   .description(
     "Developer CLI for the ANW AI Content Operating System.",
   )
-  .version("0.4.0");
+  .version("0.6.0");
 
 program
   .command("hello")
@@ -269,17 +269,23 @@ program
 program
   .command("release")
   .description(
-    "Inspect ANW CLI release readiness.",
+    "Inspect and plan ANW CLI releases.",
   )
   .option(
     "--check",
     "Run safe release-readiness checks without changing anything.",
     false,
   )
+  .option(
+    "--plan",
+    "Preview the release process without changing anything.",
+    false,
+  )
   .action(
     (
       options: {
         check?: boolean;
+        plan?: boolean;
       },
     ) => {
       try {
@@ -288,7 +294,7 @@ program
         );
       } catch (error) {
         handleCommandError(
-          "check release readiness",
+          "inspect release readiness",
           error,
         );
       }

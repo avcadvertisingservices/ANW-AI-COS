@@ -4,6 +4,23 @@ All notable changes to the ANW AI-COS CLI are documented in this file.
 
 The format follows the principles of Keep a Changelog, and the project uses semantic versioning.
 
+## [0.6.0] - 2026-08-08
+
+### Added
+
+- Added `release --plan`.
+- Added a safe release workflow preview.
+- Added proposed Git tag preview.
+- Added proposed Git push command preview.
+- Added explicit safety reporting confirming that no files, commits, tags, or remotes are changed by release planning.
+
+### Release planning
+
+Run:
+
+```powershell
+npm run dev -- release --plan
+
 ## [0.5.0] - 2026-08-08
 
 ### Added
@@ -208,3 +225,4 @@ component
 feature
 page
 doctor
+

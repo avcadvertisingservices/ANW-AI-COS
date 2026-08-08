@@ -18,6 +18,7 @@ import {
 
 export type ReleaseOptions = {
   check?: boolean;
+  plan?: boolean;
 };
 
 type ReleaseCheck = {
@@ -26,37 +27,245 @@ type ReleaseCheck = {
   detail?: string;
 };
 
+type GitResult = {
+  status: number | null;
+  stdout: string;
+  stderr: string;
+  error: Error | undefined;
+};
+
 export function runRelease(
   options: ReleaseOptions = {},
 ): void {
-  if (options.check !== true) {
-    console.log("");
-    console.log(
-      "ANW AI-COS Release",
+  if (
+    options.check === true &&
+    options.plan === true
+  ) {
+    throw new Error(
+      "Use either --check or --plan, not both.",
     );
-    console.log(
-      "==================",
-    );
-    console.log("");
+  }
 
-    console.log(
-      "No release action was performed.",
-    );
-    console.log("");
-
-    console.log(
-      "Run the safe release check with:",
-    );
-    console.log("");
-
-    console.log(
-      "npm run dev -- release --check",
-    );
-    console.log("");
+  if (options.plan === true) {
+    runReleasePlan();
 
     return;
   }
 
+  if (options.check === true) {
+    runReleaseCheck();
+
+    return;
+  }
+
+  printReleaseHelp();
+}
+
+function printReleaseHelp(): void {
+  console.log("");
+  console.log(
+    "ANW AI-COS Release",
+  );
+  console.log(
+    "==================",
+  );
+  console.log("");
+
+  console.log(
+    "No release action was performed.",
+  );
+  console.log("");
+
+  console.log(
+    "Available safe release commands:",
+  );
+  console.log("");
+
+  console.log(
+    "npm run dev -- release --check",
+  );
+
+  console.log(
+    "npm run dev -- release --plan",
+  );
+
+  console.log("");
+
+  console.log(
+    "--check validates release readiness.",
+  );
+
+  console.log(
+    "--plan previews the release process.",
+  );
+
+  console.log("");
+
+  console.log(
+    "Neither command creates commits, tags, pushes, or file changes.",
+  );
+
+  console.log("");
+}
+
+function runReleasePlan(): void {
+  const projectRoot =
+    findProjectRoot(
+      process.cwd(),
+    );
+
+  const cliRoot = join(
+    projectRoot,
+    "tools",
+    "anw-cli",
+  );
+
+  const packagePath = join(
+    cliRoot,
+    "package.json",
+  );
+
+  const version =
+    readPackageVersion(
+      packagePath,
+    );
+
+  const releaseTag =
+    `anw-cli-v${version}`;
+
+  console.log("");
+  console.log(
+    "ANW AI-COS Release Plan",
+  );
+  console.log(
+    "=======================",
+  );
+  console.log("");
+
+  console.log(
+    `Repository: ${projectRoot}`,
+  );
+
+  console.log(
+    `Version: ${version}`,
+  );
+
+  console.log(
+    `Proposed tag: ${releaseTag}`,
+  );
+
+  console.log("");
+
+  console.log(
+    "Planned release workflow:",
+  );
+
+  console.log("");
+
+  console.log(
+    "1. Confirm the Git working tree is clean.",
+  );
+
+  console.log(
+    "2. Confirm the CLI package version.",
+  );
+
+  console.log(
+    "3. Confirm README release metadata.",
+  );
+
+  console.log(
+    "4. Confirm CHANGELOG release metadata.",
+  );
+
+  console.log(
+    "5. Confirm the proposed Git tag is available.",
+  );
+
+  console.log(
+    "6. Run the complete ANW validation workflow.",
+  );
+
+  console.log(
+    "7. Create the annotated Git release tag.",
+  );
+
+  console.log(
+    "8. Push the release tag to origin.",
+  );
+
+  console.log("");
+
+  console.log(
+    "Release readiness command:",
+  );
+
+  console.log("");
+
+  console.log(
+    "npm run dev -- release --check",
+  );
+
+  console.log("");
+
+  console.log(
+    "Future tag command:",
+  );
+
+  console.log("");
+
+  console.log(
+    `git tag -a ${releaseTag} -m "ANW CLI v${version}"`,
+  );
+
+  console.log("");
+
+  console.log(
+    "Future push command:",
+  );
+
+  console.log("");
+
+  console.log(
+    `git push origin ${releaseTag}`,
+  );
+
+  console.log("");
+
+  console.log(
+    "Safety status:",
+  );
+
+  console.log(
+    "- No files were changed.",
+  );
+
+  console.log(
+    "- No commits were created.",
+  );
+
+  console.log(
+    "- No Git tags were created.",
+  );
+
+  console.log(
+    "- Nothing was pushed.",
+  );
+
+  console.log("");
+
+  console.log(
+    "Release plan complete.",
+  );
+
+  console.log(
+    "No changes were made.",
+  );
+
+  console.log("");
+}
+
+function runReleaseCheck(): void {
   const projectRoot =
     findProjectRoot(
       process.cwd(),
@@ -144,7 +353,9 @@ export function runRelease(
     ),
   );
 
-  printChecks(checks);
+  printChecks(
+    checks,
+  );
 
   const failures =
     checks.filter(
@@ -152,7 +363,9 @@ export function runRelease(
         check.status === "fail",
     );
 
-  if (failures.length > 0) {
+  if (
+    failures.length > 0
+  ) {
     console.log("");
 
     console.error(
@@ -175,14 +388,17 @@ export function runRelease(
   }
 
   console.log("");
+
   console.log(
     "Static release checks passed.",
   );
 
   console.log("");
+
   console.log(
     "Running full ANW validation...",
   );
+
   console.log("");
 
   const previousExitCode =
@@ -215,12 +431,15 @@ export function runRelease(
     previousExitCode ?? 0;
 
   console.log("");
+
   console.log(
     "ANW Release Check Summary",
   );
+
   console.log(
     "=========================",
   );
+
   console.log("");
 
   console.log(
@@ -287,9 +506,15 @@ function findProjectRoot(
     );
 
     if (
-      existsSync(adminPath) &&
-      existsSync(cliPath) &&
-      existsSync(gitPath)
+      existsSync(
+        adminPath,
+      ) &&
+      existsSync(
+        cliPath,
+      ) &&
+      existsSync(
+        gitPath,
+      )
     ) {
       return currentDirectory;
     }
@@ -367,7 +592,9 @@ function checkGitWorkingTree(
       ],
     );
 
-  if (result.error) {
+  if (
+    result.error
+  ) {
     return {
       label:
         "Git working tree",
@@ -377,25 +604,22 @@ function checkGitWorkingTree(
     };
   }
 
-  if (result.status !== 0) {
+  if (
+    result.status !== 0
+  ) {
     return {
       label:
         "Git working tree",
       status: "fail",
       detail:
-        getOutputText(
-          result.stderr,
-        ) ||
+        result.stderr ||
         "Unable to read Git status.",
     };
   }
 
-  const output =
-    getOutputText(
-      result.stdout,
-    );
-
-  if (!output) {
+  if (
+    !result.stdout
+  ) {
     return {
       label:
         "Git working tree",
@@ -406,7 +630,7 @@ function checkGitWorkingTree(
   }
 
   const changedFiles =
-    output.split(
+    result.stdout.split(
       /\r?\n/,
     );
 
@@ -553,7 +777,9 @@ function checkReleaseTagAvailable(
       ],
     );
 
-  if (result.error) {
+  if (
+    result.error
+  ) {
     return {
       label:
         "Release tag availability",
@@ -563,26 +789,21 @@ function checkReleaseTagAvailable(
     };
   }
 
-  if (result.status !== 0) {
+  if (
+    result.status !== 0
+  ) {
     return {
       label:
         "Release tag availability",
       status: "fail",
       detail:
-        getOutputText(
-          result.stderr,
-        ) ||
+        result.stderr ||
         "Unable to inspect Git tags.",
     };
   }
 
-  const tagOutput =
-    getOutputText(
-      result.stdout,
-    );
-
   if (
-    tagOutput ===
+    result.stdout ===
     releaseTag
   ) {
     return {
@@ -606,41 +827,38 @@ function checkReleaseTagAvailable(
 function runGit(
   cwd: string,
   argumentsList: string[],
-): ReturnType<typeof spawnSync> {
+): GitResult {
   const gitCommand =
     process.platform ===
     "win32"
       ? "git.exe"
       : "git";
 
-  return spawnSync(
-    gitCommand,
-    argumentsList,
-    {
-      cwd,
-      encoding: "utf8",
-      shell: false,
-    },
-  );
-}
+  const result =
+    spawnSync(
+      gitCommand,
+      argumentsList,
+      {
+        cwd,
+        encoding: "utf8",
+        shell: false,
+      },
+    );
 
-function getOutputText(
-  value:
-    | string
-    | Buffer
-    | null
-    | undefined,
-): string {
-  if (
-    value === null ||
-    value === undefined
-  ) {
-    return "";
-  }
-
-  return String(
-    value,
-  ).trim();
+  return {
+    status:
+      result.status,
+    stdout:
+      String(
+        result.stdout ?? "",
+      ).trim(),
+    stderr:
+      String(
+        result.stderr ?? "",
+      ).trim(),
+    error:
+      result.error,
+  };
 }
 
 function printChecks(
@@ -660,7 +878,9 @@ function printChecks(
       `${symbol} ${check.label}`,
     );
 
-    if (check.detail) {
+    if (
+      check.detail
+    ) {
       console.log(
         `  ${check.detail}`,
       );

@@ -11,13 +11,13 @@ The ANW CLI helps developers create consistent modules, components, pages, and c
 ## Current Version
 
 ```text
-0.5.0
+0.6.0
 ```
 
 Git tag:
 
 ```text
-anw-cli-v0.5.0
+anw-cli-v0.6.0
 ```
 ## `repair`
 
@@ -107,3 +107,38 @@ The command does not create commits, tags, pushes, or file changes.
 # Naming Rules
 
 ...the rest of your existing README continues here...
+
+## Release Planning
+
+ANW CLI supports a safe release preview mode.
+
+Run:
+
+```powershell
+npm run dev -- release --plan
+```
+
+The release plan previews:
+
+```text
+1. Git working-tree check
+2. CLI package-version check
+3. README release metadata check
+4. CHANGELOG release metadata check
+5. Git tag availability check
+6. Full ANW validation
+7. Future annotated Git tag command
+8. Future Git tag push command
+```
+
+The release plan makes no changes.
+
+It does not:
+
+```text
+- modify files
+- create commits
+- create Git tags
+- push to remotes
+```
+
