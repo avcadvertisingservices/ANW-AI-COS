@@ -17,6 +17,10 @@ import {
 } from "./commands/feature.js";
 
 import {
+  listModules,
+} from "./commands/module-list.js";
+
+import {
   createModule,
 } from "./commands/module.js";
 
@@ -78,32 +82,66 @@ program
 program
   .command("module")
   .description(
-    "Create a new ANW domain module.",
+    "Create or inspect ANW domain modules.",
   )
   .argument(
-    "<name>",
+    "[name]",
     "Module name, such as patients",
   )
   .option(
+    "--list",
+    "List discovered ANW modules without changing files.",
+    false,
+  )
+  .option(
     "--force",
-    "Overwrite generated files",
+    "Overwrite generated files when creating a module.",
     false,
   )
   .action(
     (
-      name: string,
+      name: string | undefined,
       options: {
+        list?: boolean;
         force?: boolean;
       },
     ) => {
       try {
+        if (
+          options.list === true
+        ) {
+          if (
+            name !== undefined
+          ) {
+            throw new Error(
+              "Do not provide a module name when using --list.",
+            );
+          }
+
+          listModules();
+          return;
+        }
+
+        if (
+          name === undefined
+        ) {
+          throw new Error(
+            "Provide a module name or use --list.",
+          );
+        }
+
         createModule(
           name,
-          options,
+          options.force === undefined
+            ? {}
+            : {
+                force:
+                  options.force,
+              },
         );
       } catch (error) {
         handleCommandError(
-          "create module",
+          "process module command",
           error,
         );
       }
