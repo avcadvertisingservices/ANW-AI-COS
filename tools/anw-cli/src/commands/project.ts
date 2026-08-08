@@ -27,6 +27,8 @@ import {
   discoverModules,
 } from "./module-list.js";
 
+const PROJECT_REPORT_SCHEMA_VERSION = "1.0";
+
 type GitResult = {
   status: number | null;
   stdout: string;
@@ -69,6 +71,7 @@ type ProjectStatus = {
 };
 
 type ProjectJsonReport = {
+  schemaVersion: string;
   repository: string;
   branch: string;
   workingTree: {
@@ -465,6 +468,7 @@ function buildMarkdownReport(
   const lines = [
     "# ANW AI-COS Project Report",
     "",
+    `Schema Version: ${PROJECT_REPORT_SCHEMA_VERSION}`,
     `Repository: ${status.projectRoot}`,
     "",
     "## Repository",
@@ -507,6 +511,9 @@ function buildJsonReport(
 ): string {
   const report:
     ProjectJsonReport = {
+      schemaVersion:
+        PROJECT_REPORT_SCHEMA_VERSION,
+
       repository:
         status.projectRoot,
 
