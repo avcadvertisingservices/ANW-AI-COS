@@ -44,7 +44,7 @@ program
   .description(
     "Developer CLI for the ANW AI Content Operating System.",
   )
-  .version("0.6.0");
+  .version("0.7.0");
 
 program
   .command("hello")
@@ -53,15 +53,12 @@ program
   )
   .action(() => {
     console.log("");
-
     console.log(
       "Welcome to the ANW AI-COS CLI!",
     );
-
     console.log(
       "You Are Not Alone.",
     );
-
     console.log("");
   });
 
@@ -269,23 +266,35 @@ program
 program
   .command("release")
   .description(
-    "Inspect and plan ANW CLI releases.",
-  )
-  .option(
-    "--check",
-    "Run safe release-readiness checks without changing anything.",
-    false,
+    "Plan, validate, or execute an ANW CLI release.",
   )
   .option(
     "--plan",
-    "Preview the release process without changing anything.",
+    "Preview the release workflow without changing anything.",
+    false,
+  )
+  .option(
+    "--check",
+    "Run release-readiness checks without changing anything.",
+    false,
+  )
+  .option(
+    "--execute",
+    "Execute the controlled release after all checks pass.",
+    false,
+  )
+  .option(
+    "--confirm",
+    "Explicitly confirm a controlled release execution.",
     false,
   )
   .action(
     (
       options: {
-        check?: boolean;
         plan?: boolean;
+        check?: boolean;
+        execute?: boolean;
+        confirm?: boolean;
       },
     ) => {
       try {
@@ -294,7 +303,7 @@ program
         );
       } catch (error) {
         handleCommandError(
-          "inspect release readiness",
+          "process release",
           error,
         );
       }
@@ -313,11 +322,9 @@ function handleCommandError(
       : "Unknown CLI error.";
 
   console.error("");
-
   console.error(
     `Unable to ${action}: ${message}`,
   );
-
   console.error("");
 
   process.exitCode = 1;

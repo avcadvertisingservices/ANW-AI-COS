@@ -3,8 +3,63 @@
 All notable changes to the ANW AI-COS CLI will be documented in this file.
 
 ---
+## [0.7.0] - 2026-08-08
 
-## [0.6.0] - 2026-08-08
+### Added
+
+- Added controlled release execution with `release --execute`.
+- Added mandatory `--confirm` protection for release execution.
+- Added release blocking when the Git working tree is dirty.
+- Added release blocking when README or CHANGELOG metadata does not match the package version.
+- Added release blocking when the proposed Git tag already exists.
+- Added full validation before tag creation.
+- Added annotated Git tag creation.
+- Added automatic push of only the release tag to `origin`.
+- Added protection against automatic commits, branch merges, source-branch pushes, and force pushes.
+
+### Controlled release
+
+Run:
+
+```powershell
+npm run dev -- release --execute --confirm
+```
+
+The controlled release workflow performs:
+
+```text
+1. Confirm Git working tree is clean
+2. Confirm CLI package version
+3. Confirm README release metadata
+4. Confirm CHANGELOG release metadata
+5. Confirm release tag is available
+6. Run full ANW validation
+7. Create annotated Git tag
+8. Push only the release tag to origin
+```
+
+### Safety
+
+The release command does not:
+
+```text
+- create automatic commits
+- merge branches
+- push the source branch
+- force push
+- overwrite an existing release tag
+```
+
+### Release
+
+Git tag:
+
+```text
+anw-cli-v0.7.0
+```
+
+---
+## [0.7.0] - 2026-08-08
 
 ### Added
 
