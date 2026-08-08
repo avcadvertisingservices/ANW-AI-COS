@@ -4,6 +4,63 @@ All notable changes to the ANW AI-COS CLI are documented in this file.
 
 The format follows the principles of Keep a Changelog, and the project uses semantic versioning.
 
+## [0.4.0] - 2026-08-08
+
+### Added
+
+- Added the `validate` command.
+- Added one-command ANW CLI certification.
+- Added automated TypeScript type-check execution.
+- Added automated CLI test execution.
+- Added automated production build execution.
+- Added automated Doctor execution.
+- Added automated route repair dry-run execution.
+- Added fail-fast certification behavior.
+- Added Windows-compatible npm process execution.
+
+### Commands
+
+ANW CLI v0.4.0 includes:
+
+```text
+hello
+module
+component
+feature
+page
+doctor
+repair
+validate
+```
+
+### Certification
+
+The full certification workflow can now be run with:
+
+```powershell
+npm run dev -- validate
+```
+
+Successful certification requires:
+
+```text
+✓ CLI TypeScript type-check
+✓ CLI automated tests
+✓ CLI production build
+✓ ANW repository Doctor
+✓ ANW route repair dry-run
+```
+
+### Release
+
+Git tag:
+
+```text
+anw-cli-v0.4.0
+```
+
+---
+
 ## [0.3.0] - 2026-08-07
 
 ### Added
