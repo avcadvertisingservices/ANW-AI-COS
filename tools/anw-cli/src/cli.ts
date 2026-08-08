@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
-import { Command } from "commander";
+import {
+  Command,
+} from "commander";
 
 import {
   createComponent,
@@ -26,26 +28,36 @@ import {
   repairRepository,
 } from "./commands/repair.js";
 
-const program = new Command();
+import {
+  validateRepository,
+} from "./commands/validate.js";
+
+const program =
+  new Command();
 
 program
   .name("anw")
   .description(
     "Developer CLI for the ANW AI Content Operating System.",
   )
-  .version("0.2.0");
+  .version("0.3.0");
 
 program
   .command("hello")
-  .description("Test the ANW CLI")
+  .description(
+    "Test the ANW CLI.",
+  )
   .action(() => {
     console.log("");
+
     console.log(
       "Welcome to the ANW AI-COS CLI!",
     );
+
     console.log(
       "You Are Not Alone.",
     );
+
     console.log("");
   });
 
@@ -208,11 +220,11 @@ program
 program
   .command("repair")
   .description(
-    "Safely detect and repair common ANW App Router problems.",
+    "Inspect and safely repair supported App Router problems.",
   )
   .option(
     "--write",
-    "Apply safe repairs to route files",
+    "Apply safe repairs. Without this option the command performs a dry run.",
     false,
   )
   .action(
@@ -234,6 +246,22 @@ program
     },
   );
 
+program
+  .command("validate")
+  .description(
+    "Run the complete ANW CLI certification workflow.",
+  )
+  .action(() => {
+    try {
+      validateRepository();
+    } catch (error) {
+      handleCommandError(
+        "validate repository",
+        error,
+      );
+    }
+  });
+
 program.parse();
 
 function handleCommandError(
@@ -246,9 +274,11 @@ function handleCommandError(
       : "Unknown CLI error.";
 
   console.error("");
+
   console.error(
     `Unable to ${action}: ${message}`,
   );
+
   console.error("");
 
   process.exitCode = 1;
