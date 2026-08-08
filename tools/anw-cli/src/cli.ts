@@ -13,6 +13,10 @@ import {
 } from "./commands/doctor.js";
 
 import {
+  listFeatures,
+} from "./commands/feature-list.js";
+
+import {
   createFeature,
 } from "./commands/feature.js";
 
@@ -186,32 +190,66 @@ program
 program
   .command("feature")
   .description(
-    "Create a complete ANW feature.",
+    "Create or inspect ANW features.",
   )
   .argument(
-    "<name>",
+    "[name]",
     "Feature name, such as recovery-tracker",
   )
   .option(
+    "--list",
+    "List discovered ANW features without changing files.",
+    false,
+  )
+  .option(
     "--force",
-    "Overwrite generated feature files",
+    "Overwrite generated feature files.",
     false,
   )
   .action(
     (
-      name: string,
+      name: string | undefined,
       options: {
+        list?: boolean;
         force?: boolean;
       },
     ) => {
       try {
+        if (
+          options.list === true
+        ) {
+          if (
+            name !== undefined
+          ) {
+            throw new Error(
+              "Do not provide a feature name when using --list.",
+            );
+          }
+
+          listFeatures();
+          return;
+        }
+
+        if (
+          name === undefined
+        ) {
+          throw new Error(
+            "Provide a feature name or use --list.",
+          );
+        }
+
         createFeature(
           name,
-          options,
+          options.force === undefined
+            ? {}
+            : {
+                force:
+                  options.force,
+              },
         );
       } catch (error) {
         handleCommandError(
-          "create feature",
+          "process feature command",
           error,
         );
       }
