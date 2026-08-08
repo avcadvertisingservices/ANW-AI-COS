@@ -29,6 +29,10 @@ import {
 } from "./commands/repair.js";
 
 import {
+  runRelease,
+} from "./commands/release.js";
+
+import {
   validateRepository,
 } from "./commands/validate.js";
 
@@ -40,7 +44,7 @@ program
   .description(
     "Developer CLI for the ANW AI Content Operating System.",
   )
-  .version("0.3.0");
+  .version("0.4.0");
 
 program
   .command("hello")
@@ -261,6 +265,35 @@ program
       );
     }
   });
+
+program
+  .command("release")
+  .description(
+    "Inspect ANW CLI release readiness.",
+  )
+  .option(
+    "--check",
+    "Run safe release-readiness checks without changing anything.",
+    false,
+  )
+  .action(
+    (
+      options: {
+        check?: boolean;
+      },
+    ) => {
+      try {
+        runRelease(
+          options,
+        );
+      } catch (error) {
+        handleCommandError(
+          "check release readiness",
+          error,
+        );
+      }
+    },
+  );
 
 program.parse();
 

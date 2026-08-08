@@ -1,8 +1,67 @@
-# Changelog
+﻿# Changelog
 
 All notable changes to the ANW AI-COS CLI are documented in this file.
 
 The format follows the principles of Keep a Changelog, and the project uses semantic versioning.
+
+## [0.5.0] - 2026-08-08
+
+### Added
+
+- Added the `release` command.
+- Added safe `release --check` mode.
+- Added Git working-tree cleanliness validation.
+- Added CLI package-version validation.
+- Added README release metadata validation.
+- Added CHANGELOG release metadata validation.
+- Added Git tag availability checks.
+- Added full ANW validation as part of release readiness.
+- Added fail-safe behavior that makes no commits, tags, pushes, or file changes.
+
+### Commands
+
+ANW CLI v0.5.0 includes:
+
+```text
+hello
+module
+component
+feature
+page
+doctor
+repair
+validate
+release
+```
+
+### Release readiness
+
+Run:
+
+```powershell
+npm run dev -- release --check
+```
+
+A release candidate must pass:
+
+```text
+Git working tree clean
+CLI package version
+README release metadata
+CHANGELOG release metadata
+Release tag available
+Full validation passed
+```
+
+### Release
+
+Git tag:
+
+```text
+anw-cli-v0.5.0
+```
+
+---
 
 ## [0.4.0] - 2026-08-08
 
@@ -44,11 +103,11 @@ npm run dev -- validate
 Successful certification requires:
 
 ```text
-✓ CLI TypeScript type-check
-✓ CLI automated tests
-✓ CLI production build
-✓ ANW repository Doctor
-✓ ANW route repair dry-run
+âœ“ CLI TypeScript type-check
+âœ“ CLI automated tests
+âœ“ CLI production build
+âœ“ ANW repository Doctor
+âœ“ ANW route repair dry-run
 ```
 
 ### Release

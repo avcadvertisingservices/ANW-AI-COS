@@ -1,4 +1,4 @@
-# ANW AI-COS CLI
+﻿# ANW AI-COS CLI
 
 Developer command-line tools for the **Acoustic Neuroma Warrior AI Content Operating System**.
 
@@ -11,13 +11,13 @@ The ANW CLI helps developers create consistent modules, components, pages, and c
 ## Current Version
 
 ```text
-0.4.0
+0.5.0
 ```
 
 Git tag:
 
 ```text
-anw-cli-v0.4.0
+anw-cli-v0.5.0
 ```
 ## `repair`
 
@@ -68,13 +68,41 @@ The command runs:
 A successful validation ends with:
 
 ```text
-✓ 5/5 certification steps passed.
+âœ“ 5/5 certification steps passed.
 
 Repository certification successful.
 ANW AI-COS is ready for the next release step.
 ```
 
 The validation process stops immediately if any certification step fails.
+
+
+## `release`
+
+Inspects ANW CLI release readiness without changing files.
+
+### Usage
+
+```powershell
+npm run dev -- release --check
+```
+
+### Release checks
+
+The command verifies:
+
+```text
+Git working tree clean
+CLI package version
+README release metadata
+CHANGELOG release metadata
+Release tag availability
+Full ANW validation
+```
+
+A successful release check confirms that the release candidate is ready.
+
+The command does not create commits, tags, pushes, or file changes.
 
 # Naming Rules
 
