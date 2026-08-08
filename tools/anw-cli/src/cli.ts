@@ -25,6 +25,10 @@ import {
 } from "./commands/page.js";
 
 import {
+  runProject,
+} from "./commands/project.js";
+
+import {
   repairRepository,
 } from "./commands/repair.js";
 
@@ -36,6 +40,10 @@ import {
   validateRepository,
 } from "./commands/validate.js";
 
+import {
+  cliVersion,
+} from "./version.js";
+
 const program =
   new Command();
 
@@ -44,7 +52,9 @@ program
   .description(
     "Developer CLI for the ANW AI Content Operating System.",
   )
-  .version("0.9.0");
+  .version(
+    cliVersion,
+  );
 
 program
   .command("hello")
@@ -53,12 +63,15 @@ program
   )
   .action(() => {
     console.log("");
+
     console.log(
       "Welcome to the ANW AI-COS CLI!",
     );
+
     console.log(
       "You Are Not Alone.",
     );
+
     console.log("");
   });
 
@@ -262,6 +275,35 @@ program
       );
     }
   });
+
+program
+  .command("project")
+  .description(
+    "Inspect ANW AI-COS project status and architecture.",
+  )
+  .option(
+    "--status",
+    "Show the current ANW AI-COS project status without changing anything.",
+    false,
+  )
+  .action(
+    (
+      options: {
+        status?: boolean;
+      },
+    ) => {
+      try {
+        runProject(
+          options,
+        );
+      } catch (error) {
+        handleCommandError(
+          "inspect project",
+          error,
+        );
+      }
+    },
+  );
 
 program
   .command("release")
