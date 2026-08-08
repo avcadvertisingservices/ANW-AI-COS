@@ -1,18 +1,19 @@
 ﻿# Changelog
 
-All notable changes to the ANW AI-COS CLI are documented in this file.
+All notable changes to the ANW AI-COS CLI will be documented in this file.
 
-The format follows the principles of Keep a Changelog, and the project uses semantic versioning.
+---
 
 ## [0.6.0] - 2026-08-08
 
 ### Added
 
 - Added `release --plan`.
-- Added a safe release workflow preview.
-- Added proposed Git tag preview.
-- Added proposed Git push command preview.
-- Added explicit safety reporting confirming that no files, commits, tags, or remotes are changed by release planning.
+- Added a safe preview of the ANW CLI release workflow.
+- Added proposed Git release tag preview.
+- Added proposed Git tag push command preview.
+- Added protection against using `--check` and `--plan` together.
+- Added explicit safety reporting confirming that release planning changes no files, commits, tags, or remotes.
 
 ### Release planning
 
@@ -20,6 +21,60 @@ Run:
 
 ```powershell
 npm run dev -- release --plan
+```
+
+The command previews:
+
+```text
+1. Git working-tree check
+2. CLI package-version check
+3. README release metadata check
+4. CHANGELOG release metadata check
+5. Git tag availability check
+6. Full ANW validation
+7. Future annotated Git tag command
+8. Future Git tag push command
+```
+
+The release plan is preview-only.
+
+It does not:
+
+```text
+- modify files
+- create commits
+- create Git tags
+- push to remotes
+```
+
+### Release readiness
+
+Run:
+
+```powershell
+npm run dev -- release --check
+```
+
+A release candidate must pass:
+
+```text
+Git working tree clean
+CLI package version
+README release metadata
+CHANGELOG release metadata
+Release tag available
+Full validation passed
+```
+
+### Release
+
+Git tag:
+
+```text
+anw-cli-v0.6.0
+```
+
+---
 
 ## [0.5.0] - 2026-08-08
 
@@ -84,47 +139,39 @@ anw-cli-v0.5.0
 
 ### Added
 
-- Added the `validate` command.
-- Added one-command ANW CLI certification.
-- Added automated TypeScript type-check execution.
-- Added automated CLI test execution.
-- Added automated production build execution.
-- Added automated Doctor execution.
-- Added automated route repair dry-run execution.
-- Added fail-fast certification behavior.
-- Added Windows-compatible npm process execution.
+- Added the unified `validate` command.
+- Added full CLI certification workflow.
+- Added CLI TypeScript type-check validation.
+- Added automated CLI test validation.
+- Added CLI production build validation.
+- Added repository Doctor integration.
+- Added route repair dry-run integration.
 
-### Commands
+### Validation workflow
 
-ANW CLI v0.4.0 includes:
-
-```text
-hello
-module
-component
-feature
-page
-doctor
-repair
-validate
-```
-
-### Certification
-
-The full certification workflow can now be run with:
+Run:
 
 ```powershell
 npm run dev -- validate
 ```
 
-Successful certification requires:
+The validation command runs:
 
 ```text
-âœ“ CLI TypeScript type-check
-âœ“ CLI automated tests
-âœ“ CLI production build
-âœ“ ANW repository Doctor
-âœ“ ANW route repair dry-run
+1. CLI TypeScript type-check
+2. CLI automated tests
+3. CLI production build
+4. ANW repository Doctor
+5. ANW route repair dry-run
+```
+
+A successful validation ends with:
+
+```text
+5/5 certification steps passed.
+
+Repository certification successful.
+ANW AI-COS is ready for the next release step.
 ```
 
 ### Release
@@ -137,86 +184,69 @@ anw-cli-v0.4.0
 
 ---
 
-## [0.3.0] - 2026-08-07
+## [0.3.0]
 
 ### Added
 
-- Added the `repair` command for Next.js App Router recovery.
-- Added safe dry-run mode as the default behavior.
-- Added `--write` mode for applying approved automatic repairs.
-- Added detection and replacement of empty `page.tsx` files.
-- Added detection and replacement of empty `layout.tsx` files.
-- Added detection and replacement of empty `loading.tsx` files.
-- Added detection and replacement of empty `error.tsx` files.
-- Added automatic `"use client"` insertion for error boundaries.
-- Added manual-review protection for non-empty route files without default exports.
-- Added automated tests for dry-run and write modes.
-- Added tests confirming healthy files remain unchanged.
-- Added tests confirming manual-review files are never overwritten.
+- Added repository repair tooling.
+- Added safe repair dry-run mode.
+- Added `repair --write`.
+- Added automatic repair for supported App Router problems.
+- Added repair tests.
+- Added protection against overwriting non-empty route files requiring manual review.
 
-### Commands
+### Repair command
 
-ANW CLI v0.3.0 includes:
-
-```text
-hello
-module
-component
-feature
-page
-doctor
-repair
-```
-
-### Certification
-
-Version 0.3.0 was certified using:
+Dry run:
 
 ```powershell
-npm run typecheck
-npm test
-npm run build
-npm run dev -- doctor
 npm run dev -- repair
 ```
 
-### Release
+Apply supported repairs:
 
-Git tag:
-
-```text
-anw-cli-v0.3.0
+```powershell
+npm run dev -- repair --write
 ```
 
 ---
 
-## [0.2.0] - 2026-08-06
+## [0.2.0]
 
 ### Added
 
-- Added the `module` generator for ANW domain modules.
-- Added the `component` generator for branded admin React components.
-- Added the `page` generator for Next.js App Router pages.
-- Added the `feature` generator for complete ANW feature foundations.
-- Added the `doctor` command for repository health checks.
-- Added automated generator and Doctor tests.
-- Added existing-file protection for generated files.
-- Added `--force` support for generator commands.
-- Added nested route support to the page generator.
-- Added generated `loading.tsx` and `error.tsx` route files.
-- Added automatic `"use client"` directives to generated error boundaries.
-- Added Git working-tree inspection to the Doctor.
-- Added App Router file validation.
-- Added route default-export validation.
-- Added empty route-file detection.
-- Added client error-boundary validation.
-- Added Windows-compatible Git execution.
-- Added strict TypeScript compilation.
-- Added compiled output in the `dist` directory.
+- Added ANW repository Doctor.
+- Added repository health inspection.
+- Added App Router route-file checks.
+- Added default export checks.
+- Added error boundary `"use client"` checks.
+- Added Git working-tree inspection.
 
-### Commands
+### Doctor command
 
-ANW CLI v0.2.0 includes:
+Run:
+
+```powershell
+npm run dev -- doctor
+```
+
+---
+
+## [0.1.0]
+
+### Added
+
+- Initial ANW AI-COS CLI.
+- Added `hello` command.
+- Added module generator.
+- Added component generator.
+- Added feature generator.
+- Added page generator.
+- Added CLI configuration.
+- Added automated generator tests.
+- Added TypeScript build and type-check workflows.
+
+### Initial commands
 
 ```text
 hello
@@ -224,5 +254,4 @@ module
 component
 feature
 page
-doctor
-
+```
