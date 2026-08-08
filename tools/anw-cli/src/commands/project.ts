@@ -20,6 +20,10 @@ import {
 } from "node:child_process";
 
 import {
+  hostname,
+} from "node:os";
+
+import {
   discoverFeatures,
 } from "./feature-list.js";
 
@@ -82,6 +86,11 @@ type ProjectJsonReport = {
     nodeVersion: string;
     platform: NodeJS.Platform;
     architecture: string;
+  };
+  host: {
+    hostname: string;
+    workingDirectory: string;
+    projectRoot: string;
   };
   repository: string;
   branch: string;
@@ -498,6 +507,12 @@ function buildMarkdownReport(
     `Platform: ${process.platform}`,
     `Architecture: ${process.arch}`,
     "",
+    "## Host",
+    "",
+    `Hostname: ${hostname()}`,
+    `Working Directory: ${process.cwd()}`,
+    `Project Root: ${status.projectRoot}`,
+    "",
     "## Repository",
     "",
     `Branch: ${status.branch}`,
@@ -562,6 +577,17 @@ function buildJsonReport(
 
         architecture:
           process.arch,
+      },
+
+      host: {
+        hostname:
+          hostname(),
+
+        workingDirectory:
+          process.cwd(),
+
+        projectRoot:
+          status.projectRoot,
       },
 
       repository:
