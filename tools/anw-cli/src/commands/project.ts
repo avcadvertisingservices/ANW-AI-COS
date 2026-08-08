@@ -2,7 +2,6 @@ import {
   existsSync,
   readdirSync,
   readFileSync,
-  statSync,
 } from "node:fs";
 
 import {
@@ -14,6 +13,14 @@ import {
 import {
   spawnSync,
 } from "node:child_process";
+
+import {
+  discoverFeatures,
+} from "./feature-list.js";
+
+import {
+  discoverModules,
+} from "./module-list.js";
 
 type GitResult = {
   status: number | null;
@@ -58,7 +65,9 @@ export type ProjectOptions = {
 export function runProject(
   options: ProjectOptions = {},
 ): void {
-  if (options.status === true) {
+  if (
+    options.status === true
+  ) {
     runProjectStatus();
     return;
   }
@@ -247,26 +256,14 @@ function collectProjectStatus(
       projectRoot,
     );
 
-  const moduleCount =
-    countDirectories(
-      join(
-        projectRoot,
-        "apps",
-        "admin",
-        "src",
-        "modules",
-      ),
+  const modules =
+    discoverModules(
+      projectRoot,
     );
 
-  const featureCount =
-    countDirectories(
-      join(
-        projectRoot,
-        "apps",
-        "admin",
-        "src",
-        "features",
-      ),
+  const features =
+    discoverFeatures(
+      projectRoot,
     );
 
   const componentCount =
@@ -300,8 +297,10 @@ function collectProjectStatus(
     cliVersion,
     latestReleaseTag,
     routeCount,
-    moduleCount,
-    featureCount,
+    moduleCount:
+      modules.length,
+    featureCount:
+      features.length,
     componentCount,
     overallStatus,
   };
@@ -440,8 +439,11 @@ function getWorkingTreeStatus(
     )
   ) {
     return {
-      state: "UNKNOWN",
-      changes: 0,
+      state:
+        "UNKNOWN",
+
+      changes:
+        0,
     };
   }
 
@@ -640,45 +642,6 @@ function findAdminAppDirectory(
   );
 }
 
-function countDirectories(
-  directory: string,
-): number {
-  if (
-    !existsSync(
-      directory,
-    )
-  ) {
-    return 0;
-  }
-
-  try {
-    return readdirSync(
-      directory,
-      {
-        encoding: "utf8",
-      },
-    ).filter(
-      (entry) => {
-        const fullPath =
-          join(
-            directory,
-            entry,
-          );
-
-        try {
-          return statSync(
-            fullPath,
-          ).isDirectory();
-        } catch {
-          return false;
-        }
-      },
-    ).length;
-  } catch {
-    return 0;
-  }
-}
-
 function countSourceFiles(
   directory: string,
 ): number {
@@ -799,8 +762,10 @@ function runGit(
       argumentsList,
       {
         cwd,
-        encoding: "utf8",
-        shell: false,
+        encoding:
+          "utf8",
+        shell:
+          false,
       },
     );
 
@@ -810,12 +775,14 @@ function runGit(
 
     stdout:
       String(
-        result.stdout ?? "",
+        result.stdout ??
+          "",
       ).trim(),
 
     stderr:
       String(
-        result.stderr ?? "",
+        result.stderr ??
+          "",
       ).trim(),
 
     error:
@@ -827,7 +794,9 @@ function gitCommandSucceeded(
   result: GitResult,
 ): boolean {
   return (
-    result.error === undefined &&
-    result.status === 0
+    result.error ===
+      undefined &&
+    result.status ===
+      0
   );
 }
