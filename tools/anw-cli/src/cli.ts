@@ -44,7 +44,7 @@ program
   .description(
     "Developer CLI for the ANW AI Content Operating System.",
   )
-  .version("0.7.0");
+  .version("0.8.0");
 
 program
   .command("hello")
@@ -53,12 +53,15 @@ program
   )
   .action(() => {
     console.log("");
+
     console.log(
       "Welcome to the ANW AI-COS CLI!",
     );
+
     console.log(
       "You Are Not Alone.",
     );
+
     console.log("");
   });
 
@@ -266,7 +269,12 @@ program
 program
   .command("release")
   .description(
-    "Plan, validate, or execute an ANW CLI release.",
+    "Inspect, plan, validate, or execute an ANW CLI release.",
+  )
+  .option(
+    "--status",
+    "Show current ANW CLI release status without changing anything.",
+    false,
   )
   .option(
     "--plan",
@@ -291,6 +299,7 @@ program
   .action(
     (
       options: {
+        status?: boolean;
         plan?: boolean;
         check?: boolean;
         execute?: boolean;
@@ -322,9 +331,11 @@ function handleCommandError(
       : "Unknown CLI error.";
 
   console.error("");
+
   console.error(
     `Unable to ${action}: ${message}`,
   );
+
   console.error("");
 
   process.exitCode = 1;

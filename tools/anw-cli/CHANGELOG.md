@@ -3,7 +3,7 @@
 All notable changes to the ANW AI-COS CLI will be documented in this file.
 
 ---
-## [0.7.0] - 2026-08-08
+## [0.8.0] - 2026-08-08
 
 ### Added
 
@@ -55,11 +55,11 @@ The release command does not:
 Git tag:
 
 ```text
-anw-cli-v0.7.0
+anw-cli-v0.8.0
 ```
 
 ---
-## [0.7.0] - 2026-08-08
+## [0.8.0] - 2026-08-08
 
 ### Added
 

@@ -19,6 +19,7 @@ import {
 export type ReleaseOptions = {
   check?: boolean;
   plan?: boolean;
+  status?: boolean;
   execute?: boolean;
   confirm?: boolean;
 };
@@ -52,12 +53,13 @@ export function runRelease(
   const selectedModes = [
     options.check === true,
     options.plan === true,
+    options.status === true,
     options.execute === true,
   ].filter(Boolean).length;
 
   if (selectedModes > 1) {
     throw new Error(
-      "Use only one release mode at a time: --check, --plan, or --execute.",
+      "Use only one release mode at a time: --status, --plan, --check, or --execute.",
     );
   }
 
@@ -68,6 +70,11 @@ export function runRelease(
     throw new Error(
       "--confirm can only be used together with --execute.",
     );
+  }
+
+  if (options.status === true) {
+    runReleaseStatus();
+    return;
   }
 
   if (options.plan === true) {
@@ -111,6 +118,10 @@ function printReleaseHelp(): void {
   console.log("");
 
   console.log(
+    "npm run dev -- release --status",
+  );
+
+  console.log(
     "npm run dev -- release --plan",
   );
 
@@ -123,6 +134,10 @@ function printReleaseHelp(): void {
   );
 
   console.log("");
+
+  console.log(
+    "--status shows current release information.",
+  );
 
   console.log(
     "--plan previews the release workflow.",
@@ -189,6 +204,239 @@ function createReleaseContext(): ReleaseContext {
     version,
     releaseTag,
   };
+}
+
+function runReleaseStatus(): void {
+  const context =
+    createReleaseContext();
+
+  const branchResult =
+    runGit(
+      context.projectRoot,
+      [
+        "branch",
+        "--show-current",
+      ],
+    );
+
+  const statusResult =
+    runGit(
+      context.projectRoot,
+      [
+        "status",
+        "--porcelain",
+      ],
+    );
+
+  const currentTagResult =
+    runGit(
+      context.projectRoot,
+      [
+        "tag",
+        "--list",
+        context.releaseTag,
+      ],
+    );
+
+  const tagsResult =
+    runGit(
+      context.projectRoot,
+      [
+        "tag",
+        "--list",
+        "anw-cli-v*",
+        "--sort=-v:refname",
+      ],
+    );
+
+  const remoteResult =
+    runGit(
+      context.projectRoot,
+      [
+        "remote",
+        "get-url",
+        "origin",
+      ],
+    );
+
+  console.log("");
+  console.log(
+    "ANW AI-COS Release Status",
+  );
+  console.log(
+    "=========================",
+  );
+  console.log("");
+
+  console.log(
+    `Repository: ${context.projectRoot}`,
+  );
+
+  console.log(
+    `Package version: ${context.version}`,
+  );
+
+  console.log(
+    `Expected release tag: ${context.releaseTag}`,
+  );
+
+  console.log("");
+
+  if (
+    gitCommandSucceeded(
+      branchResult,
+    ) &&
+    branchResult.stdout
+  ) {
+    console.log(
+      `Current branch: ${branchResult.stdout}`,
+    );
+  } else {
+    console.log(
+      "Current branch: UNKNOWN",
+    );
+  }
+
+  if (
+    gitCommandSucceeded(
+      statusResult,
+    )
+  ) {
+    if (
+      statusResult.stdout
+    ) {
+      const changedFiles =
+        statusResult.stdout.split(
+          /\r?\n/,
+        );
+
+      console.log(
+        `Working tree: DIRTY (${changedFiles.length} change${
+          changedFiles.length === 1
+            ? ""
+            : "s"
+        })`,
+      );
+    } else {
+      console.log(
+        "Working tree: CLEAN",
+      );
+    }
+  } else {
+    console.log(
+      "Working tree: UNKNOWN",
+    );
+  }
+
+  console.log("");
+
+  const currentVersionReleased =
+    gitCommandSucceeded(
+      currentTagResult,
+    ) &&
+    currentTagResult.stdout ===
+      context.releaseTag;
+
+  console.log(
+    "Release state:",
+  );
+
+  if (
+    currentVersionReleased
+  ) {
+    console.log(
+      `RELEASED (${context.releaseTag})`,
+    );
+  } else {
+    console.log(
+      `NOT RELEASED (${context.releaseTag} is available locally)`,
+    );
+  }
+
+  console.log("");
+
+  const releaseTags =
+    gitCommandSucceeded(
+      tagsResult,
+    )
+      ? tagsResult.stdout
+        .split(
+          /\r?\n/,
+        )
+        .map(
+          (tag) =>
+            tag.trim(),
+        )
+        .filter(Boolean)
+      : [];
+
+  if (
+    releaseTags.length > 0
+  ) {
+    console.log(
+      `Latest ANW CLI release: ${releaseTags[0]}`,
+    );
+
+    console.log("");
+
+    console.log(
+      "Recent ANW CLI releases:",
+    );
+
+    const recentTags =
+      releaseTags.slice(
+        0,
+        10,
+      );
+
+    for (
+      const tag
+      of recentTags
+    ) {
+      console.log(
+        `- ${tag}`,
+      );
+    }
+  } else {
+    console.log(
+      "Latest ANW CLI release: NONE",
+    );
+
+    console.log("");
+
+    console.log(
+      "Recent ANW CLI releases: NONE",
+    );
+  }
+
+  console.log("");
+
+  if (
+    gitCommandSucceeded(
+      remoteResult,
+    ) &&
+    remoteResult.stdout
+  ) {
+    console.log(
+      `Origin remote: ${remoteResult.stdout}`,
+    );
+  } else {
+    console.log(
+      "Origin remote: UNKNOWN",
+    );
+  }
+
+  console.log("");
+
+  console.log(
+    "Status inspection complete.",
+  );
+
+  console.log(
+    "No changes were made.",
+  );
+
+  console.log("");
 }
 
 function runReleasePlan(): void {
@@ -380,14 +628,17 @@ function runReleaseCheck(): void {
   }
 
   console.log("");
+
   console.log(
     "Static release checks passed.",
   );
+
   console.log("");
 
   console.log(
     "Running full ANW validation...",
   );
+
   console.log("");
 
   const validationPassed =
@@ -422,20 +673,25 @@ function runReleaseExecute(
     options.confirm !== true
   ) {
     console.log("");
+
     console.error(
       "Release execution blocked.",
     );
+
     console.error(
       "Use --execute together with --confirm.",
     );
+
     console.log("");
 
     console.error(
       "Required command:",
     );
+
     console.error(
       "npm run dev -- release --execute --confirm",
     );
+
     console.log("");
 
     process.exitCode = 1;
@@ -559,9 +815,11 @@ function runReleaseExecute(
   }
 
   console.log("");
+
   console.log(
     "All release checks passed.",
   );
+
   console.log("");
 
   console.log(
@@ -825,9 +1083,11 @@ function runFullValidation(): boolean {
         : String(error);
 
     console.error("");
+
     console.error(
       `Validation failed: ${message}`,
     );
+
     console.error("");
 
     process.exitCode =
