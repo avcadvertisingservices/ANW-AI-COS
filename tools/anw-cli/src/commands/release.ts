@@ -17,9 +17,10 @@ import {
 } from "./validate.js";
 
 export type ReleaseOptions = {
-  check?: boolean;
-  plan?: boolean;
   status?: boolean;
+  history?: boolean;
+  plan?: boolean;
+  check?: boolean;
   execute?: boolean;
   confirm?: boolean;
 };
@@ -47,19 +48,26 @@ type ReleaseContext = {
   releaseTag: string;
 };
 
+type ReleaseHistoryEntry = {
+  tag: string;
+  date: string;
+  commit: string;
+};
+
 export function runRelease(
   options: ReleaseOptions = {},
 ): void {
   const selectedModes = [
-    options.check === true,
-    options.plan === true,
     options.status === true,
+    options.history === true,
+    options.plan === true,
+    options.check === true,
     options.execute === true,
   ].filter(Boolean).length;
 
   if (selectedModes > 1) {
     throw new Error(
-      "Use only one release mode at a time: --status, --plan, --check, or --execute.",
+      "Use only one release mode at a time: --status, --history, --plan, --check, or --execute.",
     );
   }
 
@@ -68,12 +76,17 @@ export function runRelease(
     options.execute !== true
   ) {
     throw new Error(
-      "--confirm can only be used together with --execute.",
+      "--confirm can only be used with --execute.",
     );
   }
 
   if (options.status === true) {
     runReleaseStatus();
+    return;
+  }
+
+  if (options.history === true) {
+    runReleaseHistory();
     return;
   }
 
@@ -88,76 +101,11 @@ export function runRelease(
   }
 
   if (options.execute === true) {
-    runReleaseExecute(
-      options,
-    );
+    runReleaseExecute(options);
     return;
   }
 
   printReleaseHelp();
-}
-
-function printReleaseHelp(): void {
-  console.log("");
-  console.log(
-    "ANW AI-COS Release",
-  );
-  console.log(
-    "==================",
-  );
-  console.log("");
-
-  console.log(
-    "No release action was performed.",
-  );
-  console.log("");
-
-  console.log(
-    "Available release commands:",
-  );
-  console.log("");
-
-  console.log(
-    "npm run dev -- release --status",
-  );
-
-  console.log(
-    "npm run dev -- release --plan",
-  );
-
-  console.log(
-    "npm run dev -- release --check",
-  );
-
-  console.log(
-    "npm run dev -- release --execute --confirm",
-  );
-
-  console.log("");
-
-  console.log(
-    "--status shows current release information.",
-  );
-
-  console.log(
-    "--plan previews the release workflow.",
-  );
-
-  console.log(
-    "--check validates release readiness.",
-  );
-
-  console.log(
-    "--execute performs the controlled tag release.",
-  );
-
-  console.log("");
-
-  console.log(
-    "--execute requires --confirm.",
-  );
-
-  console.log("");
 }
 
 function createReleaseContext(): ReleaseContext {
@@ -166,26 +114,30 @@ function createReleaseContext(): ReleaseContext {
       process.cwd(),
     );
 
-  const cliRoot = join(
-    projectRoot,
-    "tools",
-    "anw-cli",
-  );
+  const cliRoot =
+    join(
+      projectRoot,
+      "tools",
+      "anw-cli",
+    );
 
-  const packagePath = join(
-    cliRoot,
-    "package.json",
-  );
+  const packagePath =
+    join(
+      cliRoot,
+      "package.json",
+    );
 
-  const readmePath = join(
-    cliRoot,
-    "README.md",
-  );
+  const readmePath =
+    join(
+      cliRoot,
+      "README.md",
+    );
 
-  const changelogPath = join(
-    cliRoot,
-    "CHANGELOG.md",
-  );
+  const changelogPath =
+    join(
+      cliRoot,
+      "CHANGELOG.md",
+    );
 
   const version =
     readPackageVersion(
@@ -204,6 +156,44 @@ function createReleaseContext(): ReleaseContext {
     version,
     releaseTag,
   };
+}
+
+function printReleaseHelp(): void {
+  console.log("");
+  console.log("ANW AI-COS Release");
+  console.log("==================");
+  console.log("");
+
+  console.log("Available commands:");
+  console.log("");
+
+  console.log(
+    "npm run dev -- release --status",
+  );
+
+  console.log(
+    "npm run dev -- release --history",
+  );
+
+  console.log(
+    "npm run dev -- release --plan",
+  );
+
+  console.log(
+    "npm run dev -- release --check",
+  );
+
+  console.log(
+    "npm run dev -- release --execute --confirm",
+  );
+
+  console.log("");
+
+  console.log(
+    "No release action was performed.",
+  );
+
+  console.log("");
 }
 
 function runReleaseStatus(): void {
@@ -282,44 +272,36 @@ function runReleaseStatus(): void {
 
   console.log("");
 
-  if (
-    gitCommandSucceeded(
-      branchResult,
-    ) &&
-    branchResult.stdout
-  ) {
-    console.log(
-      `Current branch: ${branchResult.stdout}`,
-    );
-  } else {
-    console.log(
-      "Current branch: UNKNOWN",
-    );
-  }
+  console.log(
+    `Current branch: ${
+      gitCommandSucceeded(branchResult) &&
+      branchResult.stdout
+        ? branchResult.stdout
+        : "UNKNOWN"
+    }`,
+  );
 
   if (
     gitCommandSucceeded(
       statusResult,
     )
   ) {
-    if (
-      statusResult.stdout
-    ) {
-      const changedFiles =
-        statusResult.stdout.split(
-          /\r?\n/,
-        );
+    const changes =
+      splitLines(
+        statusResult.stdout,
+      );
 
+    if (changes.length === 0) {
       console.log(
-        `Working tree: DIRTY (${changedFiles.length} change${
-          changedFiles.length === 1
-            ? ""
-            : "s"
-        })`,
+        "Working tree: CLEAN",
       );
     } else {
       console.log(
-        "Working tree: CLEAN",
+        `Working tree: DIRTY (${changes.length} change${
+          changes.length === 1
+            ? ""
+            : "s"
+        })`,
       );
     }
   } else {
@@ -330,7 +312,7 @@ function runReleaseStatus(): void {
 
   console.log("");
 
-  const currentVersionReleased =
+  const released =
     gitCommandSucceeded(
       currentTagResult,
     ) &&
@@ -338,43 +320,27 @@ function runReleaseStatus(): void {
       context.releaseTag;
 
   console.log(
-    "Release state:",
+    `Release state: ${
+      released
+        ? `RELEASED (${context.releaseTag})`
+        : `NOT RELEASED (${context.releaseTag})`
+    }`,
   );
-
-  if (
-    currentVersionReleased
-  ) {
-    console.log(
-      `RELEASED (${context.releaseTag})`,
-    );
-  } else {
-    console.log(
-      `NOT RELEASED (${context.releaseTag} is available locally)`,
-    );
-  }
 
   console.log("");
 
-  const releaseTags =
+  const tags =
     gitCommandSucceeded(
       tagsResult,
     )
-      ? tagsResult.stdout
-        .split(
-          /\r?\n/,
+      ? splitLines(
+          tagsResult.stdout,
         )
-        .map(
-          (tag) =>
-            tag.trim(),
-        )
-        .filter(Boolean)
       : [];
 
-  if (
-    releaseTags.length > 0
-  ) {
+  if (tags.length > 0) {
     console.log(
-      `Latest ANW CLI release: ${releaseTags[0]}`,
+      `Latest ANW CLI release: ${tags[0]}`,
     );
 
     console.log("");
@@ -383,15 +349,14 @@ function runReleaseStatus(): void {
       "Recent ANW CLI releases:",
     );
 
-    const recentTags =
-      releaseTags.slice(
-        0,
-        10,
-      );
+    console.log("");
 
     for (
       const tag
-      of recentTags
+      of tags.slice(
+        0,
+        10,
+      )
     ) {
       console.log(
         `- ${tag}`,
@@ -401,30 +366,18 @@ function runReleaseStatus(): void {
     console.log(
       "Latest ANW CLI release: NONE",
     );
-
-    console.log("");
-
-    console.log(
-      "Recent ANW CLI releases: NONE",
-    );
   }
 
   console.log("");
 
-  if (
-    gitCommandSucceeded(
-      remoteResult,
-    ) &&
-    remoteResult.stdout
-  ) {
-    console.log(
-      `Origin remote: ${remoteResult.stdout}`,
-    );
-  } else {
-    console.log(
-      "Origin remote: UNKNOWN",
-    );
-  }
+  console.log(
+    `Origin remote: ${
+      gitCommandSucceeded(remoteResult) &&
+      remoteResult.stdout
+        ? remoteResult.stdout
+        : "UNKNOWN"
+    }`,
+  );
 
   console.log("");
 
@@ -437,6 +390,250 @@ function runReleaseStatus(): void {
   );
 
   console.log("");
+
+  process.exitCode = 0;
+}
+
+function runReleaseHistory(): void {
+  const context =
+    createReleaseContext();
+
+  const tagsResult =
+    runGit(
+      context.projectRoot,
+      [
+        "tag",
+        "--list",
+        "anw-cli-v*",
+        "--sort=-v:refname",
+      ],
+    );
+
+  const currentTagResult =
+    runGit(
+      context.projectRoot,
+      [
+        "tag",
+        "--list",
+        context.releaseTag,
+      ],
+    );
+
+  console.log("");
+  console.log(
+    "ANW AI-COS Release History",
+  );
+  console.log(
+    "==========================",
+  );
+  console.log("");
+
+  console.log(
+    `Current package version: ${context.version}`,
+  );
+
+  console.log(
+    `Current expected tag: ${context.releaseTag}`,
+  );
+
+  const released =
+    gitCommandSucceeded(
+      currentTagResult,
+    ) &&
+    currentTagResult.stdout ===
+      context.releaseTag;
+
+  console.log(
+    `Current release state: ${
+      released
+        ? "RELEASED"
+        : "NOT RELEASED"
+    }`,
+  );
+
+  console.log("");
+
+  if (
+    !gitCommandSucceeded(
+      tagsResult,
+    )
+  ) {
+    console.error(
+      "Unable to read release history.",
+    );
+
+    printGitFailure(
+      tagsResult,
+    );
+
+    process.exitCode = 1;
+    return;
+  }
+
+  const tags =
+    splitLines(
+      tagsResult.stdout,
+    );
+
+  if (tags.length === 0) {
+    console.log(
+      "No ANW CLI release tags found.",
+    );
+
+    console.log("");
+
+    console.log(
+      "History inspection complete.",
+    );
+
+    console.log(
+      "No changes were made.",
+    );
+
+    console.log("");
+
+    process.exitCode = 0;
+    return;
+  }
+
+  console.log(
+    `Latest release: ${tags[0]}`,
+  );
+
+  console.log(
+    `Total releases found: ${tags.length}`,
+  );
+
+  console.log("");
+
+  console.log(
+    "Recent releases:",
+  );
+
+  console.log("");
+
+  const entries:
+    ReleaseHistoryEntry[] = [];
+
+  for (
+    const tag
+    of tags.slice(
+      0,
+      10,
+    )
+  ) {
+    entries.push(
+      readReleaseHistoryEntry(
+        context.projectRoot,
+        tag,
+      ),
+    );
+  }
+
+  for (
+    const entry
+    of entries
+  ) {
+    console.log(
+      entry.tag,
+    );
+
+    console.log(
+      `  Date: ${entry.date}`,
+    );
+
+    console.log(
+      `  Commit: ${entry.commit}`,
+    );
+
+    console.log("");
+  }
+
+  console.log(
+    "Release progression:",
+  );
+
+  console.log("");
+
+  for (
+    let index = 0;
+    index < entries.length;
+    index += 1
+  ) {
+    const entry =
+      entries[index];
+
+    if (!entry) {
+      continue;
+    }
+
+    console.log(
+      `${index + 1}. ${entry.tag}`,
+    );
+  }
+
+  console.log("");
+
+  console.log(
+    "History inspection complete.",
+  );
+
+  console.log(
+    "No changes were made.",
+  );
+
+  console.log("");
+
+  process.exitCode = 0;
+}
+
+function readReleaseHistoryEntry(
+  projectRoot: string,
+  tag: string,
+): ReleaseHistoryEntry {
+  const commitResult =
+    runGit(
+      projectRoot,
+      [
+        "rev-list",
+        "-n",
+        "1",
+        tag,
+      ],
+    );
+
+  const dateResult =
+    runGit(
+      projectRoot,
+      [
+        "for-each-ref",
+        `refs/tags/${tag}`,
+        "--format=%(creatordate:iso-strict)",
+      ],
+    );
+
+  return {
+    tag,
+
+    commit:
+      gitCommandSucceeded(
+        commitResult,
+      ) &&
+      commitResult.stdout
+        ? commitResult.stdout.slice(
+            0,
+            12,
+          )
+        : "UNKNOWN",
+
+    date:
+      gitCommandSucceeded(
+        dateResult,
+      ) &&
+      dateResult.stdout
+        ? dateResult.stdout
+        : "UNKNOWN",
+  };
 }
 
 function runReleasePlan(): void {
@@ -473,11 +670,11 @@ function runReleasePlan(): void {
   console.log("");
 
   console.log(
-    "1. Confirm the Git working tree is clean.",
+    "1. Confirm Git working tree is clean.",
   );
 
   console.log(
-    "2. Confirm the CLI package version.",
+    "2. Confirm CLI package version.",
   );
 
   console.log(
@@ -489,15 +686,15 @@ function runReleasePlan(): void {
   );
 
   console.log(
-    "5. Confirm the proposed Git tag is available.",
+    "5. Confirm release tag availability.",
   );
 
   console.log(
-    "6. Run the complete ANW validation workflow.",
+    "6. Run full ANW validation.",
   );
 
   console.log(
-    "7. Create the annotated Git release tag.",
+    "7. Create annotated Git tag.",
   );
 
   console.log(
@@ -507,10 +704,8 @@ function runReleasePlan(): void {
   console.log("");
 
   console.log(
-    "Release readiness command:",
+    "Release readiness:",
   );
-
-  console.log("");
 
   console.log(
     "npm run dev -- release --check",
@@ -519,10 +714,8 @@ function runReleasePlan(): void {
   console.log("");
 
   console.log(
-    "Controlled release command:",
+    "Controlled release:",
   );
-
-  console.log("");
 
   console.log(
     "npm run dev -- release --execute --confirm",
@@ -534,8 +727,6 @@ function runReleasePlan(): void {
     "Future tag command:",
   );
 
-  console.log("");
-
   console.log(
     `git tag -a ${context.releaseTag} -m "ANW CLI v${context.version}"`,
   );
@@ -546,42 +737,8 @@ function runReleasePlan(): void {
     "Future push command:",
   );
 
-  console.log("");
-
   console.log(
     `git push origin ${context.releaseTag}`,
-  );
-
-  console.log("");
-
-  console.log(
-    "Safety status:",
-  );
-
-  console.log("");
-
-  console.log(
-    "- No files were changed.",
-  );
-
-  console.log(
-    "- No commits were created.",
-  );
-
-  console.log(
-    "- No Git tags were created.",
-  );
-
-  console.log(
-    "- Nothing was pushed.",
-  );
-
-  console.log(
-    "- No branches were merged.",
-  );
-
-  console.log(
-    "- No force push was performed.",
   );
 
   console.log("");
@@ -595,15 +752,28 @@ function runReleasePlan(): void {
   );
 
   console.log("");
+
+  process.exitCode = 0;
 }
 
 function runReleaseCheck(): void {
   const context =
     createReleaseContext();
 
-  printReleaseCheckHeader(
-    context,
+  console.log("");
+  console.log(
+    "ANW AI-COS Release Check",
   );
+  console.log(
+    "========================",
+  );
+  console.log("");
+
+  console.log(
+    `Repository: ${context.projectRoot}`,
+  );
+
+  console.log("");
 
   const checks =
     collectReleaseChecks(
@@ -641,16 +811,11 @@ function runReleaseCheck(): void {
 
   console.log("");
 
-  const validationPassed =
-    runFullValidation();
-
   if (
-    !validationPassed
+    !runFullValidation()
   ) {
-    console.log("");
-
     console.error(
-      "Release check failed because repository validation failed.",
+      "Release check failed because validation failed.",
     );
 
     console.log("");
@@ -659,9 +824,53 @@ function runReleaseCheck(): void {
     return;
   }
 
-  printReleaseCheckSummary(
-    context,
+  console.log("");
+
+  console.log(
+    "ANW Release Check Summary",
   );
+
+  console.log(
+    "=========================",
+  );
+
+  console.log("");
+
+  console.log(
+    `✓ Version: ${context.version}`,
+  );
+
+  console.log(
+    `✓ Release tag available: ${context.releaseTag}`,
+  );
+
+  console.log(
+    "✓ README version matches",
+  );
+
+  console.log(
+    "✓ CHANGELOG version matches",
+  );
+
+  console.log(
+    "✓ Git working tree clean",
+  );
+
+  console.log(
+    "✓ Full validation passed",
+  );
+
+  console.log("");
+
+  console.log(
+    "Release candidate is ready.",
+  );
+
+  console.log(
+    "No files, commits, tags, or remotes were changed.",
+  );
+
+  console.log("");
 
   process.exitCode = 0;
 }
@@ -724,16 +933,6 @@ function runReleaseExecute(
 
   console.log("");
 
-  console.log(
-    "Confirmation flag detected.",
-  );
-
-  console.log(
-    "Beginning mandatory release checks...",
-  );
-
-  console.log("");
-
   const checks =
     collectReleaseChecks(
       context,
@@ -777,22 +976,13 @@ function runReleaseExecute(
   console.log("");
 
   console.log(
-    "Mandatory static checks passed.",
-  );
-
-  console.log("");
-
-  console.log(
     "Running full ANW validation before release...",
   );
 
   console.log("");
 
-  const validationPassed =
-    runFullValidation();
-
   if (
-    !validationPassed
+    !runFullValidation()
   ) {
     console.log("");
 
@@ -843,23 +1033,13 @@ function runReleaseExecute(
       tagResult,
     )
   ) {
-    console.log("");
-
     console.error(
-      "Unable to create the release tag.",
+      "Unable to create release tag.",
     );
 
     printGitFailure(
       tagResult,
     );
-
-    console.log("");
-
-    console.error(
-      "Nothing was pushed.",
-    );
-
-    console.log("");
 
     process.exitCode = 1;
     return;
@@ -890,27 +1070,17 @@ function runReleaseExecute(
       pushResult,
     )
   ) {
-    console.log("");
-
     console.error(
-      "The release tag was created locally, but the push failed.",
+      "Tag was created locally, but push failed.",
     );
 
     printGitFailure(
       pushResult,
     );
 
-    console.log("");
-
     console.error(
       `Local tag remains: ${context.releaseTag}`,
     );
-
-    console.error(
-      "No force push or automatic rollback was attempted.",
-    );
-
-    console.log("");
 
     process.exitCode = 1;
     return;
@@ -983,25 +1153,6 @@ function runReleaseExecute(
   process.exitCode = 0;
 }
 
-function printReleaseCheckHeader(
-  context: ReleaseContext,
-): void {
-  console.log("");
-  console.log(
-    "ANW AI-COS Release Check",
-  );
-  console.log(
-    "========================",
-  );
-  console.log("");
-
-  console.log(
-    `Repository: ${context.projectRoot}`,
-  );
-
-  console.log("");
-}
-
 function collectReleaseChecks(
   context: ReleaseContext,
 ): ReleaseCheck[] {
@@ -1009,6 +1160,7 @@ function collectReleaseChecks(
     checkGitWorkingTree(
       context.projectRoot,
     ),
+
     {
       label:
         "CLI package version",
@@ -1016,247 +1168,24 @@ function collectReleaseChecks(
       detail:
         context.version,
     },
+
     checkReadmeVersion(
       context.readmePath,
       context.version,
       context.releaseTag,
     ),
+
     checkChangelogVersion(
       context.changelogPath,
       context.version,
       context.releaseTag,
     ),
+
     checkReleaseTagAvailable(
       context.projectRoot,
       context.releaseTag,
     ),
   ];
-}
-
-function hasCheckFailures(
-  checks: ReleaseCheck[],
-): boolean {
-  return checks.some(
-    (check) =>
-      check.status === "fail",
-  );
-}
-
-function printReleaseFailure(
-  checks: ReleaseCheck[],
-): void {
-  const failures =
-    checks.filter(
-      (check) =>
-        check.status === "fail",
-    );
-
-  console.log("");
-
-  console.error(
-    `Release check failed with ${failures.length} problem${
-      failures.length === 1
-        ? ""
-        : "s"
-    }.`,
-  );
-
-  console.error(
-    "Fix the reported problems before continuing.",
-  );
-
-  console.log("");
-}
-
-function runFullValidation(): boolean {
-  const previousExitCode =
-    process.exitCode;
-
-  process.exitCode = 0;
-
-  try {
-    validateRepository();
-  } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : String(error);
-
-    console.error("");
-
-    console.error(
-      `Validation failed: ${message}`,
-    );
-
-    console.error("");
-
-    process.exitCode =
-      previousExitCode ?? 0;
-
-    return false;
-  }
-
-  const validationExitCode =
-    process.exitCode ?? 0;
-
-  process.exitCode =
-    previousExitCode ?? 0;
-
-  return (
-    validationExitCode === 0
-  );
-}
-
-function printReleaseCheckSummary(
-  context: ReleaseContext,
-): void {
-  console.log("");
-  console.log(
-    "ANW Release Check Summary",
-  );
-
-  console.log(
-    "=========================",
-  );
-
-  console.log("");
-
-  console.log(
-    `✓ Version: ${context.version}`,
-  );
-
-  console.log(
-    `✓ Release tag available: ${context.releaseTag}`,
-  );
-
-  console.log(
-    "✓ README version matches",
-  );
-
-  console.log(
-    "✓ CHANGELOG version matches",
-  );
-
-  console.log(
-    "✓ Git working tree clean",
-  );
-
-  console.log(
-    "✓ Full validation passed",
-  );
-
-  console.log("");
-
-  console.log(
-    "Release candidate is ready.",
-  );
-
-  console.log(
-    "No files, commits, tags, or remotes were changed.",
-  );
-
-  console.log("");
-}
-
-function findProjectRoot(
-  startDirectory: string,
-): string {
-  let currentDirectory =
-    resolve(
-      startDirectory,
-    );
-
-  while (true) {
-    const adminPath = join(
-      currentDirectory,
-      "apps",
-      "admin",
-    );
-
-    const cliPath = join(
-      currentDirectory,
-      "tools",
-      "anw-cli",
-    );
-
-    const gitPath = join(
-      currentDirectory,
-      ".git",
-    );
-
-    if (
-      existsSync(
-        adminPath,
-      ) &&
-      existsSync(
-        cliPath,
-      ) &&
-      existsSync(
-        gitPath,
-      )
-    ) {
-      return currentDirectory;
-    }
-
-    const parentDirectory =
-      resolve(
-        currentDirectory,
-        "..",
-      );
-
-    if (
-      parentDirectory ===
-      currentDirectory
-    ) {
-      break;
-    }
-
-    currentDirectory =
-      parentDirectory;
-  }
-
-  throw new Error(
-    "ANW project root could not be found. Run the command from inside the ANW-AI-COS repository.",
-  );
-}
-
-function readPackageVersion(
-  packagePath: string,
-): string {
-  if (
-    !existsSync(
-      packagePath,
-    )
-  ) {
-    throw new Error(
-      `CLI package.json was not found: ${packagePath}`,
-    );
-  }
-
-  const rawPackage =
-    readFileSync(
-      packagePath,
-      "utf8",
-    );
-
-  const parsedPackage =
-    JSON.parse(
-      rawPackage,
-    ) as {
-      version?: unknown;
-    };
-
-  if (
-    typeof parsedPackage.version !==
-      "string" ||
-    !parsedPackage.version.trim()
-  ) {
-    throw new Error(
-      "CLI package.json does not contain a valid version.",
-    );
-  }
-
-  return parsedPackage.version.trim();
 }
 
 function checkGitWorkingTree(
@@ -1272,19 +1201,9 @@ function checkGitWorkingTree(
     );
 
   if (
-    result.error
-  ) {
-    return {
-      label:
-        "Git working tree",
-      status: "fail",
-      detail:
-        result.error.message,
-    };
-  }
-
-  if (
-    result.status !== 0
+    !gitCommandSucceeded(
+      result,
+    )
   ) {
     return {
       label:
@@ -1292,12 +1211,18 @@ function checkGitWorkingTree(
       status: "fail",
       detail:
         result.stderr ||
-        "Unable to read Git status.",
+        result.error?.message ||
+        "Unable to inspect Git working tree.",
     };
   }
 
+  const changes =
+    splitLines(
+      result.stdout,
+    );
+
   if (
-    !result.stdout
+    changes.length === 0
   ) {
     return {
       label:
@@ -1308,20 +1233,16 @@ function checkGitWorkingTree(
     };
   }
 
-  const changedFiles =
-    result.stdout.split(
-      /\r?\n/,
-    );
-
   return {
     label:
       "Git working tree",
     status: "fail",
-    detail: `${changedFiles.length} uncommitted change${
-      changedFiles.length === 1
-        ? ""
-        : "s"
-    } detected`,
+    detail:
+      `${changes.length} uncommitted change${
+        changes.length === 1
+          ? ""
+          : "s"
+      } detected`,
   };
 }
 
@@ -1350,19 +1271,13 @@ function checkReadmeVersion(
       "utf8",
     );
 
-  const hasVersion =
+  if (
     content.includes(
       version,
-    );
-
-  const hasTag =
+    ) &&
     content.includes(
       releaseTag,
-    );
-
-  if (
-    hasVersion &&
-    hasTag
+    )
   ) {
     return {
       label:
@@ -1407,22 +1322,16 @@ function checkChangelogVersion(
       "utf8",
     );
 
-  const versionHeading =
+  const heading =
     `## [${version}]`;
 
-  const hasVersion =
+  if (
     content.includes(
-      versionHeading,
-    );
-
-  const hasTag =
+      heading,
+    ) &&
     content.includes(
       releaseTag,
-    );
-
-  if (
-    hasVersion &&
-    hasTag
+    )
   ) {
     return {
       label:
@@ -1438,7 +1347,7 @@ function checkChangelogVersion(
       "CHANGELOG release metadata",
     status: "fail",
     detail:
-      `CHANGELOG.md must contain ${versionHeading} and ${releaseTag}.`,
+      `CHANGELOG.md must contain ${heading} and ${releaseTag}.`,
   };
 }
 
@@ -1457,19 +1366,9 @@ function checkReleaseTagAvailable(
     );
 
   if (
-    result.error
-  ) {
-    return {
-      label:
-        "Release tag availability",
-      status: "fail",
-      detail:
-        result.error.message,
-    };
-  }
-
-  if (
-    result.status !== 0
+    !gitCommandSucceeded(
+      result,
+    )
   ) {
     return {
       label:
@@ -1477,6 +1376,7 @@ function checkReleaseTagAvailable(
       status: "fail",
       detail:
         result.stderr ||
+        result.error?.message ||
         "Unable to inspect Git tags.",
     };
   }
@@ -1501,6 +1401,202 @@ function checkReleaseTagAvailable(
     detail:
       `${releaseTag} is available`,
   };
+}
+
+function hasCheckFailures(
+  checks: ReleaseCheck[],
+): boolean {
+  return checks.some(
+    (check) =>
+      check.status === "fail",
+  );
+}
+
+function printReleaseFailure(
+  checks: ReleaseCheck[],
+): void {
+  const failures =
+    checks.filter(
+      (check) =>
+        check.status === "fail",
+    );
+
+  console.log("");
+
+  console.error(
+    `Release check failed with ${failures.length} problem${
+      failures.length === 1
+        ? ""
+        : "s"
+    }.`,
+  );
+
+  console.error(
+    "Fix the reported problems before continuing.",
+  );
+
+  console.log("");
+}
+
+function printChecks(
+  checks: ReleaseCheck[],
+): void {
+  for (
+    const check
+    of checks
+  ) {
+    const symbol =
+      check.status ===
+      "pass"
+        ? "✓"
+        : "✗";
+
+    console.log(
+      `${symbol} ${check.label}`,
+    );
+
+    if (
+      check.detail
+    ) {
+      console.log(
+        `  ${check.detail}`,
+      );
+    }
+  }
+}
+
+function runFullValidation(): boolean {
+  const previousExitCode =
+    process.exitCode;
+
+  process.exitCode = 0;
+
+  try {
+    validateRepository();
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : String(error);
+
+    console.error(
+      `Validation failed: ${message}`,
+    );
+
+    process.exitCode =
+      previousExitCode ?? 0;
+
+    return false;
+  }
+
+  const validationExitCode =
+    process.exitCode ?? 0;
+
+  process.exitCode =
+    previousExitCode ?? 0;
+
+  return (
+    validationExitCode === 0
+  );
+}
+
+function findProjectRoot(
+  startDirectory: string,
+): string {
+  let currentDirectory =
+    resolve(
+      startDirectory,
+    );
+
+  while (true) {
+    if (
+      existsSync(
+        join(
+          currentDirectory,
+          ".git",
+        ),
+      ) &&
+      existsSync(
+        join(
+          currentDirectory,
+          "apps",
+          "admin",
+        ),
+      ) &&
+      existsSync(
+        join(
+          currentDirectory,
+          "tools",
+          "anw-cli",
+        ),
+      )
+    ) {
+      return currentDirectory;
+    }
+
+    const parentDirectory =
+      resolve(
+        currentDirectory,
+        "..",
+      );
+
+    if (
+      parentDirectory ===
+      currentDirectory
+    ) {
+      break;
+    }
+
+    currentDirectory =
+      parentDirectory;
+  }
+
+  throw new Error(
+    "ANW project root could not be found.",
+  );
+}
+
+function readPackageVersion(
+  packagePath: string,
+): string {
+  const rawPackage =
+    readFileSync(
+      packagePath,
+      "utf8",
+    );
+
+  const parsedPackage =
+    JSON.parse(
+      rawPackage,
+    ) as {
+      version?: unknown;
+    };
+
+  if (
+    typeof parsedPackage.version !==
+      "string" ||
+    !parsedPackage.version.trim()
+  ) {
+    throw new Error(
+      "CLI package.json does not contain a valid version.",
+    );
+  }
+
+  return parsedPackage.version.trim();
+}
+
+function splitLines(
+  value: string,
+): string[] {
+  return value
+    .split(
+      /\r?\n/,
+    )
+    .map(
+      (line) =>
+        line.trim(),
+    )
+    .filter(Boolean);
 }
 
 function runGit(
@@ -1547,7 +1643,7 @@ function gitCommandSucceeded(
   result: GitResult,
 ): boolean {
   return (
-    !result.error &&
+    result.error === undefined &&
     result.status === 0
   );
 }
@@ -1577,32 +1673,5 @@ function printGitFailure(
     console.error(
       result.stdout,
     );
-  }
-}
-
-function printChecks(
-  checks: ReleaseCheck[],
-): void {
-  for (
-    const check
-    of checks
-  ) {
-    const symbol =
-      check.status ===
-      "pass"
-        ? "✓"
-        : "✗";
-
-    console.log(
-      `${symbol} ${check.label}`,
-    );
-
-    if (
-      check.detail
-    ) {
-      console.log(
-        `  ${check.detail}`,
-      );
-    }
   }
 }

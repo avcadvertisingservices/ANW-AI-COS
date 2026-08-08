@@ -44,7 +44,7 @@ program
   .description(
     "Developer CLI for the ANW AI Content Operating System.",
   )
-  .version("0.8.0");
+  .version("0.9.0");
 
 program
   .command("hello")
@@ -53,15 +53,12 @@ program
   )
   .action(() => {
     console.log("");
-
     console.log(
       "Welcome to the ANW AI-COS CLI!",
     );
-
     console.log(
       "You Are Not Alone.",
     );
-
     console.log("");
   });
 
@@ -277,6 +274,11 @@ program
     false,
   )
   .option(
+    "--history",
+    "Show recent ANW CLI release history without changing anything.",
+    false,
+  )
+  .option(
     "--plan",
     "Preview the release workflow without changing anything.",
     false,
@@ -300,6 +302,7 @@ program
     (
       options: {
         status?: boolean;
+        history?: boolean;
         plan?: boolean;
         check?: boolean;
         execute?: boolean;

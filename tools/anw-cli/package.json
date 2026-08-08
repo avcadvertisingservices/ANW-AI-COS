@@ -1,6 +1,6 @@
 {
   "name": "@anw/anw-cli",
-  "version": "0.8.0",
+  "version": "0.11.0",
   "private": true,
   "description": "Developer CLI for the ANW AI Content Operating System.",
   "type": "module",
@@ -12,7 +12,11 @@
     "dev": "tsx src/cli.ts",
     "typecheck": "tsc --noEmit",
     "test": "npm run build && node --test dist/tests/generators.test.js dist/tests/repair.test.js",
-    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\""
+    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
+    "release:sync": "powershell -ExecutionPolicy Bypass -File ./update-release-docs.ps1",
+    "release:next": "npm version minor --no-git-tag-version && npm run release:sync",
+    "release:patch": "npm version patch --no-git-tag-version && npm run release:sync",
+    "release:major": "npm version major --no-git-tag-version && npm run release:sync"
   },
   "dependencies": {
     "commander": "^14.0.0"

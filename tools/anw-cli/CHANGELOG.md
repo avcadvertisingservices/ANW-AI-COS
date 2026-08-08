@@ -3,6 +3,40 @@
 All notable changes to the ANW AI-COS CLI will be documented in this file.
 
 ---
+## [0.11.0] - 2026-08-08
+
+### Added
+
+- Prepared ANW CLI version 0.11.0.
+- Automated release version synchronization.
+
+### Release
+
+Git tag:
+
+```text
+anw-cli-v0.11.0
+```
+
+---
+
+## [0.10.0] - 2026-08-08
+
+### Added
+
+- Prepared ANW CLI version 0.10.0.
+- Automated release version synchronization.
+
+### Release
+
+Git tag:
+
+```text
+anw-cli-v0.10.0
+```
+
+---
+
 ## [0.8.0] - 2026-08-08
 
 ### Added
@@ -119,6 +153,73 @@ README release metadata
 CHANGELOG release metadata
 Release tag available
 Full validation passed
+```
+
+### Release
+
+Git tag:
+
+```text
+anw-cli-v0.6.0
+```
+
+---
+
+## [0.6.0] - 2026-08-08
+
+### Added
+
+- Added `release --plan`.
+- Added a safe preview of the ANW CLI release workflow.
+- Added proposed Git release tag preview.
+- Added proposed Git tag push command preview.
+- Added protection against using `--check` and `--plan` together.
+- Added explicit safety reporting for release planning.
+- Release planning makes no file changes.
+- Release planning creates no commits.
+- Release planning creates no Git tags.
+- Release planning performs no remote pushes.
+
+### Release planning
+
+Run:
+
+```powershell
+npm run dev -- release --plan
+```
+
+The command previews:
+
+```text
+1. Git working-tree check
+2. CLI package-version check
+3. README release metadata check
+4. CHANGELOG release metadata check
+5. Git tag availability check
+6. Full ANW validation
+7. Future annotated Git tag command
+8. Future Git tag push command
+```
+
+No release actions are performed by --plan.
+
+### Release readiness
+
+Run:
+
+```powershell
+npm run dev -- release --check
+```
+
+The release check must confirm:
+
+```text
+Git working tree clean
+CLI package version
+README release metadata
+CHANGELOG release metadata
+Release tag availability
+Full ANW validation
 ```
 
 ### Release
@@ -310,3 +411,6 @@ component
 feature
 page
 ```
+
+
+

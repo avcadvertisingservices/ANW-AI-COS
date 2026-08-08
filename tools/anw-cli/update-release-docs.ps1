@@ -1,23 +1,14 @@
 $ErrorActionPreference = "Stop"
 
-$readmePath = Join-Path $PSScriptRoot "README.md"
-$changelogPath = Join-Path $PSScriptRoot "CHANGELOG.md"
+$root = $PSScriptRoot
 
-$version = "0.6.0"
-$tag = "anw-cli-v0.6.0"
-$date = "2026-08-08"
+$packagePath = Join-Path $root "package.json"
+$readmePath = Join-Path $root "README.md"
+$changelogPath = Join-Path $root "CHANGELOG.md"
 
-Write-Host ""
-Write-Host "ANW CLI Release Documentation Updater"
-Write-Host "====================================="
-Write-Host ""
-Write-Host "Version: $version"
-Write-Host "Tag:     $tag"
-Write-Host ""
-
-# ------------------------------------------------------------
-# CHECK FILES
-# ------------------------------------------------------------
+if (-not (Test-Path $packagePath)) {
+    throw "package.json was not found."
+}
 
 if (-not (Test-Path $readmePath)) {
     throw "README.md was not found."
@@ -28,59 +19,59 @@ if (-not (Test-Path $changelogPath)) {
 }
 
 # ------------------------------------------------------------
-# UPDATE README
+# READ VERSION AUTOMATICALLY
 # ------------------------------------------------------------
 
-$readme = Get-Content $readmePath -Raw
+$package =
+    Get-Content $packagePath -Raw |
+    ConvertFrom-Json
 
-# Update previous release version references.
-$readme = $readme -replace '0\.5\.0', '0.6.0'
-$readme = $readme -replace 'anw-cli-v0\.5\.0', 'anw-cli-v0.6.0'
+$version = [string]$package.version
+$tag = "anw-cli-v$version"
+$date = Get-Date -Format "yyyy-MM-dd"
 
-# Add release plan documentation if it does not already exist.
-if ($readme -notmatch 'release --plan') {
+if ([string]::IsNullOrWhiteSpace($version)) {
+    throw "Unable to read version from package.json."
+}
 
-    $releasePlanSection = @(
-        "",
-        "## Release Planning",
-        "",
-        "ANW CLI supports a safe release preview mode.",
-        "",
-        "Run:",
-        "",
-        '```powershell',
-        "npm run dev -- release --plan",
-        '```',
-        "",
-        "The release plan previews:",
-        "",
-        '```text',
-        "1. Git working-tree check",
-        "2. CLI package-version check",
-        "3. README release metadata check",
-        "4. CHANGELOG release metadata check",
-        "5. Git tag availability check",
-        "6. Full ANW validation",
-        "7. Future annotated Git tag command",
-        "8. Future Git tag push command",
-        '```',
-        "",
-        "The release plan makes no changes.",
-        "",
-        "It does not:",
-        "",
-        '```text',
-        "- modify files",
-        "- create commits",
-        "- create Git tags",
-        "- push to remotes",
-        '```',
-        ""
+Write-Host ""
+Write-Host "ANW CLI Release Metadata Sync"
+Write-Host "============================="
+Write-Host ""
+Write-Host "Version: $version"
+Write-Host "Tag:     $tag"
+Write-Host ""
+
+# ------------------------------------------------------------
+# README
+# ------------------------------------------------------------
+
+$readme =
+    Get-Content $readmePath -Raw
+
+# Replace current ANW CLI release tags.
+$readme =
+    [regex]::Replace(
+        $readme,
+        'anw-cli-v\d+\.\d+\.\d+',
+        $tag
     )
 
-    $releasePlanText = $releasePlanSection -join "`r`n"
+# Replace standalone version line used by release metadata.
+$readme =
+    [regex]::Replace(
+        $readme,
+        '(?m)^\d+\.\d+\.\d+$',
+        $version
+    )
 
-    $readme = $readme + $releasePlanText
+# Ensure current version and tag exist.
+if ($readme -notmatch [regex]::Escape($version)) {
+    $readme += "`r`n`r`nCurrent ANW CLI version: $version"
+}
+
+if ($readme -notmatch [regex]::Escape($tag)) {
+    $readme += "`r`nRelease tag: $tag"
 }
 
 Set-Content `
@@ -88,74 +79,30 @@ Set-Content `
     -Value $readme `
     -Encoding UTF8
 
-Write-Host "README.md updated for v0.6.0"
+Write-Host "README.md synchronized."
 
 # ------------------------------------------------------------
-# UPDATE CHANGELOG
+# CHANGELOG
 # ------------------------------------------------------------
 
-$changelog = Get-Content $changelogPath -Raw
+$changelog =
+    Get-Content $changelogPath -Raw
 
-# Only add the section once.
-if ($changelog -notmatch '## \[0\.6\.0\]') {
+$versionHeading =
+    "## [$version]"
 
+# Add a new release section only if this version does not exist.
+if (
+    $changelog -notmatch
+    [regex]::Escape($versionHeading)
+) {
     $releaseLines = @(
-        "## [0.6.0] - $date",
+        "## [$version] - $date",
         "",
         "### Added",
         "",
-        "- Added ``release --plan``.",
-        "- Added a safe preview of the ANW CLI release workflow.",
-        "- Added proposed Git release tag preview.",
-        "- Added proposed Git tag push command preview.",
-        "- Added protection against using ``--check`` and ``--plan`` together.",
-        "- Added explicit safety reporting for release planning.",
-        "- Release planning makes no file changes.",
-        "- Release planning creates no commits.",
-        "- Release planning creates no Git tags.",
-        "- Release planning performs no remote pushes.",
-        "",
-        "### Release planning",
-        "",
-        "Run:",
-        "",
-        '```powershell',
-        "npm run dev -- release --plan",
-        '```',
-        "",
-        "The command previews:",
-        "",
-        '```text',
-        "1. Git working-tree check",
-        "2. CLI package-version check",
-        "3. README release metadata check",
-        "4. CHANGELOG release metadata check",
-        "5. Git tag availability check",
-        "6. Full ANW validation",
-        "7. Future annotated Git tag command",
-        "8. Future Git tag push command",
-        '```',
-        "",
-        "No release actions are performed by --plan.",
-        "",
-        "### Release readiness",
-        "",
-        "Run:",
-        "",
-        '```powershell',
-        "npm run dev -- release --check",
-        '```',
-        "",
-        "The release check must confirm:",
-        "",
-        '```text',
-        "Git working tree clean",
-        "CLI package version",
-        "README release metadata",
-        "CHANGELOG release metadata",
-        "Release tag availability",
-        "Full ANW validation",
-        '```',
+        "- Prepared ANW CLI version $version.",
+        "- Automated release version synchronization.",
         "",
         "### Release",
         "",
@@ -169,21 +116,38 @@ if ($changelog -notmatch '## \[0\.6\.0\]') {
         ""
     )
 
-    $newRelease = $releaseLines -join "`r`n"
+    $releaseSection =
+        $releaseLines -join "`r`n"
 
-    # Put v0.6.0 immediately before v0.5.0 when possible.
-    if ($changelog -match '(?m)^## \[0\.5\.0\]') {
+    $firstRelease =
+        [regex]::Match(
+            $changelog,
+            '(?m)^## \[\d+\.\d+\.\d+\]'
+        )
 
-        $changelog = $changelog -replace `
-            '(?m)^## \[0\.5\.0\]', `
-            ($newRelease + "`r`n## [0.5.0]")
+    if ($firstRelease.Success) {
+        $before =
+            $changelog.Substring(
+                0,
+                $firstRelease.Index
+            )
+
+        $after =
+            $changelog.Substring(
+                $firstRelease.Index
+            )
+
+        $changelog =
+            $before +
+            $releaseSection +
+            "`r`n" +
+            $after
     }
     else {
-
-        # If the old heading cannot be found, prepend v0.6.0
-        # while preserving all existing changelog content.
-        $changelog = `
-            $newRelease + "`r`n" + $changelog
+        $changelog =
+            $releaseSection +
+            "`r`n" +
+            $changelog
     }
 }
 
@@ -192,41 +156,49 @@ Set-Content `
     -Value $changelog `
     -Encoding UTF8
 
-Write-Host "CHANGELOG.md updated for v0.6.0"
+Write-Host "CHANGELOG.md synchronized."
 
 # ------------------------------------------------------------
-# VERIFY METADATA
+# VERIFY
 # ------------------------------------------------------------
 
-Write-Host ""
-Write-Host "Checking release metadata..."
-Write-Host ""
+$readmeCheck =
+    Get-Content $readmePath -Raw
 
-$readmeCheck = Get-Content $readmePath -Raw
-$changelogCheck = Get-Content $changelogPath -Raw
+$changelogCheck =
+    Get-Content $changelogPath -Raw
+
+Write-Host ""
+Write-Host "Verification"
+Write-Host "------------"
 
 if (
-    $readmeCheck -match '0\.6\.0' -and
-    $readmeCheck -match 'anw-cli-v0\.6\.0'
+    $readmeCheck.Contains($version) -and
+    $readmeCheck.Contains($tag)
 ) {
-    Write-Host "PASS: README release metadata"
+    Write-Host "PASS: README metadata"
 }
 else {
-    Write-Host "FAIL: README release metadata"
+    Write-Host "FAIL: README metadata"
+    exit 1
 }
 
 if (
-    $changelogCheck -match '## \[0\.6\.0\]' -and
-    $changelogCheck -match 'anw-cli-v0\.6\.0'
+    $changelogCheck.Contains(
+        "## [$version]"
+    ) -and
+    $changelogCheck.Contains($tag)
 ) {
-    Write-Host "PASS: CHANGELOG release metadata"
+    Write-Host "PASS: CHANGELOG metadata"
 }
 else {
-    Write-Host "FAIL: CHANGELOG release metadata"
+    Write-Host "FAIL: CHANGELOG metadata"
+    exit 1
 }
 
 Write-Host ""
-Write-Host "Release documentation update complete."
+Write-Host "Release metadata synchronized successfully."
 Write-Host ""
-
-git status
+Write-Host "Version: $version"
+Write-Host "Tag:     $tag"
+Write-Host ""
