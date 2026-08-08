@@ -72,6 +72,7 @@ type ProjectStatus = {
 
 type ProjectJsonReport = {
   schemaVersion: string;
+  generatedAt: string;
   repository: string;
   branch: string;
   workingTree: {
@@ -432,13 +433,18 @@ function runProjectReportMode(
       projectRoot,
     );
 
+  const generatedAt =
+    new Date().toISOString();
+
   const content =
     options.json === true
       ? buildJsonReport(
           status,
+          generatedAt,
         )
       : buildMarkdownReport(
           status,
+          generatedAt,
         );
 
   if (
@@ -464,11 +470,13 @@ function runProjectReportMode(
 
 function buildMarkdownReport(
   status: ProjectStatus,
+  generatedAt: string,
 ): string {
   const lines = [
     "# ANW AI-COS Project Report",
     "",
     `Schema Version: ${PROJECT_REPORT_SCHEMA_VERSION}`,
+    `Generated At: ${generatedAt}`,
     `Repository: ${status.projectRoot}`,
     "",
     "## Repository",
@@ -508,11 +516,14 @@ function buildMarkdownReport(
 
 function buildJsonReport(
   status: ProjectStatus,
+  generatedAt: string,
 ): string {
   const report:
     ProjectJsonReport = {
       schemaVersion:
         PROJECT_REPORT_SCHEMA_VERSION,
+
+      generatedAt,
 
       repository:
         status.projectRoot,
