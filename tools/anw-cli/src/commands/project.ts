@@ -44,6 +44,11 @@ type WorkingTreeResult = {
   changes: number;
 };
 
+type InventoryItem = {
+  name: string;
+  path: string;
+};
+
 type ProjectStatus = {
   projectRoot: string;
   branch: string;
@@ -59,14 +64,10 @@ type ProjectStatus = {
   overallStatus: ProjectHealth;
 };
 
-type InventoryItem = {
-  name: string;
-  path: string;
-};
-
 export type ProjectOptions = {
   status?: boolean;
   inventory?: boolean;
+  report?: boolean;
 };
 
 export function runProject(
@@ -76,13 +77,14 @@ export function runProject(
     [
       options.status,
       options.inventory,
+      options.report,
     ].filter(Boolean).length;
 
   if (
     selectedModes > 1
   ) {
     throw new Error(
-      "Choose only one project mode: --status or --inventory.",
+      "Choose only one project mode: --status, --inventory, or --report.",
     );
   }
 
@@ -97,6 +99,13 @@ export function runProject(
     options.inventory === true
   ) {
     runProjectInventory();
+    return;
+  }
+
+  if (
+    options.report === true
+  ) {
+    runProjectReport();
     return;
   }
 
@@ -122,6 +131,10 @@ function printProjectHelp(): void {
 
   console.log(
     "npm run dev -- project --inventory",
+  );
+
+  console.log(
+    "npm run dev -- project --report",
   );
 
   console.log("");
@@ -324,6 +337,131 @@ function runProjectInventory(): void {
   console.log("");
 }
 
+function runProjectReport(): void {
+  const projectRoot =
+    findProjectRoot(
+      process.cwd(),
+    );
+
+  const status =
+    collectProjectStatus(
+      projectRoot,
+    );
+
+  console.log("");
+  console.log(
+    "# ANW AI-COS Project Report",
+  );
+  console.log("");
+
+  console.log(
+    `Repository: ${status.projectRoot}`,
+  );
+
+  console.log("");
+
+  console.log(
+    "## Repository",
+  );
+  console.log("");
+
+  console.log(
+    `Branch: ${status.branch}`,
+  );
+
+  console.log(
+    `Working tree: ${
+      status.workingTree === "DIRTY"
+        ? `DIRTY (${status.workingTreeChanges} ${
+            status.workingTreeChanges === 1
+              ? "change"
+              : "changes"
+          })`
+        : status.workingTree
+    }`,
+  );
+
+  console.log(
+    `Latest commit: ${status.latestCommit}`,
+  );
+
+  console.log("");
+
+  console.log(
+    "## CLI Release",
+  );
+  console.log("");
+
+  console.log(
+    `Version: ${status.cliVersion}`,
+  );
+
+  console.log(
+    `Latest release tag: ${status.latestReleaseTag}`,
+  );
+
+  console.log("");
+
+  console.log(
+    "## Architecture",
+  );
+  console.log("");
+
+  console.log(
+    `Modules: ${status.moduleCount}`,
+  );
+
+  console.log(
+    `Features: ${status.featureCount}`,
+  );
+
+  console.log(
+    `Components: ${status.componentCount}`,
+  );
+
+  console.log(
+    `Routes: ${status.routeCount}`,
+  );
+
+  console.log("");
+
+  console.log(
+    "## Health",
+  );
+  console.log("");
+
+  console.log(
+    `Overall status: ${status.overallStatus}`,
+  );
+
+  console.log("");
+
+  if (
+    status.overallStatus ===
+    "HEALTHY"
+  ) {
+    console.log(
+      "The ANW AI-COS repository structure is available and readable.",
+    );
+  } else {
+    console.log(
+      "One or more project status checks require attention.",
+    );
+  }
+
+  console.log("");
+
+  console.log(
+    "Project report generation complete.",
+  );
+
+  console.log(
+    "No files were changed.",
+  );
+
+  console.log("");
+}
+
 function printInventorySection(
   title: string,
   items: InventoryItem[],
@@ -396,10 +534,10 @@ function collectProjectStatus(
       projectRoot,
     );
 
-  const routeCount =
+  const routes =
     discoverRoutes(
       projectRoot,
-    ).length;
+    );
 
   const modules =
     discoverModules(
@@ -422,7 +560,8 @@ function collectProjectStatus(
       workingTree,
       latestCommit,
       cliVersion,
-      routeCount,
+      routeCount:
+        routes.length,
     });
 
   return {
@@ -435,7 +574,8 @@ function collectProjectStatus(
     latestCommit,
     cliVersion,
     latestReleaseTag,
-    routeCount,
+    routeCount:
+      routes.length,
     moduleCount:
       modules.length,
     featureCount:
@@ -464,7 +604,8 @@ function determineOverallHealth(
       "UNKNOWN" ||
     input.cliVersion ===
       "UNKNOWN" ||
-    input.routeCount === 0
+    input.routeCount ===
+      0
   ) {
     return "ATTENTION REQUIRED";
   }
@@ -553,7 +694,8 @@ function getCurrentBranch(
     gitCommandSucceeded(
       result,
     ) &&
-    result.stdout.length > 0
+    result.stdout.length >
+      0
   ) {
     return result.stdout;
   }
@@ -581,7 +723,6 @@ function getWorkingTreeStatus(
     return {
       state:
         "UNKNOWN",
-
       changes:
         0,
     };
@@ -594,7 +735,8 @@ function getWorkingTreeStatus(
 
   return {
     state:
-      changes.length === 0
+      changes.length ===
+      0
         ? "CLEAN"
         : "DIRTY",
 
@@ -620,7 +762,8 @@ function getLatestCommit(
     gitCommandSucceeded(
       result,
     ) &&
-    result.stdout.length > 0
+    result.stdout.length >
+      0
   ) {
     return result.stdout;
   }
@@ -772,16 +915,19 @@ function discoverComponents(
           ),
         );
 
+      const key =
+        relativePath.toLowerCase();
+
       if (
         discovered.has(
-          relativePath.toLowerCase(),
+          key,
         )
       ) {
         continue;
       }
 
       discovered.set(
-        relativePath.toLowerCase(),
+        key,
         {
           name:
             basename(
@@ -890,7 +1036,8 @@ function getRouteDisplayName(
       ),
     );
 
-  return routePath.length > 0
+  return routePath.length >
+    0
     ? routePath
     : basename(
         filePath,
@@ -946,8 +1093,10 @@ function walkFiles(
       readdirSync(
         directory,
         {
-          withFileTypes: true,
-          encoding: "utf8",
+          withFileTypes:
+            true,
+          encoding:
+            "utf8",
         },
       );
   } catch {
@@ -1010,7 +1159,8 @@ function splitLines(
     )
     .filter(
       (line) =>
-        line.length > 0,
+        line.length >
+        0,
     );
 }
 

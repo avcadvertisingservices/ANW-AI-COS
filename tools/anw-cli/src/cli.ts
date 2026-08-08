@@ -367,11 +367,17 @@ program
     "Show the detailed ANW AI-COS architecture inventory without changing anything.",
     false,
   )
+  .option(
+    "--report",
+    "Show a consolidated ANW AI-COS project report without changing anything.",
+    false,
+  )
   .action(
     (
       options: {
         status?: boolean;
         inventory?: boolean;
+        report?: boolean;
       },
     ) => {
       try {
