@@ -28,6 +28,8 @@ import {
 } from "./module-list.js";
 
 const PROJECT_REPORT_SCHEMA_VERSION = "1.0";
+const PROJECT_REPORT_TYPE = "project";
+const PROJECT_REPORT_GENERATOR = "anw-cli";
 
 type GitResult = {
   status: number | null;
@@ -73,6 +75,9 @@ type ProjectStatus = {
 type ProjectJsonReport = {
   schemaVersion: string;
   generatedAt: string;
+  reportType: string;
+  generator: string;
+  generatorVersion: string;
   repository: string;
   branch: string;
   workingTree: {
@@ -477,6 +482,9 @@ function buildMarkdownReport(
     "",
     `Schema Version: ${PROJECT_REPORT_SCHEMA_VERSION}`,
     `Generated At: ${generatedAt}`,
+    `Report Type: ${PROJECT_REPORT_TYPE}`,
+    `Generator: ${PROJECT_REPORT_GENERATOR}`,
+    `Generator Version: ${status.cliVersion}`,
     `Repository: ${status.projectRoot}`,
     "",
     "## Repository",
@@ -524,6 +532,15 @@ function buildJsonReport(
         PROJECT_REPORT_SCHEMA_VERSION,
 
       generatedAt,
+
+      reportType:
+        PROJECT_REPORT_TYPE,
+
+      generator:
+        PROJECT_REPORT_GENERATOR,
+
+      generatorVersion:
+        status.cliVersion,
 
       repository:
         status.projectRoot,
