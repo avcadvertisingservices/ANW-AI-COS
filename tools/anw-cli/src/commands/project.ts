@@ -95,6 +95,7 @@ export type ProjectOptions = {
   report?: boolean;
   json?: boolean;
   output?: string;
+  force?: boolean;
 };
 
 export function runProject(
@@ -130,6 +131,24 @@ export function runProject(
   ) {
     throw new Error(
       "--output can only be used together with --report.",
+    );
+  }
+
+  if (
+    options.force === true &&
+    options.output === undefined
+  ) {
+    throw new Error(
+      "--force can only be used together with --output.",
+    );
+  }
+
+  if (
+    options.force === true &&
+    options.report !== true
+  ) {
+    throw new Error(
+      "--force can only be used together with --report --output.",
     );
   }
 
@@ -204,10 +223,16 @@ function printProjectHelp(): void {
     "npm run dev -- project --report --json --output docs/project-report.json",
   );
 
+  console.log(
+    "npm run dev -- project --report --output docs/project-report.md --force",
+  );
+
   console.log("");
+
   console.log(
     "No project changes were made.",
   );
+
   console.log("");
 }
 
@@ -231,6 +256,7 @@ function runProjectStatus(): void {
   console.log(
     `Repository: ${status.projectRoot}`,
   );
+
   console.log("");
 
   console.log(
@@ -251,6 +277,7 @@ function runProjectStatus(): void {
   console.log(
     `Latest commit: ${status.latestCommit}`,
   );
+
   console.log("");
 
   console.log(
@@ -265,6 +292,7 @@ function runProjectStatus(): void {
   console.log(
     `Latest release tag: ${status.latestReleaseTag}`,
   );
+
   console.log("");
 
   console.log(
@@ -275,6 +303,7 @@ function runProjectStatus(): void {
   console.log(
     `App Router files: ${status.routeCount}`,
   );
+
   console.log("");
 
   console.log(
@@ -293,6 +322,7 @@ function runProjectStatus(): void {
   console.log(
     `Components: ${status.componentCount}`,
   );
+
   console.log("");
 
   console.log(
@@ -303,6 +333,7 @@ function runProjectStatus(): void {
   console.log(
     `Status: ${status.overallStatus}`,
   );
+
   console.log("");
 
   console.log(
@@ -312,6 +343,7 @@ function runProjectStatus(): void {
   console.log(
     "No changes were made.",
   );
+
   console.log("");
 }
 
@@ -350,6 +382,7 @@ function runProjectInventory(): void {
   console.log(
     `Repository: ${projectRoot}`,
   );
+
   console.log("");
 
   printInventorySection(
@@ -379,6 +412,7 @@ function runProjectInventory(): void {
   console.log(
     "No files were changed.",
   );
+
   console.log("");
 }
 
@@ -414,6 +448,7 @@ function runProjectReportMode(
       options.json === true
         ? "JSON"
         : "Markdown",
+      options.force === true,
     );
 
     return;
@@ -460,7 +495,6 @@ function buildMarkdownReport(
       : "One or more project status checks require attention.",
     "",
     "Project report generation complete.",
-    "No files were changed.",
   ];
 
   return lines.join(
@@ -528,6 +562,7 @@ function writeReportFile(
   requestedPath: string,
   content: string,
   format: "Markdown" | "JSON",
+  force: boolean,
 ): void {
   const trimmedPath =
     requestedPath.trim();
@@ -543,6 +578,17 @@ function writeReportFile(
           projectRoot,
           trimmedPath,
         );
+
+  if (
+    existsSync(
+      outputPath,
+    ) &&
+    force !== true
+  ) {
+    throw new Error(
+      `Output file already exists: ${outputPath}\nUse --force to overwrite it.`,
+    );
+  }
 
   const outputDirectory =
     dirname(
@@ -576,10 +622,20 @@ function writeReportFile(
     `Output: ${outputPath}`,
   );
 
+  console.log(
+    `Overwrite: ${
+      force
+        ? "ENABLED"
+        : "PROTECTED"
+    }`,
+  );
+
   console.log("");
 
   console.log(
-    "Project report written successfully.",
+    force
+      ? "Project report written successfully with overwrite permission."
+      : "Project report written successfully.",
   );
 
   console.log("");
@@ -609,11 +665,13 @@ function printInventorySection(
   console.log(
     `## ${title}`,
   );
+
   console.log("");
 
   console.log(
     `${title} found: ${items.length}`,
   );
+
   console.log("");
 
   if (
@@ -624,6 +682,7 @@ function printInventorySection(
     );
 
     console.log("");
+
     return;
   }
 

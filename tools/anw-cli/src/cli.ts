@@ -112,12 +112,10 @@ program
     ) => {
       try {
         if (
-          options.list ===
-          true
+          options.list === true
         ) {
           if (
-            name !==
-            undefined
+            name !== undefined
           ) {
             throw new Error(
               "Do not provide a module name when using --list.",
@@ -129,8 +127,7 @@ program
         }
 
         if (
-          name ===
-          undefined
+          name === undefined
         ) {
           throw new Error(
             "Provide a module name or use --list.",
@@ -139,8 +136,7 @@ program
 
         createModule(
           name,
-          options.force ===
-            undefined
+          options.force === undefined
             ? {}
             : {
                 force:
@@ -220,12 +216,10 @@ program
     ) => {
       try {
         if (
-          options.list ===
-          true
+          options.list === true
         ) {
           if (
-            name !==
-            undefined
+            name !== undefined
           ) {
             throw new Error(
               "Do not provide a feature name when using --list.",
@@ -237,8 +231,7 @@ program
         }
 
         if (
-          name ===
-          undefined
+          name === undefined
         ) {
           throw new Error(
             "Provide a feature name or use --list.",
@@ -247,8 +240,7 @@ program
 
         createFeature(
           name,
-          options.force ===
-            undefined
+          options.force === undefined
             ? {}
             : {
                 force:
@@ -389,6 +381,11 @@ program
     "--output <path>",
     "Write the project report to a file. Requires --report.",
   )
+  .option(
+    "--force",
+    "Allow an existing report output file to be overwritten. Requires --report --output.",
+    false,
+  )
   .action(
     (
       options: {
@@ -397,6 +394,7 @@ program
         report?: boolean;
         json?: boolean;
         output?: string;
+        force?: boolean;
       },
     ) => {
       try {
