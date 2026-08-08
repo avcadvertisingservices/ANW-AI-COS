@@ -7,6 +7,7 @@ import {
 import {
   basename,
   join,
+  relative,
   resolve,
 } from "node:path";
 
@@ -58,17 +59,44 @@ type ProjectStatus = {
   overallStatus: ProjectHealth;
 };
 
+type InventoryItem = {
+  name: string;
+  path: string;
+};
+
 export type ProjectOptions = {
   status?: boolean;
+  inventory?: boolean;
 };
 
 export function runProject(
   options: ProjectOptions = {},
 ): void {
+  const selectedModes =
+    [
+      options.status,
+      options.inventory,
+    ].filter(Boolean).length;
+
+  if (
+    selectedModes > 1
+  ) {
+    throw new Error(
+      "Choose only one project mode: --status or --inventory.",
+    );
+  }
+
   if (
     options.status === true
   ) {
     runProjectStatus();
+    return;
+  }
+
+  if (
+    options.inventory === true
+  ) {
+    runProjectInventory();
     return;
   }
 
@@ -83,13 +111,17 @@ function printProjectHelp(): void {
   console.log("");
 
   console.log(
-    "Available command:",
+    "Available commands:",
   );
 
   console.log("");
 
   console.log(
     "npm run dev -- project --status",
+  );
+
+  console.log(
+    "npm run dev -- project --inventory",
   );
 
   console.log("");
@@ -223,6 +255,119 @@ function runProjectStatus(): void {
   console.log("");
 }
 
+function runProjectInventory(): void {
+  const projectRoot =
+    findProjectRoot(
+      process.cwd(),
+    );
+
+  const modules =
+    discoverModules(
+      projectRoot,
+    );
+
+  const features =
+    discoverFeatures(
+      projectRoot,
+    );
+
+  const components =
+    discoverComponents(
+      projectRoot,
+    );
+
+  const routes =
+    discoverRoutes(
+      projectRoot,
+    );
+
+  console.log("");
+  console.log(
+    "# ANW AI-COS Project Inventory",
+  );
+  console.log("");
+
+  console.log(
+    `Repository: ${projectRoot}`,
+  );
+
+  console.log("");
+
+  printInventorySection(
+    "Modules",
+    modules,
+  );
+
+  printInventorySection(
+    "Features",
+    features,
+  );
+
+  printInventorySection(
+    "Components",
+    components,
+  );
+
+  printInventorySection(
+    "Routes",
+    routes,
+  );
+
+  console.log(
+    "Project inventory inspection complete.",
+  );
+
+  console.log(
+    "No files were changed.",
+  );
+
+  console.log("");
+}
+
+function printInventorySection(
+  title: string,
+  items: InventoryItem[],
+): void {
+  console.log(
+    `## ${title}`,
+  );
+
+  console.log("");
+
+  console.log(
+    `${title} found: ${items.length}`,
+  );
+
+  console.log("");
+
+  if (
+    items.length === 0
+  ) {
+    console.log(
+      `No ${title.toLowerCase()} were discovered.`,
+    );
+
+    console.log("");
+
+    return;
+  }
+
+  for (
+    const item
+    of items
+  ) {
+    console.log(
+      `- ${item.name}`,
+    );
+
+    console.log(
+      `  ${item.path}`,
+    );
+  }
+
+  console.log("");
+}
+
 function collectProjectStatus(
   projectRoot: string,
 ): ProjectStatus {
@@ -252,9 +397,9 @@ function collectProjectStatus(
     );
 
   const routeCount =
-    countRouteFiles(
+    discoverRoutes(
       projectRoot,
-    );
+    ).length;
 
   const modules =
     discoverModules(
@@ -266,15 +411,9 @@ function collectProjectStatus(
       projectRoot,
     );
 
-  const componentCount =
-    countSourceFiles(
-      join(
-        projectRoot,
-        "apps",
-        "admin",
-        "src",
-        "components",
-      ),
+  const components =
+    discoverComponents(
+      projectRoot,
     );
 
   const overallStatus =
@@ -301,7 +440,8 @@ function collectProjectStatus(
       modules.length,
     featureCount:
       features.length,
-    componentCount,
+    componentCount:
+      components.length,
     overallStatus,
   };
 }
@@ -568,9 +708,109 @@ function getLatestReleaseTag(
   );
 }
 
-function countRouteFiles(
+function discoverComponents(
   projectRoot: string,
-): number {
+): InventoryItem[] {
+  const candidateDirectories = [
+    join(
+      projectRoot,
+      "apps",
+      "admin",
+      "src",
+      "components",
+    ),
+
+    join(
+      projectRoot,
+      "src",
+      "components",
+    ),
+
+    join(
+      projectRoot,
+      "components",
+    ),
+  ];
+
+  const discovered =
+    new Map<
+      string,
+      InventoryItem
+    >();
+
+  for (
+    const directory
+    of candidateDirectories
+  ) {
+    if (
+      !existsSync(
+        directory,
+      )
+    ) {
+      continue;
+    }
+
+    const files =
+      walkFiles(
+        directory,
+      ).filter(
+        (filePath) =>
+          /\.(tsx?|jsx?)$/i.test(
+            filePath,
+          ),
+      );
+
+    for (
+      const filePath
+      of files
+    ) {
+      const relativePath =
+        normalizeDisplayPath(
+          relative(
+            projectRoot,
+            filePath,
+          ),
+        );
+
+      if (
+        discovered.has(
+          relativePath.toLowerCase(),
+        )
+      ) {
+        continue;
+      }
+
+      discovered.set(
+        relativePath.toLowerCase(),
+        {
+          name:
+            basename(
+              filePath,
+            ),
+
+          path:
+            relativePath,
+        },
+      );
+    }
+  }
+
+  return Array.from(
+    discovered.values(),
+  ).sort(
+    (
+      left,
+      right,
+    ) =>
+      left.path.localeCompare(
+        right.path,
+      ),
+  );
+}
+
+function discoverRoutes(
+  projectRoot: string,
+): InventoryItem[] {
   const appDirectory =
     findAdminAppDirectory(
       projectRoot,
@@ -580,7 +820,7 @@ function countRouteFiles(
     appDirectory ===
     undefined
   ) {
-    return 0;
+    return [];
   }
 
   const routeFileNames =
@@ -599,19 +839,62 @@ function countRouteFiles(
       "route.tsx",
     ]);
 
-  const files =
-    walkFiles(
-      appDirectory,
+  return walkFiles(
+    appDirectory,
+  )
+    .filter(
+      (filePath) =>
+        routeFileNames.has(
+          basename(
+            filePath,
+          ),
+        ),
+    )
+    .map(
+      (filePath) => ({
+        name:
+          getRouteDisplayName(
+            appDirectory,
+            filePath,
+          ),
+
+        path:
+          normalizeDisplayPath(
+            relative(
+              projectRoot,
+              filePath,
+            ),
+          ),
+      }),
+    )
+    .sort(
+      (
+        left,
+        right,
+      ) =>
+        left.path.localeCompare(
+          right.path,
+        ),
+    );
+}
+
+function getRouteDisplayName(
+  appDirectory: string,
+  filePath: string,
+): string {
+  const routePath =
+    normalizeDisplayPath(
+      relative(
+        appDirectory,
+        filePath,
+      ),
     );
 
-  return files.filter(
-    (filePath) =>
-      routeFileNames.has(
-        basename(
-          filePath,
-        ),
-      ),
-  ).length;
+  return routePath.length > 0
+    ? routePath
+    : basename(
+        filePath,
+      );
 }
 
 function findAdminAppDirectory(
@@ -640,30 +923,6 @@ function findAdminAppDirectory(
         candidate,
       ),
   );
-}
-
-function countSourceFiles(
-  directory: string,
-): number {
-  if (
-    !existsSync(
-      directory,
-    )
-  ) {
-    return 0;
-  }
-
-  const files =
-    walkFiles(
-      directory,
-    );
-
-  return files.filter(
-    (filePath) =>
-      /\.(tsx?|jsx?)$/i.test(
-        filePath,
-      ),
-  ).length;
 }
 
 function walkFiles(
@@ -727,6 +986,15 @@ function walkFiles(
   }
 
   return files;
+}
+
+function normalizeDisplayPath(
+  path: string,
+): string {
+  return path.replace(
+    /\\/g,
+    "/",
+  );
 }
 
 function splitLines(

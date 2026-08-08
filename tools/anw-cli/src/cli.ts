@@ -362,10 +362,16 @@ program
     "Show the current ANW AI-COS project status without changing anything.",
     false,
   )
+  .option(
+    "--inventory",
+    "Show the detailed ANW AI-COS architecture inventory without changing anything.",
+    false,
+  )
   .action(
     (
       options: {
         status?: boolean;
+        inventory?: boolean;
       },
     ) => {
       try {
