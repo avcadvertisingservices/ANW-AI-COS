@@ -3,6 +3,23 @@
 All notable changes to the ANW AI-COS CLI will be documented in this file.
 
 ---
+## [0.12.0] - 2026-08-08
+
+### Added
+
+- Prepared ANW CLI version 0.12.0.
+- Automated release version synchronization.
+
+### Release
+
+Git tag:
+
+```text
+anw-cli-v0.12.0
+```
+
+---
+
 ## [0.11.0] - 2026-08-08
 
 ### Added
@@ -411,6 +428,7 @@ component
 feature
 page
 ```
+
 
 
 
