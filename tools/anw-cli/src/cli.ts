@@ -386,6 +386,10 @@ program
     "Allow an existing report output file to be overwritten. Requires --report --output.",
     false,
   )
+  .option(
+    "--compare <reports...>",
+    "Compare exactly two JSON project reports without changing files.",
+  )
   .action(
     (
       options: {
@@ -395,6 +399,7 @@ program
         json?: boolean;
         output?: string;
         force?: boolean;
+        compare?: string[];
       },
     ) => {
       try {

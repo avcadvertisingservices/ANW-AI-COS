@@ -119,6 +119,7 @@ export type ProjectOptions = {
   json?: boolean;
   output?: string;
   force?: boolean;
+  compare?: string[];
 };
 
 export function runProject(
@@ -129,13 +130,15 @@ export function runProject(
       options.status,
       options.inventory,
       options.report,
+      Array.isArray(options.compare) &&
+        options.compare.length > 0,
     ].filter(Boolean).length;
 
   if (
     selectedModes > 1
   ) {
     throw new Error(
-      "Choose only one project mode: --status, --inventory, or --report.",
+      "Choose only one project mode: --status, --inventory, --report, or --compare.",
     );
   }
 
@@ -182,6 +185,15 @@ export function runProject(
     throw new Error(
       "--output requires a non-empty file path.",
     );
+  }
+
+  if (
+    options.compare !== undefined
+  ) {
+    runProjectCompareMode(
+      options.compare,
+    );
+    return;
   }
 
   if (
@@ -250,7 +262,12 @@ function printProjectHelp(): void {
     "npm run dev -- project --report --output docs/project-report.md --force",
   );
 
+  console.log(
+    "npm run dev -- project --compare <before.json> <after.json>",
+  );
+
   console.log("");
+
 
   console.log(
     "No project changes were made.",
@@ -437,6 +454,339 @@ function runProjectInventory(): void {
   );
 
   console.log("");
+}
+
+
+type ProjectComparableReport = {
+  schemaVersion?: unknown;
+  reportType?: unknown;
+  generatedAt?: unknown;
+  generatorVersion?: unknown;
+  architecture?: {
+    modules?: unknown;
+    features?: unknown;
+    components?: unknown;
+    routes?: unknown;
+  };
+  health?: unknown;
+};
+
+type ProjectCompareMetric = {
+  label: string;
+  before: number;
+  after: number;
+};
+
+function runProjectCompareMode(
+  reportPaths: string[],
+): void {
+  if (
+    reportPaths.length !== 2
+  ) {
+    throw new Error(
+      "--compare requires exactly two JSON report paths: <before.json> <after.json>.",
+    );
+  }
+
+  const projectRoot =
+    findProjectRoot(
+      process.cwd(),
+    );
+
+  const beforePath =
+    resolveReportInputPath(
+      projectRoot,
+      reportPaths[0]!,
+    );
+
+  const afterPath =
+    resolveReportInputPath(
+      projectRoot,
+      reportPaths[1]!,
+    );
+
+  const beforeReport =
+    readComparableProjectReport(
+      beforePath,
+    );
+
+  const afterReport =
+    readComparableProjectReport(
+      afterPath,
+    );
+
+  const metrics:
+    ProjectCompareMetric[] = [
+      {
+        label: "Modules",
+        before:
+          readArchitectureCount(
+            beforeReport,
+            "modules",
+            beforePath,
+          ),
+        after:
+          readArchitectureCount(
+            afterReport,
+            "modules",
+            afterPath,
+          ),
+      },
+      {
+        label: "Features",
+        before:
+          readArchitectureCount(
+            beforeReport,
+            "features",
+            beforePath,
+          ),
+        after:
+          readArchitectureCount(
+            afterReport,
+            "features",
+            afterPath,
+          ),
+      },
+      {
+        label: "Components",
+        before:
+          readArchitectureCount(
+            beforeReport,
+            "components",
+            beforePath,
+          ),
+        after:
+          readArchitectureCount(
+            afterReport,
+            "components",
+            afterPath,
+          ),
+      },
+      {
+        label: "Routes",
+        before:
+          readArchitectureCount(
+            beforeReport,
+            "routes",
+            beforePath,
+          ),
+        after:
+          readArchitectureCount(
+            afterReport,
+            "routes",
+            afterPath,
+          ),
+      },
+    ];
+
+  console.log("");
+  console.log(
+    "# ANW AI-COS Project Report Comparison",
+  );
+  console.log("");
+
+  console.log(
+    `Before: ${beforePath}`,
+  );
+
+  console.log(
+    `After: ${afterPath}`,
+  );
+
+  console.log("");
+
+  console.log(
+    "## Architecture Changes",
+  );
+
+  console.log("");
+
+  for (
+    const metric
+    of metrics
+  ) {
+    console.log(
+      `${metric.label}: ${metric.before} -> ${metric.after} (${formatSignedDelta(
+        metric.after -
+          metric.before,
+      )})`,
+    );
+  }
+
+  console.log("");
+
+  console.log(
+    "## Health",
+  );
+
+  console.log("");
+
+  console.log(
+    `Before: ${readHealth(
+      beforeReport,
+      beforePath,
+    )}`,
+  );
+
+  console.log(
+    `After: ${readHealth(
+      afterReport,
+      afterPath,
+    )}`,
+  );
+
+  console.log("");
+
+  console.log(
+    "Project report comparison complete.",
+  );
+
+  console.log(
+    "No files were changed.",
+  );
+
+  console.log("");
+}
+
+function resolveReportInputPath(
+  projectRoot: string,
+  requestedPath: string,
+): string {
+  const trimmedPath =
+    requestedPath.trim();
+
+  if (
+    trimmedPath.length === 0
+  ) {
+    throw new Error(
+      "--compare report paths must be non-empty.",
+    );
+  }
+
+  return isAbsolute(
+    trimmedPath,
+  )
+    ? resolve(
+        trimmedPath,
+      )
+    : resolve(
+        projectRoot,
+        trimmedPath,
+      );
+}
+
+function readComparableProjectReport(
+  reportPath: string,
+): ProjectComparableReport {
+  if (
+    !existsSync(
+      reportPath,
+    )
+  ) {
+    throw new Error(
+      `Project report not found: ${reportPath}`,
+    );
+  }
+
+  try {
+    const rawReport =
+      readFileSync(
+        reportPath,
+        "utf8",
+      );
+
+    const parsedReport =
+      JSON.parse(
+        rawReport,
+      ) as ProjectComparableReport;
+
+    if (
+      parsedReport.reportType !==
+      PROJECT_REPORT_TYPE
+    ) {
+      throw new Error(
+        `Unsupported report type in ${reportPath}. Expected "${PROJECT_REPORT_TYPE}".`,
+      );
+    }
+
+    return parsedReport;
+  } catch (
+    error
+  ) {
+    if (
+      error instanceof Error &&
+      error.message.startsWith(
+        "Unsupported report type",
+      )
+    ) {
+      throw error;
+    }
+
+    throw new Error(
+      `Unable to read project report: ${reportPath}`,
+    );
+  }
+}
+
+function readArchitectureCount(
+  report: ProjectComparableReport,
+  key:
+    | "modules"
+    | "features"
+    | "components"
+    | "routes",
+  reportPath: string,
+): number {
+  const value =
+    report.architecture?.[
+      key
+    ];
+
+  if (
+    typeof value !==
+      "number" ||
+    !Number.isFinite(
+      value,
+    )
+  ) {
+    throw new Error(
+      `Invalid architecture.${key} value in ${reportPath}.`,
+    );
+  }
+
+  return value;
+}
+
+function readHealth(
+  report: ProjectComparableReport,
+  reportPath: string,
+): ProjectHealth {
+  if (
+    report.health ===
+      "HEALTHY" ||
+    report.health ===
+      "ATTENTION REQUIRED"
+  ) {
+    return report.health;
+  }
+
+  throw new Error(
+    `Invalid health value in ${reportPath}.`,
+  );
+}
+
+function formatSignedDelta(
+  value: number,
+): string {
+  if (
+    value > 0
+  ) {
+    return `+${value}`;
+  }
+
+  return String(
+    value,
+  );
 }
 
 function runProjectReportMode(
