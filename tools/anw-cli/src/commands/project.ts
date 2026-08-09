@@ -116,6 +116,7 @@ export type ProjectOptions = {
   status?: boolean;
   inventory?: boolean;
   report?: boolean;
+  snapshot?: boolean;
   json?: boolean;
   output?: string;
   force?: boolean;
@@ -130,6 +131,7 @@ export function runProject(
       options.status,
       options.inventory,
       options.report,
+      options.snapshot,
       Array.isArray(options.compare) &&
         options.compare.length > 0,
     ].filter(Boolean).length;
@@ -138,7 +140,7 @@ export function runProject(
     selectedModes > 1
   ) {
     throw new Error(
-      "Choose only one project mode: --status, --inventory, --report, or --compare.",
+      "Choose only one project mode: --status, --inventory, --report, --snapshot, or --compare.",
     );
   }
 
@@ -217,6 +219,13 @@ export function runProject(
   }
 
   if (
+    options.snapshot === true
+  ) {
+    runProjectSnapshotMode();
+    return;
+  }
+
+  if (
     options.report === true
   ) {
     runProjectReportMode(
@@ -266,6 +275,10 @@ function printProjectHelp(): void {
 
   console.log(
     "npm run dev -- project --report --output docs/project-report.md --force",
+  );
+
+  console.log(
+    "npm run dev -- project --snapshot",
   );
 
   console.log(
@@ -1063,6 +1076,49 @@ function formatSignedDelta(
   );
 }
 
+function runProjectSnapshotMode(): void {
+  const projectRoot =
+    findProjectRoot(
+      process.cwd(),
+    );
+
+  const status =
+    collectProjectStatus(
+      projectRoot,
+    );
+
+  const generatedAt =
+    new Date().toISOString();
+
+  const content =
+    buildJsonReport(
+      status,
+      generatedAt,
+    );
+
+  const timestamp =
+    generatedAt.replace(
+      /[:.]/g,
+      "-",
+    );
+
+  const outputPath =
+    join(
+      "docs",
+      "snapshots",
+      `project-${timestamp}.json`,
+    );
+
+  writeReportFile(
+    projectRoot,
+    outputPath,
+    content,
+    "JSON",
+    false,
+    "Project Snapshot",
+  );
+}
+
 function runProjectReportMode(
   options: ProjectOptions,
 ): void {
@@ -1272,7 +1328,8 @@ function writeReportFile(
   force: boolean,
   artifactName:
     | "Project Report"
-    | "Project Report Comparison" =
+    | "Project Report Comparison"
+    | "Project Snapshot" =
       "Project Report",
 ): void {
   const trimmedPath =

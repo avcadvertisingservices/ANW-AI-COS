@@ -373,17 +373,22 @@ program
     false,
   )
   .option(
+    "--snapshot",
+    "Create a timestamped JSON project snapshot under docs/snapshots.",
+    false,
+  )
+  .option(
     "--json",
-    "Output the project report or comparison as structured JSON. Requires --report or --compare.",
+    "Output a project report or comparison as structured JSON.",
     false,
   )
   .option(
     "--output <path>",
-    "Write the project report to a file. Requires --report.",
+    "Write a project report or comparison to a file.",
   )
   .option(
     "--force",
-    "Allow an existing report output file to be overwritten. Requires --report --output.",
+    "Allow an existing project report or comparison output file to be overwritten.",
     false,
   )
   .option(
@@ -396,6 +401,7 @@ program
         status?: boolean;
         inventory?: boolean;
         report?: boolean;
+        snapshot?: boolean;
         json?: boolean;
         output?: string;
         force?: boolean;
