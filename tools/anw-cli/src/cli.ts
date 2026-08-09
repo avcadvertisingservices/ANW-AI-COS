@@ -13,6 +13,10 @@ import {
 } from "./commands/content.js";
 
 import {
+  runCoreAudit,
+} from "./commands/core-audit.js";
+
+import {
   runDoctor,
 } from "./commands/doctor.js";
 
@@ -418,7 +422,7 @@ program
 program
   .command("project")
   .description(
-    "Inspect ANW AI-COS project status and architecture.",
+    "Inspect ANW AI-COS project status, architecture, history, and core foundation.",
   )
   .option(
     "--status",
@@ -451,6 +455,11 @@ program
     false,
   )
   .option(
+    "--core-audit",
+    "Audit the ANW AI-COS core foundation and documentation map without changing files.",
+    false,
+  )
+  .option(
     "--json",
     "Output a project report or comparison as structured JSON.",
     false,
@@ -477,6 +486,7 @@ program
         snapshot?: boolean;
         snapshotHistory?: boolean;
         compareLatest?: boolean;
+        coreAudit?: boolean;
         json?: boolean;
         output?: string;
         force?: boolean;
@@ -484,6 +494,41 @@ program
       },
     ) => {
       try {
+        if (
+          options.coreAudit ===
+          true
+        ) {
+          const otherProjectModeSelected =
+            options.status === true ||
+            options.inventory === true ||
+            options.report === true ||
+            options.snapshot === true ||
+            options.snapshotHistory === true ||
+            options.compareLatest === true ||
+            options.compare !== undefined;
+
+          if (
+            otherProjectModeSelected
+          ) {
+            throw new Error(
+              "--core-audit cannot be combined with another project mode.",
+            );
+          }
+
+          if (
+            options.json === true ||
+            options.output !== undefined ||
+            options.force === true
+          ) {
+            throw new Error(
+              "--core-audit is read-only and cannot be combined with --json, --output, or --force.",
+            );
+          }
+
+          runCoreAudit();
+          return;
+        }
+
         runProject(
           options,
         );
