@@ -117,6 +117,7 @@ export type ProjectOptions = {
   inventory?: boolean;
   report?: boolean;
   snapshot?: boolean;
+  compareLatest?: boolean;
   json?: boolean;
   output?: string;
   force?: boolean;
@@ -132,6 +133,7 @@ export function runProject(
       options.inventory,
       options.report,
       options.snapshot,
+      options.compareLatest,
       Array.isArray(options.compare) &&
         options.compare.length > 0,
     ].filter(Boolean).length;
@@ -140,27 +142,29 @@ export function runProject(
     selectedModes > 1
   ) {
     throw new Error(
-      "Choose only one project mode: --status, --inventory, --report, --snapshot, or --compare.",
+      "Choose only one project mode: --status, --inventory, --report, --snapshot, --compare-latest, or --compare.",
     );
   }
 
   if (
     options.json === true &&
     options.report !== true &&
+    options.compareLatest !== true &&
     options.compare === undefined
   ) {
     throw new Error(
-      "--json can only be used together with --report or --compare.",
+      "--json can only be used together with --report, --compare-latest, or --compare.",
     );
   }
 
   if (
     options.output !== undefined &&
     options.report !== true &&
+    options.compareLatest !== true &&
     options.compare === undefined
   ) {
     throw new Error(
-      "--output can only be used together with --report or --compare.",
+      "--output can only be used together with --report, --compare-latest, or --compare.",
     );
   }
 
@@ -176,10 +180,11 @@ export function runProject(
   if (
     options.force === true &&
     options.report !== true &&
+    options.compareLatest !== true &&
     options.compare === undefined
   ) {
     throw new Error(
-      "--force can only be used together with --report --output or --compare --output.",
+      "--force can only be used together with --report --output, --compare-latest --output, or --compare --output.",
     );
   }
 
@@ -190,6 +195,17 @@ export function runProject(
     throw new Error(
       "--output requires a non-empty file path.",
     );
+  }
+
+  if (
+    options.compareLatest === true
+  ) {
+    runProjectCompareLatestMode(
+      options.json === true,
+      options.output,
+      options.force === true,
+    );
+    return;
   }
 
   if (
@@ -279,6 +295,26 @@ function printProjectHelp(): void {
 
   console.log(
     "npm run dev -- project --snapshot",
+  );
+
+  console.log(
+    "npm run dev -- project --compare-latest",
+  );
+
+  console.log(
+    "npm run dev -- project --compare-latest --json",
+  );
+
+  console.log(
+    "npm run dev -- project --compare-latest --output docs/latest-comparison.md",
+  );
+
+  console.log(
+    "npm run dev -- project --compare-latest --json --output docs/latest-comparison.json",
+  );
+
+  console.log(
+    "npm run dev -- project --compare-latest --output docs/latest-comparison.md --force",
   );
 
   console.log(
@@ -560,6 +596,119 @@ type ProjectComparisonJsonReport = {
     after: ProjectHealth;
   };
 };
+
+function runProjectCompareLatestMode(
+  json: boolean,
+  output: string | undefined,
+  force: boolean,
+): void {
+  const projectRoot =
+    findProjectRoot(
+      process.cwd(),
+    );
+
+  const snapshotsDirectory =
+    join(
+      projectRoot,
+      "docs",
+      "snapshots",
+    );
+
+  if (
+    !existsSync(
+      snapshotsDirectory,
+    )
+  ) {
+    throw new Error(
+      `Snapshot directory not found: ${snapshotsDirectory}\nCreate at least two snapshots with: npm run dev -- project --snapshot`,
+    );
+  }
+
+  const snapshotFiles =
+    readdirSync(
+      snapshotsDirectory,
+      {
+        withFileTypes: true,
+        encoding: "utf8",
+      },
+    )
+      .filter(
+        (entry) =>
+          entry.isFile() &&
+          /^project-.*\.json$/i.test(
+            entry.name,
+          ),
+      )
+      .map(
+        (entry) =>
+          entry.name,
+      )
+      .sort(
+        (left, right) =>
+          left.localeCompare(
+            right,
+          ),
+      );
+
+  if (
+    snapshotFiles.length < 2
+  ) {
+    throw new Error(
+      `--compare-latest requires at least two project snapshots in ${snapshotsDirectory}. Found ${snapshotFiles.length}.`,
+    );
+  }
+
+  const beforeFile =
+    snapshotFiles[
+      snapshotFiles.length - 2
+    ]!;
+
+  const afterFile =
+    snapshotFiles[
+      snapshotFiles.length - 1
+    ]!;
+
+  const beforePath =
+    join(
+      snapshotsDirectory,
+      beforeFile,
+    );
+
+  const afterPath =
+    join(
+      snapshotsDirectory,
+      afterFile,
+    );
+
+  if (
+    !json &&
+    output === undefined
+  ) {
+    console.log("");
+    console.log(
+      "# ANW AI-COS Latest Snapshot Comparison",
+    );
+    console.log("");
+    console.log(
+      `Previous snapshot: ${beforeFile}`,
+    );
+    console.log(
+      `Latest snapshot: ${afterFile}`,
+    );
+    console.log("");
+  }
+
+  runProjectCompareMode(
+    [
+      beforePath,
+      afterPath,
+    ],
+    json,
+    output,
+    force,
+  );
+}
+
 
 function runProjectCompareMode(
   reportPaths: string[],

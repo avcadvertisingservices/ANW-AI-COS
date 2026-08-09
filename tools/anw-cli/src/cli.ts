@@ -378,6 +378,11 @@ program
     false,
   )
   .option(
+    "--compare-latest",
+    "Compare the two newest project snapshots under docs/snapshots.",
+    false,
+  )
+  .option(
     "--json",
     "Output a project report or comparison as structured JSON.",
     false,
@@ -402,6 +407,7 @@ program
         inventory?: boolean;
         report?: boolean;
         snapshot?: boolean;
+        compareLatest?: boolean;
         json?: boolean;
         output?: string;
         force?: boolean;
