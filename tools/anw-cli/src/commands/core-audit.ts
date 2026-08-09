@@ -9,6 +9,10 @@ import {
   resolve,
 } from "node:path";
 
+import {
+  cliVersion,
+} from "../version.js";
+
 type AuditResult = {
   name: string;
   status: "PASS" | "ATTENTION";
@@ -20,6 +24,12 @@ type CoreFoundationArea = {
   milestone: string;
   command: string;
   sourceFile: string;
+};
+
+type FoundationMilestone = {
+  version: string;
+  name: string;
+  status: "COMPLETE";
 };
 
 const CORE_FOUNDATION_AREAS: CoreFoundationArea[] = [
@@ -73,6 +83,44 @@ const CORE_FOUNDATION_AREAS: CoreFoundationArea[] = [
   },
 ];
 
+const FOUNDATION_MILESTONES: FoundationMilestone[] = [
+  {
+    version: "v0.43",
+    name: "Content System Status",
+    status: "COMPLETE",
+  },
+  {
+    version: "v0.44",
+    name: "Content Model / Taxonomy",
+    status: "COMPLETE",
+  },
+  {
+    version: "v0.45",
+    name: "Recovery Library Registry",
+    status: "COMPLETE",
+  },
+  {
+    version: "v0.46",
+    name: "Content Workflow",
+    status: "COMPLETE",
+  },
+  {
+    version: "v0.47",
+    name: "Brand + Safety Rules",
+    status: "COMPLETE",
+  },
+  {
+    version: "v0.48",
+    name: "Website Integration Contract",
+    status: "COMPLETE",
+  },
+  {
+    version: "v0.49",
+    name: "Core Audit + Documentation Map",
+    status: "COMPLETE",
+  },
+];
+
 export function runCoreAudit(): void {
   const cliRoot =
     resolveCliRoot(
@@ -84,63 +132,11 @@ export function runCoreAudit(): void {
       cliRoot,
     );
 
-  const results: AuditResult[] = [];
-
-  results.push(
-    inspectFile(
+  const results =
+    collectCoreAuditResults(
       cliRoot,
-      "CLI entry point",
-      "src/cli.ts",
-    ),
-  );
-
-  results.push(
-    inspectFile(
-      cliRoot,
-      "Content system",
-      "src/commands/content.ts",
-    ),
-  );
-
-  results.push(
-    inspectFile(
-      cliRoot,
-      "Project inspection system",
-      "src/commands/project.ts",
-    ),
-  );
-
-  results.push(
-    inspectFile(
-      cliRoot,
-      "Release system",
-      "src/commands/release.ts",
-    ),
-  );
-
-  results.push(
-    inspectFile(
-      cliRoot,
-      "Validation system",
-      "src/commands/validate.ts",
-    ),
-  );
-
-  results.push(
-    inspectDirectory(
       repositoryRoot,
-      "Documentation directory",
-      "docs",
-    ),
-  );
-
-  results.push(
-    inspectDirectory(
-      repositoryRoot,
-      "Snapshot storage",
-      "docs/snapshots",
-    ),
-  );
+    );
 
   const passed =
     results.filter(
@@ -202,26 +198,9 @@ export function runCoreAudit(): void {
 
   console.log("");
 
-  for (
-    const result
-    of results
-  ) {
-    const symbol =
-      result.status ===
-      "PASS"
-        ? "✓"
-        : "!";
-
-    console.log(
-      `${symbol} ${result.name}: ${result.status}`,
-    );
-
-    console.log(
-      `  ${result.detail}`,
-    );
-
-    console.log("");
-  }
+  printAuditResults(
+    results,
+  );
 
   console.log(
     "## Documentation Map",
@@ -348,6 +327,378 @@ export function runCoreAudit(): void {
   );
 
   console.log("");
+}
+
+export function runFoundation(): void {
+  const cliRoot =
+    resolveCliRoot(
+      process.cwd(),
+    );
+
+  const repositoryRoot =
+    resolveRepositoryRoot(
+      cliRoot,
+    );
+
+  const results =
+    collectCoreAuditResults(
+      cliRoot,
+      repositoryRoot,
+    );
+
+  const passed =
+    results.filter(
+      (result) =>
+        result.status ===
+        "PASS",
+    ).length;
+
+  const attention =
+    results.length -
+    passed;
+
+  const isFoundationRelease =
+    cliVersion ===
+    "0.50.0";
+
+  console.log("");
+
+  console.log(
+    "# ANW AI-COS Core Foundation v1",
+  );
+
+  console.log("");
+
+  console.log(
+    "Foundation milestone: v0.50.0",
+  );
+
+  console.log(
+    `Current CLI version: ${cliVersion}`,
+  );
+
+  console.log(
+    "Mode: READ ONLY",
+  );
+
+  console.log("");
+
+  console.log(
+    "## Foundation Milestones",
+  );
+
+  console.log("");
+
+  FOUNDATION_MILESTONES.forEach(
+    (
+      milestone,
+      index,
+    ) => {
+      console.log(
+        `${index + 1}. ${milestone.version} ${milestone.name}`,
+      );
+
+      console.log(
+        `   Status: ${milestone.status}`,
+      );
+
+      console.log("");
+    },
+  );
+
+  console.log(
+    "8. v0.50 ANW AI-COS Core Foundation v1",
+  );
+
+  console.log(
+    `   Status: ${
+      isFoundationRelease
+        ? "FROZEN"
+        : "RELEASE CANDIDATE"
+    }`,
+  );
+
+  console.log("");
+
+  console.log(
+    "## Foundation Capabilities",
+  );
+
+  console.log("");
+
+  console.log(
+    "✓ Project health and architecture inspection",
+  );
+
+  console.log(
+    "✓ Project reports and JSON reporting",
+  );
+
+  console.log(
+    "✓ Project snapshots and history",
+  );
+
+  console.log(
+    "✓ Project comparison and latest-snapshot comparison",
+  );
+
+  console.log(
+    "✓ Controlled release workflow",
+  );
+
+  console.log(
+    "✓ Automated release certification",
+  );
+
+  console.log(
+    "✓ Content system status",
+  );
+
+  console.log(
+    "✓ Canonical content taxonomy",
+  );
+
+  console.log(
+    "✓ Recovery Library registry",
+  );
+
+  console.log(
+    "✓ Human-approved content workflow",
+  );
+
+  console.log(
+    "✓ Brand and safety rules",
+  );
+
+  console.log(
+    "✓ Website integration contract",
+  );
+
+  console.log(
+    "✓ Core audit and documentation map",
+  );
+
+  console.log("");
+
+  console.log(
+    "## Foundation Health",
+  );
+
+  console.log("");
+
+  printAuditResults(
+    results,
+  );
+
+  console.log(
+    "## Freeze Policy",
+  );
+
+  console.log("");
+
+  console.log(
+    "1. The Core Foundation v1 architecture is considered stable after v0.50.0 release certification.",
+  );
+
+  console.log(
+    "2. New CLI features are not added merely because they are convenient or interesting.",
+  );
+
+  console.log(
+    "3. Core changes after the freeze require a clear website, reliability, safety, or integration need.",
+  );
+
+  console.log(
+    "4. Existing release, validation, content, project, and safety contracts should remain backward compatible where practical.",
+  );
+
+  console.log(
+    "5. Product development now moves from foundation-building to user-facing website implementation.",
+  );
+
+  console.log("");
+
+  console.log(
+    "## Foundation Summary",
+  );
+
+  console.log("");
+
+  console.log(
+    `Checks: ${results.length}`,
+  );
+
+  console.log(
+    `Passed: ${passed}`,
+  );
+
+  console.log(
+    `Attention: ${attention}`,
+  );
+
+  console.log("");
+
+  if (
+    attention === 0
+  ) {
+    console.log(
+      `Foundation status: ${
+        isFoundationRelease
+          ? "FROZEN"
+          : "READY FOR v0.50.0 RELEASE"
+      }`,
+    );
+  } else {
+    console.log(
+      "Foundation status: ATTENTION REQUIRED",
+    );
+  }
+
+  console.log("");
+
+  console.log(
+    "Next phase: ANW Website Phase 1",
+  );
+
+  console.log("");
+
+  console.log(
+    "Website focus:",
+  );
+
+  console.log(
+    "- Public website foundation",
+  );
+
+  console.log(
+    "- Journey-based navigation",
+  );
+
+  console.log(
+    "- Recovery Library",
+  );
+
+  console.log(
+    "- Core patient education pages",
+  );
+
+  console.log(
+    "- Starter Guide funnel",
+  );
+
+  console.log(
+    "- Survivor story and trust experience",
+  );
+
+  console.log("");
+
+  console.log(
+    "Foundation inspection complete.",
+  );
+
+  console.log(
+    "No files were changed.",
+  );
+
+  console.log("");
+}
+
+function collectCoreAuditResults(
+  cliRoot: string,
+  repositoryRoot: string,
+): AuditResult[] {
+  const results: AuditResult[] = [];
+
+  results.push(
+    inspectFile(
+      cliRoot,
+      "CLI entry point",
+      "src/cli.ts",
+    ),
+  );
+
+  results.push(
+    inspectFile(
+      cliRoot,
+      "Content system",
+      "src/commands/content.ts",
+    ),
+  );
+
+  results.push(
+    inspectFile(
+      cliRoot,
+      "Core audit system",
+      "src/commands/core-audit.ts",
+    ),
+  );
+
+  results.push(
+    inspectFile(
+      cliRoot,
+      "Project inspection system",
+      "src/commands/project.ts",
+    ),
+  );
+
+  results.push(
+    inspectFile(
+      cliRoot,
+      "Release system",
+      "src/commands/release.ts",
+    ),
+  );
+
+  results.push(
+    inspectFile(
+      cliRoot,
+      "Validation system",
+      "src/commands/validate.ts",
+    ),
+  );
+
+  results.push(
+    inspectDirectory(
+      repositoryRoot,
+      "Documentation directory",
+      "docs",
+    ),
+  );
+
+  results.push(
+    inspectDirectory(
+      repositoryRoot,
+      "Snapshot storage",
+      "docs/snapshots",
+    ),
+  );
+
+  return results;
+}
+
+function printAuditResults(
+  results: AuditResult[],
+): void {
+  for (
+    const result
+    of results
+  ) {
+    const symbol =
+      result.status ===
+      "PASS"
+        ? "✓"
+        : "!";
+
+    console.log(
+      `${symbol} ${result.name}: ${result.status}`,
+    );
+
+    console.log(
+      `  ${result.detail}`,
+    );
+
+    console.log("");
+  }
 }
 
 function inspectFile(

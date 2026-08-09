@@ -14,6 +14,7 @@ import {
 
 import {
   runCoreAudit,
+  runFoundation,
 } from "./commands/core-audit.js";
 
 import {
@@ -422,7 +423,7 @@ program
 program
   .command("project")
   .description(
-    "Inspect ANW AI-COS project status, architecture, history, and core foundation.",
+    "Inspect ANW AI-COS project status, architecture, history, audit, and foundation.",
   )
   .option(
     "--status",
@@ -460,6 +461,11 @@ program
     false,
   )
   .option(
+    "--foundation",
+    "Show the ANW AI-COS Core Foundation v1 freeze status and next product phase without changing files.",
+    false,
+  )
+  .option(
     "--json",
     "Output a project report or comparison as structured JSON.",
     false,
@@ -487,6 +493,7 @@ program
         snapshotHistory?: boolean;
         compareLatest?: boolean;
         coreAudit?: boolean;
+        foundation?: boolean;
         json?: boolean;
         output?: string;
         force?: boolean;
@@ -494,11 +501,31 @@ program
       },
     ) => {
       try {
-        if (
+        const coreAuditSelected =
           options.coreAudit ===
-          true
+          true;
+
+        const foundationSelected =
+          options.foundation ===
+          true;
+
+        if (
+          coreAuditSelected &&
+          foundationSelected
         ) {
-          const otherProjectModeSelected =
+          throw new Error(
+            "--core-audit and --foundation cannot be used together.",
+          );
+        }
+
+        const specialProjectModeSelected =
+          coreAuditSelected ||
+          foundationSelected;
+
+        if (
+          specialProjectModeSelected
+        ) {
+          const regularProjectModeSelected =
             options.status === true ||
             options.inventory === true ||
             options.report === true ||
@@ -508,10 +535,10 @@ program
             options.compare !== undefined;
 
           if (
-            otherProjectModeSelected
+            regularProjectModeSelected
           ) {
             throw new Error(
-              "--core-audit cannot be combined with another project mode.",
+              "--core-audit and --foundation cannot be combined with another project mode.",
             );
           }
 
@@ -521,11 +548,18 @@ program
             options.force === true
           ) {
             throw new Error(
-              "--core-audit is read-only and cannot be combined with --json, --output, or --force.",
+              "--core-audit and --foundation are read-only and cannot be combined with --json, --output, or --force.",
             );
           }
 
-          runCoreAudit();
+          if (
+            coreAuditSelected
+          ) {
+            runCoreAudit();
+            return;
+          }
+
+          runFoundation();
           return;
         }
 
