@@ -9,6 +9,10 @@ import {
 } from "./commands/component.js";
 
 import {
+  runContent,
+} from "./commands/content.js";
+
+import {
   runDoctor,
 } from "./commands/doctor.js";
 
@@ -351,6 +355,35 @@ program
       );
     }
   });
+
+program
+  .command("content")
+  .description(
+    "Inspect ANW AI-COS content system status.",
+  )
+  .option(
+    "--status",
+    "Show the current ANW AI-COS content system status without changing files.",
+    false,
+  )
+  .action(
+    (
+      options: {
+        status?: boolean;
+      },
+    ) => {
+      try {
+        runContent(
+          options,
+        );
+      } catch (error) {
+        handleCommandError(
+          "inspect content system",
+          error,
+        );
+      }
+    },
+  );
 
 program
   .command("project")
