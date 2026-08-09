@@ -378,6 +378,11 @@ program
     false,
   )
   .option(
+    "--snapshot-history",
+    "List saved project snapshots under docs/snapshots without changing files.",
+    false,
+  )
+  .option(
     "--compare-latest",
     "Compare the two newest project snapshots under docs/snapshots.",
     false,
@@ -407,6 +412,7 @@ program
         inventory?: boolean;
         report?: boolean;
         snapshot?: boolean;
+        snapshotHistory?: boolean;
         compareLatest?: boolean;
         json?: boolean;
         output?: string;

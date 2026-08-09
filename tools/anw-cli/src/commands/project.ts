@@ -117,6 +117,7 @@ export type ProjectOptions = {
   inventory?: boolean;
   report?: boolean;
   snapshot?: boolean;
+  snapshotHistory?: boolean;
   compareLatest?: boolean;
   json?: boolean;
   output?: string;
@@ -133,6 +134,7 @@ export function runProject(
       options.inventory,
       options.report,
       options.snapshot,
+      options.snapshotHistory,
       options.compareLatest,
       Array.isArray(options.compare) &&
         options.compare.length > 0,
@@ -142,7 +144,7 @@ export function runProject(
     selectedModes > 1
   ) {
     throw new Error(
-      "Choose only one project mode: --status, --inventory, --report, --snapshot, --compare-latest, or --compare.",
+      "Choose only one project mode: --status, --inventory, --report, --snapshot, --snapshot-history, --compare-latest, or --compare.",
     );
   }
 
@@ -195,6 +197,13 @@ export function runProject(
     throw new Error(
       "--output requires a non-empty file path.",
     );
+  }
+
+  if (
+    options.snapshotHistory === true
+  ) {
+    runProjectSnapshotHistoryMode();
+    return;
   }
 
   if (
@@ -295,6 +304,10 @@ function printProjectHelp(): void {
 
   console.log(
     "npm run dev -- project --snapshot",
+  );
+
+  console.log(
+    "npm run dev -- project --snapshot-history",
   );
 
   console.log(
@@ -596,6 +609,193 @@ type ProjectComparisonJsonReport = {
     after: ProjectHealth;
   };
 };
+
+function runProjectSnapshotHistoryMode(): void {
+  const projectRoot =
+    findProjectRoot(
+      process.cwd(),
+    );
+
+  const snapshotsDirectory =
+    join(
+      projectRoot,
+      "docs",
+      "snapshots",
+    );
+
+  console.log("");
+  console.log(
+    "# ANW AI-COS Snapshot History",
+  );
+  console.log("");
+
+  if (
+    !existsSync(
+      snapshotsDirectory,
+    )
+  ) {
+    console.log(
+      "Snapshots found: 0",
+    );
+    console.log("");
+    console.log(
+      `Snapshot directory not found: ${snapshotsDirectory}`,
+    );
+    console.log("");
+    console.log(
+      "No files were changed.",
+    );
+    console.log("");
+    return;
+  }
+
+  const snapshotFiles =
+    readdirSync(
+      snapshotsDirectory,
+      {
+        withFileTypes: true,
+        encoding: "utf8",
+      },
+    )
+      .filter(
+        (entry) =>
+          entry.isFile() &&
+          /^project-.*\.json$/i.test(
+            entry.name,
+          ),
+      )
+      .map(
+        (entry) =>
+          entry.name,
+      )
+      .sort(
+        (left, right) =>
+          right.localeCompare(
+            left,
+          ),
+      );
+
+  console.log(
+    `Snapshots found: ${snapshotFiles.length}`,
+  );
+  console.log("");
+
+  if (
+    snapshotFiles.length === 0
+  ) {
+    console.log(
+      "No project snapshots were found.",
+    );
+    console.log("");
+    console.log(
+      "Create one with: npm run dev -- project --snapshot",
+    );
+    console.log("");
+    console.log(
+      "No files were changed.",
+    );
+    console.log("");
+    return;
+  }
+
+  snapshotFiles.forEach(
+    (fileName, index) => {
+      const snapshotPath =
+        join(
+          snapshotsDirectory,
+          fileName,
+        );
+
+      const report =
+        readComparableProjectReport(
+          snapshotPath,
+        );
+
+      const version =
+        getStringReportField(
+          report.generatorVersion,
+          "generatorVersion",
+          snapshotPath,
+        );
+
+      const generatedAt =
+        getStringReportField(
+          report.generatedAt,
+          "generatedAt",
+          snapshotPath,
+        );
+
+      const health =
+        readHealth(
+          report,
+          snapshotPath,
+        );
+
+      const modules =
+        readArchitectureCount(
+          report,
+          "modules",
+          snapshotPath,
+        );
+
+      const features =
+        readArchitectureCount(
+          report,
+          "features",
+          snapshotPath,
+        );
+
+      const components =
+        readArchitectureCount(
+          report,
+          "components",
+          snapshotPath,
+        );
+
+      const routes =
+        readArchitectureCount(
+          report,
+          "routes",
+          snapshotPath,
+        );
+
+      console.log(
+        `${index + 1}. ${fileName}`,
+      );
+      console.log(
+        `   Version: ${version}`,
+      );
+      console.log(
+        `   Generated At: ${generatedAt}`,
+      );
+      console.log(
+        `   Health: ${health}`,
+      );
+      console.log(
+        `   Modules: ${modules}`,
+      );
+      console.log(
+        `   Features: ${features}`,
+      );
+      console.log(
+        `   Components: ${components}`,
+      );
+      console.log(
+        `   Routes: ${routes}`,
+      );
+      console.log("");
+    },
+  );
+
+  console.log(
+    "Snapshot history inspection complete.",
+  );
+  console.log(
+    "No files were changed.",
+  );
+  console.log("");
+}
+
 
 function runProjectCompareLatestMode(
   json: boolean,
