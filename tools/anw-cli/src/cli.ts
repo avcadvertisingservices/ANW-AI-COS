@@ -359,17 +359,23 @@ program
 program
   .command("content")
   .description(
-    "Inspect ANW AI-COS content system status.",
+    "Inspect ANW AI-COS content system status and taxonomy.",
   )
   .option(
     "--status",
     "Show the current ANW AI-COS content system status without changing files.",
     false,
   )
+  .option(
+    "--taxonomy",
+    "Show the canonical ANW AI-COS content taxonomy without changing files.",
+    false,
+  )
   .action(
     (
       options: {
         status?: boolean;
+        taxonomy?: boolean;
       },
     ) => {
       try {
