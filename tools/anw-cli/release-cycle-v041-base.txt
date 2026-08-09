@@ -1,0 +1,450 @@
+param(
+  [Parameter(Mandatory = $true)]
+  [string]$CommitMessage,
+
+  [switch]$Execute
+)
+
+$ErrorActionPreference = "Stop"
+
+$CliRoot = $PSScriptRoot
+
+$RepoRoot = (
+  git -C $CliRoot rev-parse --show-toplevel
+).Trim()
+
+if (-not $RepoRoot) {
+  throw "Unable to determine the ANW repository root."
+}
+
+function Run-Step {
+  param(
+    [string]$Title,
+    [scriptblock]$Action
+  )
+
+  Write-Host ""
+  Write-Host "========================================"
+  Write-Host $Title
+  Write-Host "========================================"
+
+  $global:LASTEXITCODE = 0
+
+  & $Action
+
+  if ($LASTEXITCODE -ne 0) {
+    throw "$Title failed with exit code $LASTEXITCODE."
+  }
+}
+
+function Run-AnwCli {
+  param(
+    [Parameter(ValueFromRemainingArguments = $true)]
+    [string[]]$Arguments
+  )
+
+  Push-Location $CliRoot
+
+  try {
+    & npx --no-install tsx src/cli.ts @Arguments
+
+    if ($LASTEXITCODE -ne 0) {
+      throw "ANW CLI command failed: $($Arguments -join ' ')"
+    }
+  }
+  finally {
+    Pop-Location
+  }
+}
+
+function Get-CliVersion {
+  $packagePath =
+    Join-Path $CliRoot "package.json"
+
+  $package =
+    Get-Content $packagePath -Raw |
+    ConvertFrom-Json
+
+  return [string]$package.version
+}
+
+function Test-ReleaseTagExists {
+  param(
+    [string]$Version
+  )
+
+  $tag =
+    "anw-cli-v$Version"
+
+  $match =
+    git -C $RepoRoot tag --list $tag
+
+  if ($LASTEXITCODE -ne 0) {
+    throw "Unable to inspect Git release tags."
+  }
+
+  return (
+    ($match | Out-String).Trim() -eq $tag
+  )
+}
+
+function Get-WorkingTreeStatus {
+  $status =
+    git -C $RepoRoot status --porcelain --untracked-files=all
+
+  if ($LASTEXITCODE -ne 0) {
+    throw "Unable to inspect Git working tree."
+  }
+
+  return @(
+    $status |
+    Where-Object {
+      $_ -and
+      $_.Trim().Length -gt 0
+    }
+  )
+}
+
+function Get-ChangedFiles {
+  $files = @()
+
+  # Includes:
+  # - modified tracked files
+  # - deleted tracked files
+  # - new untracked files
+  #
+  # Ignored runtime files are intentionally excluded.
+  $workingFiles =
+    git -C $RepoRoot ls-files `
+      --modified `
+      --deleted `
+      --others `
+      --exclude-standard
+
+  if ($LASTEXITCODE -ne 0) {
+    throw "Unable to inspect working tree changes."
+  }
+
+  $stagedFiles =
+    git -C $RepoRoot diff --cached --name-only
+
+  if ($LASTEXITCODE -ne 0) {
+    throw "Unable to inspect staged changes."
+  }
+
+  $files += $workingFiles
+  $files += $stagedFiles
+
+  return @(
+    $files |
+    Where-Object {
+      $_ -and
+      $_.Trim().Length -gt 0
+    } |
+    ForEach-Object {
+      $_.Trim()
+    } |
+    Sort-Object -Unique
+  )
+}
+
+function Remove-DisposableFiles {
+  $paths = @(
+    (Join-Path $CliRoot "project-v*-base.txt"),
+    (Join-Path $CliRoot "cli-v*-base.txt"),
+    (Join-Path $CliRoot "package-v*-base.txt"),
+    (Join-Path $CliRoot "release-cycle-v*-base.txt"),
+
+    (Join-Path $RepoRoot "docs\before.json"),
+    (Join-Path $RepoRoot "docs\after.json"),
+    (Join-Path $RepoRoot "docs\comparison.json"),
+    (Join-Path $RepoRoot "docs\comparison.md"),
+    (Join-Path $RepoRoot "docs\latest-comparison.json"),
+    (Join-Path $RepoRoot "docs\latest-comparison.md")
+  )
+
+  foreach ($path in $paths) {
+    Remove-Item `
+      $path `
+      -Force `
+      -ErrorAction SilentlyContinue
+  }
+}
+
+function Stage-ReleaseFiles {
+  param(
+    [string[]]$Files
+  )
+
+  foreach ($file in $Files) {
+    if (
+      -not $file -or
+      $file.Trim().Length -eq 0
+    ) {
+      continue
+    }
+
+    # -A is important because it correctly handles:
+    # - new files
+    # - modified files
+    # - deleted files
+    git -C $RepoRoot add -A -- $file
+
+    if ($LASTEXITCODE -ne 0) {
+      throw "Failed to stage $file."
+    }
+  }
+}
+
+function Get-StagedFiles {
+  $files =
+    git -C $RepoRoot diff --cached --name-only
+
+  if ($LASTEXITCODE -ne 0) {
+    throw "Unable to inspect staged release files."
+  }
+
+  return @(
+    $files |
+    Where-Object {
+      $_ -and
+      $_.Trim().Length -gt 0
+    } |
+    ForEach-Object {
+      $_.Trim()
+    } |
+    Sort-Object -Unique
+  )
+}
+
+Write-Host ""
+Write-Host "# ANW CLI Automated Release Cycle v3"
+Write-Host ""
+
+$branch = (
+  git -C $RepoRoot branch --show-current
+).Trim()
+
+if (-not $branch) {
+  throw "Unable to determine the current Git branch."
+}
+
+if ($branch -in @(
+  "main",
+  "master"
+)) {
+  throw "Safety stop: automated releases cannot run from '$branch'."
+}
+
+Write-Host "Repository: $RepoRoot"
+Write-Host "CLI Root:   $CliRoot"
+Write-Host "Branch:     $branch"
+Write-Host "Mode:       $(if ($Execute) { 'EXECUTE' } else { 'PREVIEW' })"
+
+Remove-DisposableFiles
+
+$initialVersion =
+  Get-CliVersion
+
+$initialTagExists =
+  Test-ReleaseTagExists $initialVersion
+
+$sourceChanges =
+  Get-ChangedFiles
+
+Write-Host ""
+Write-Host "Current version: $initialVersion"
+Write-Host "Current tag exists: $initialTagExists"
+
+Write-Host ""
+Write-Host "Source changes detected:"
+
+if ($sourceChanges.Count -eq 0) {
+  Write-Host "  none"
+}
+else {
+  foreach ($file in $sourceChanges) {
+    Write-Host "  $file"
+  }
+}
+
+Run-Step "1/4 Tests" {
+  Push-Location $CliRoot
+
+  try {
+    npm test
+  }
+  finally {
+    Pop-Location
+  }
+}
+
+Run-Step "2/4 Repository validation" {
+  Run-AnwCli validate
+}
+
+if (-not $Execute) {
+  Write-Host ""
+  Write-Host "# Preview Complete"
+  Write-Host ""
+  Write-Host "Tests and validation passed."
+  Write-Host "No version bump, commit, push, or release was performed."
+  Write-Host ""
+  Write-Host "Run again with -Execute when ready:"
+  Write-Host ""
+  Write-Host "npm run release:auto -- `"$CommitMessage`""
+  Write-Host ""
+
+  exit 0
+}
+
+$currentVersion =
+  Get-CliVersion
+
+$currentTagExists =
+  Test-ReleaseTagExists $currentVersion
+
+# Resume-safe release behavior:
+#
+# If the current version already has a release tag,
+# this is a new release cycle and the CLI is bumped once.
+#
+# If the current version does not yet have its tag,
+# the script assumes a previous cycle already bumped
+# the version and resumes without bumping again.
+
+if ($currentTagExists) {
+  Run-Step "3/4 Version bump and metadata sync" {
+    Push-Location $CliRoot
+
+    try {
+      npm run release:next
+    }
+    finally {
+      Pop-Location
+    }
+  }
+
+  $currentVersion =
+    Get-CliVersion
+
+  if (
+    Test-ReleaseTagExists $currentVersion
+  ) {
+    throw "Safety stop: release tag anw-cli-v$currentVersion already exists after version bump."
+  }
+}
+else {
+  Write-Host ""
+  Write-Host "Resume mode detected."
+  Write-Host "Version $currentVersion has no release tag."
+  Write-Host "Skipping release:next to prevent an accidental double bump."
+}
+
+$releaseMetadataFiles = @(
+  "tools/anw-cli/CHANGELOG.md",
+  "tools/anw-cli/README.md",
+  "tools/anw-cli/package-lock.json",
+  "tools/anw-cli/package.json"
+)
+
+$filesToStage = @()
+
+$filesToStage += @(
+  $sourceChanges
+)
+
+$filesToStage += @(
+  $releaseMetadataFiles
+)
+
+$filesToStage = @(
+  $filesToStage |
+  Where-Object {
+    $_ -and
+    $_.Trim().Length -gt 0
+  } |
+  ForEach-Object {
+    $_.Trim()
+  } |
+  Sort-Object -Unique
+)
+
+Write-Host ""
+Write-Host "Files to stage:"
+
+if ($filesToStage.Count -eq 0) {
+  Write-Host "  none"
+}
+else {
+  foreach ($file in $filesToStage) {
+    Write-Host "  $file"
+  }
+}
+
+Stage-ReleaseFiles `
+  -Files $filesToStage
+
+$stagedFiles =
+  Get-StagedFiles
+
+if ($stagedFiles.Count -gt 0) {
+  Write-Host ""
+  Write-Host "Staged release set:"
+
+  foreach ($file in $stagedFiles) {
+    Write-Host "  $file"
+  }
+
+  Run-Step "Commit release changes" {
+    git -C $RepoRoot commit -m $CommitMessage
+  }
+
+  Run-Step "Push source branch" {
+    git -C $RepoRoot push origin $branch
+  }
+}
+else {
+  Write-Host ""
+  Write-Host "No staged source changes remain."
+  Write-Host "Continuing in release-resume mode."
+}
+
+$status =
+  Get-WorkingTreeStatus
+
+if ($status.Count -gt 0) {
+  Write-Host ""
+  Write-Host "Unexpected working tree changes remain:"
+  Write-Host ""
+
+  foreach ($entry in $status) {
+    Write-Host "  $entry"
+  }
+
+  Write-Host ""
+  Write-Host "Release execution stopped before tag creation."
+
+  throw "Safety stop: working tree is not clean before release checks."
+}
+
+Run-Step "Release readiness check" {
+  Run-AnwCli release --check
+}
+
+Run-Step "4/4 Controlled release" {
+  Run-AnwCli release --execute --confirm
+}
+
+Write-Host ""
+Write-Host "# ANW Automated Release Complete"
+Write-Host ""
+Write-Host "Version: $(Get-CliVersion)"
+Write-Host "Tag:     anw-cli-v$(Get-CliVersion)"
+Write-Host ""
+
+git -C $RepoRoot status
+
+if ($LASTEXITCODE -ne 0) {
+  throw "Unable to display final Git status."
+}
