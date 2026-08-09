@@ -374,7 +374,7 @@ program
   )
   .option(
     "--json",
-    "Output the project report as structured JSON. Requires --report.",
+    "Output the project report or comparison as structured JSON. Requires --report or --compare.",
     false,
   )
   .option(

@@ -1,6 +1,6 @@
 {
   "name": "@anw/anw-cli",
-  "version": "0.27.0",
+  "version": "0.28.0",
   "private": true,
   "description": "Developer CLI for the ANW AI Content Operating System.",
   "type": "module",

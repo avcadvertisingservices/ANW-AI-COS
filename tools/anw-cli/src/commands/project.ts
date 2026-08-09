@@ -144,10 +144,11 @@ export function runProject(
 
   if (
     options.json === true &&
-    options.report !== true
+    options.report !== true &&
+    options.compare === undefined
   ) {
     throw new Error(
-      "--json can only be used together with --report.",
+      "--json can only be used together with --report or --compare.",
     );
   }
 
@@ -192,6 +193,7 @@ export function runProject(
   ) {
     runProjectCompareMode(
       options.compare,
+      options.json === true,
     );
     return;
   }
@@ -264,6 +266,10 @@ function printProjectHelp(): void {
 
   console.log(
     "npm run dev -- project --compare <before.json> <after.json>",
+  );
+
+  console.log(
+    "npm run dev -- project --compare <before.json> <after.json> --json",
   );
 
   console.log("");
@@ -473,12 +479,62 @@ type ProjectComparableReport = {
 
 type ProjectCompareMetric = {
   label: string;
+  key:
+    | "modules"
+    | "features"
+    | "components"
+    | "routes";
   before: number;
   after: number;
 };
 
+type ProjectComparisonJsonReport = {
+  schemaVersion: string;
+  generatedAt: string;
+  reportType: "project-comparison";
+  generator: string;
+  generatorVersion: string;
+  before: {
+    path: string;
+    version: string;
+    generatedAt: string;
+  };
+  after: {
+    path: string;
+    version: string;
+    generatedAt: string;
+  };
+  changes: {
+    modules: {
+      before: number;
+      after: number;
+      delta: number;
+    };
+    features: {
+      before: number;
+      after: number;
+      delta: number;
+    };
+    components: {
+      before: number;
+      after: number;
+      delta: number;
+    };
+    routes: {
+      before: number;
+      after: number;
+      delta: number;
+    };
+  };
+  health: {
+    before: ProjectHealth;
+    after: ProjectHealth;
+  };
+};
+
 function runProjectCompareMode(
   reportPaths: string[],
+  json: boolean,
 ): void {
   if (
     reportPaths.length !== 2
@@ -519,6 +575,7 @@ function runProjectCompareMode(
     ProjectCompareMetric[] = [
       {
         label: "Modules",
+        key: "modules",
         before:
           readArchitectureCount(
             beforeReport,
@@ -534,6 +591,7 @@ function runProjectCompareMode(
       },
       {
         label: "Features",
+        key: "features",
         before:
           readArchitectureCount(
             beforeReport,
@@ -549,6 +607,7 @@ function runProjectCompareMode(
       },
       {
         label: "Components",
+        key: "components",
         before:
           readArchitectureCount(
             beforeReport,
@@ -564,6 +623,7 @@ function runProjectCompareMode(
       },
       {
         label: "Routes",
+        key: "routes",
         before:
           readArchitectureCount(
             beforeReport,
@@ -578,6 +638,36 @@ function runProjectCompareMode(
           ),
       },
     ];
+
+  const beforeHealth =
+    readHealth(
+      beforeReport,
+      beforePath,
+    );
+
+  const afterHealth =
+    readHealth(
+      afterReport,
+      afterPath,
+    );
+
+  if (
+    json
+  ) {
+    console.log(
+      buildProjectComparisonJson(
+        beforePath,
+        afterPath,
+        beforeReport,
+        afterReport,
+        metrics,
+        beforeHealth,
+        afterHealth,
+      ),
+    );
+
+    return;
+  }
 
   console.log("");
   console.log(
@@ -622,17 +712,11 @@ function runProjectCompareMode(
   console.log("");
 
   console.log(
-    `Before: ${readHealth(
-      beforeReport,
-      beforePath,
-    )}`,
+    `Before: ${beforeHealth}`,
   );
 
   console.log(
-    `After: ${readHealth(
-      afterReport,
-      afterPath,
-    )}`,
+    `After: ${afterHealth}`,
   );
 
   console.log("");
@@ -646,6 +730,172 @@ function runProjectCompareMode(
   );
 
   console.log("");
+}
+
+function buildProjectComparisonJson(
+  beforePath: string,
+  afterPath: string,
+  beforeReport: ProjectComparableReport,
+  afterReport: ProjectComparableReport,
+  metrics: ProjectCompareMetric[],
+  beforeHealth: ProjectHealth,
+  afterHealth: ProjectHealth,
+): string {
+  const metricMap =
+    new Map(
+      metrics.map(
+        (metric) => [
+          metric.key,
+          metric,
+        ],
+      ),
+    );
+
+  const readMetric =
+    (
+      key:
+        | "modules"
+        | "features"
+        | "components"
+        | "routes",
+    ) => {
+      const metric =
+        metricMap.get(
+          key,
+        );
+
+      if (
+        metric === undefined
+      ) {
+        throw new Error(
+          `Missing comparison metric: ${key}`,
+        );
+      }
+
+      return {
+        before:
+          metric.before,
+        after:
+          metric.after,
+        delta:
+          metric.after -
+          metric.before,
+      };
+    };
+
+  const report:
+    ProjectComparisonJsonReport = {
+      schemaVersion:
+        PROJECT_REPORT_SCHEMA_VERSION,
+
+      generatedAt:
+        new Date().toISOString(),
+
+      reportType:
+        "project-comparison",
+
+      generator:
+        PROJECT_REPORT_GENERATOR,
+
+      generatorVersion:
+        getStringReportField(
+          afterReport.generatorVersion,
+          "generatorVersion",
+          afterPath,
+        ),
+
+      before: {
+        path:
+          beforePath,
+
+        version:
+          getStringReportField(
+            beforeReport.generatorVersion,
+            "generatorVersion",
+            beforePath,
+          ),
+
+        generatedAt:
+          getStringReportField(
+            beforeReport.generatedAt,
+            "generatedAt",
+            beforePath,
+          ),
+      },
+
+      after: {
+        path:
+          afterPath,
+
+        version:
+          getStringReportField(
+            afterReport.generatorVersion,
+            "generatorVersion",
+            afterPath,
+          ),
+
+        generatedAt:
+          getStringReportField(
+            afterReport.generatedAt,
+            "generatedAt",
+            afterPath,
+          ),
+      },
+
+      changes: {
+        modules:
+          readMetric(
+            "modules",
+          ),
+
+        features:
+          readMetric(
+            "features",
+          ),
+
+        components:
+          readMetric(
+            "components",
+          ),
+
+        routes:
+          readMetric(
+            "routes",
+          ),
+      },
+
+      health: {
+        before:
+          beforeHealth,
+
+        after:
+          afterHealth,
+      },
+    };
+
+  return JSON.stringify(
+    report,
+    null,
+    2,
+  );
+}
+
+function getStringReportField(
+  value: unknown,
+  fieldName: string,
+  reportPath: string,
+): string {
+  if (
+    typeof value ===
+      "string" &&
+    value.trim().length > 0
+  ) {
+    return value.trim();
+  }
+
+  throw new Error(
+    `Invalid ${fieldName} value in ${reportPath}.`,
+  );
 }
 
 function resolveReportInputPath(
