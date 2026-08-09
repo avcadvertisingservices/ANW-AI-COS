@@ -3,6 +3,7 @@ export type ContentOptions = {
   taxonomy?: boolean;
   recoveryLibrary?: boolean;
   workflow?: boolean;
+  brandRules?: boolean;
 };
 
 type TaxonomySection = {
@@ -19,6 +20,11 @@ type WorkflowState = {
   name: string;
   purpose: string;
   next: string[];
+};
+
+type BrandRuleSection = {
+  name: string;
+  rules: string[];
 };
 
 const CONTENT_RECORD_FIELDS = [
@@ -300,22 +306,134 @@ const CONTENT_WORKFLOW: WorkflowState[] = [
   },
 ];
 
+const BRAND_AND_SAFETY_RULES: BrandRuleSection[] = [
+  {
+    name: "Mission",
+    rules: [
+      "Help Acoustic Neuroma patients, survivors, caregivers, and families feel informed, supported, and less alone.",
+      "Create content that is compassionate, useful, understandable, and grounded in the real patient journey.",
+      "Support education and advocacy without replacing professional medical care.",
+    ],
+  },
+  {
+    name: "Brand Voice",
+    rules: [
+      "Use a compassionate, calm, respectful, survivor-led voice.",
+      "Write in clear patient-friendly language and explain medical terminology when it is necessary.",
+      "Speak with empathy without being patronizing, dramatic, or fear-based.",
+      "Use realistic hope rather than promises, guarantees, or exaggerated outcomes.",
+      "Preserve the ANW message: You Are Not Alone.",
+    ],
+  },
+  {
+    name: "Survivor Experience",
+    rules: [
+      "Clearly distinguish personal survivor experience from general medical information.",
+      "Do not present one person's outcome as the expected outcome for every patient.",
+      "Respect that treatment decisions, symptoms, recovery timelines, and outcomes differ between people.",
+      "Community stories must preserve dignity and should not be presented as clinical evidence.",
+    ],
+  },
+  {
+    name: "Medical Safety",
+    rules: [
+      "Do not diagnose a person from symptoms, comments, images, stories, or social media information.",
+      "Do not guarantee that a treatment, surgery, radiation approach, medicine, exercise, supplement, or recovery technique will work.",
+      "Do not tell people to stop, start, replace, or change prescribed medical treatment without appropriate professional guidance.",
+      "Avoid definitive claims when evidence, individual circumstances, or medical evaluation may change the answer.",
+      "Encourage appropriate professional medical evaluation when content involves diagnosis, treatment decisions, new neurological symptoms, emergencies, or significant changes in condition.",
+    ],
+  },
+  {
+    name: "Medical Review Levels",
+    rules: [
+      "NONE may be used for clearly non-medical community, encouragement, storytelling, and general brand content.",
+      "BASIC requires factual and wording review before approval.",
+      "ELEVATED requires stronger source verification and human review before approval.",
+      "REQUIRED must not be approved for publishing until appropriate medical or expert review requirements have been satisfied.",
+      "Medical review level does not remove the requirement for human approval before publishing.",
+    ],
+  },
+  {
+    name: "Human Approval",
+    rules: [
+      "No content may enter automated publishing unless its workflow status is APPROVED.",
+      "Human review must consider accuracy, safety, tone, privacy, brand alignment, and platform suitability.",
+      "Automation may assist with drafting, formatting, scheduling, repurposing, and analytics but must not bypass the approval gate.",
+      "Content requiring correction must return to DRAFT or REVIEW before being approved again.",
+    ],
+  },
+  {
+    name: "Evidence and Sources",
+    rules: [
+      "Separate survivor experience, community discussion, expert information, research, and ANW original education using the Source Type field.",
+      "Medical or scientific claims should use trustworthy sources appropriate to the importance of the claim.",
+      "Do not fabricate studies, statistics, quotations, medical recommendations, or expert statements.",
+      "When uncertainty exists, communicate the uncertainty rather than presenting assumptions as established facts.",
+    ],
+  },
+  {
+    name: "Patient-Friendly Communication",
+    rules: [
+      "Avoid unnecessary alarm, catastrophic framing, and sensational medical language.",
+      "Do not use fear as a tactic to increase clicks, comments, shares, or watch time.",
+      "Use strong hooks only when they remain accurate and respectful.",
+      "Make educational content easy to scan, understand, save, and discuss with a healthcare professional.",
+    ],
+  },
+  {
+    name: "Privacy and Community Safety",
+    rules: [
+      "Do not expose private patient information without appropriate permission.",
+      "Avoid publishing identifying medical details from community members unless they knowingly provided them for that purpose.",
+      "Handle sensitive stories, diagnoses, images, caregiver experiences, and recovery challenges with dignity.",
+      "Do not shame people for choosing surgery, radiation, watch and wait, rehabilitation, hearing devices, mental health support, or other legitimate care pathways.",
+    ],
+  },
+  {
+    name: "Calls to Action",
+    rules: [
+      "Use calls to action that support education, community, recovery resources, and informed discussion.",
+      "Do not use deceptive urgency or exploit fear, illness, disability, or uncertainty to drive engagement or sales.",
+      "Keep promotional language secondary to patient value and trust.",
+      "Approved CTA values should remain consistent with the ANW content taxonomy.",
+    ],
+  },
+  {
+    name: "Visual Identity",
+    rules: [
+      "Keep ANW branding consistent across website, social media, printables, guides, and video assets.",
+      "Favor calm, readable, accessible layouts suitable for patients who may experience fatigue, visual sensitivity, or cognitive overload.",
+      "Use the official ANW logo consistently and avoid visual treatments that reduce readability or trust.",
+      "Medical diagrams, illustrations, and generated visuals must not imply diagnostic certainty when they are educational or illustrative only.",
+    ],
+  },
+  {
+    name: "Publishing Principle",
+    rules: [
+      "Patient trust is more important than reach, virality, speed, or monetization.",
+      "Accuracy and safety are more important than publishing volume.",
+      "Every published asset should help the audience feel seen, understand something useful, navigate their journey, or connect with community.",
+    ],
+  },
+];
+
 export function runContent(
   options: ContentOptions = {},
 ): void {
-  const selectedModes =
-    [
-      options.status,
-      options.taxonomy,
-      options.recoveryLibrary,
-      options.workflow,
-    ].filter(Boolean).length;
+  const selectedModes = [
+    options.status,
+    options.taxonomy,
+    options.recoveryLibrary,
+    options.workflow,
+    options.brandRules,
+  ].filter(Boolean).length;
 
   if (
     selectedModes > 1
   ) {
     throw new Error(
-      "Choose only one content mode: --status, --taxonomy, --recovery-library, or --workflow.",
+      "Choose only one content mode: --status, --taxonomy, --recovery-library, --workflow, or --brand-rules.",
     );
   }
 
@@ -344,6 +462,13 @@ export function runContent(
     options.workflow === true
   ) {
     runContentWorkflow();
+    return;
+  }
+
+  if (
+    options.brandRules === true
+  ) {
+    runBrandRules();
     return;
   }
 
@@ -581,6 +706,70 @@ function runContentWorkflow(): void {
   console.log("");
 }
 
+function runBrandRules(): void {
+  console.log("");
+
+  console.log(
+    "# ANW AI-COS Brand + Safety Rules",
+  );
+
+  console.log("");
+
+  console.log(
+    `Rule sections: ${BRAND_AND_SAFETY_RULES.length}`,
+  );
+
+  console.log("");
+
+  console.log(
+    "Core principle:",
+  );
+
+  console.log(
+    "Patient trust is more important than reach, virality, speed, or monetization.",
+  );
+
+  console.log("");
+
+  console.log(
+    "Publishing gate: HUMAN APPROVAL REQUIRED",
+  );
+
+  console.log("");
+
+  BRAND_AND_SAFETY_RULES.forEach(
+    (
+      section,
+      index,
+    ) => {
+      console.log(
+        `${index + 1}. ${section.name}`,
+      );
+
+      for (
+        const rule
+        of section.rules
+      ) {
+        console.log(
+          `   - ${rule}`,
+        );
+      }
+
+      console.log("");
+    },
+  );
+
+  console.log(
+    "Brand and safety rules inspection complete.",
+  );
+
+  console.log(
+    "No files were changed.",
+  );
+
+  console.log("");
+}
+
 function printContentHelp(): void {
   console.log("");
 
@@ -610,6 +799,10 @@ function printContentHelp(): void {
 
   console.log(
     "npm run dev -- content --workflow",
+  );
+
+  console.log(
+    "npm run dev -- content --brand-rules",
   );
 
   console.log("");
