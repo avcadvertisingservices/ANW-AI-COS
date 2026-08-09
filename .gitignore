@@ -24,3 +24,5 @@ coverage/
 .DS_Store
 supabase/.temp/
 output/
+
+docs/snapshots/*.json
