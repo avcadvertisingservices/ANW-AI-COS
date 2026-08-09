@@ -2,6 +2,7 @@ export type ContentOptions = {
   status?: boolean;
   taxonomy?: boolean;
   recoveryLibrary?: boolean;
+  workflow?: boolean;
 };
 
 type TaxonomySection = {
@@ -12,6 +13,12 @@ type TaxonomySection = {
 type RecoveryLibrarySection = {
   name: string;
   purpose: string;
+};
+
+type WorkflowState = {
+  name: string;
+  purpose: string;
+  next: string[];
 };
 
 const CONTENT_RECORD_FIELDS = [
@@ -228,6 +235,71 @@ const RECOVERY_LIBRARY: RecoveryLibrarySection[] = [
   },
 ];
 
+const CONTENT_WORKFLOW: WorkflowState[] = [
+  {
+    name: "IDEA",
+    purpose:
+      "A content concept has been captured but has not yet been developed.",
+    next: [
+      "DRAFT",
+      "ARCHIVED",
+    ],
+  },
+  {
+    name: "DRAFT",
+    purpose:
+      "The content is being written, designed, scripted, or assembled.",
+    next: [
+      "REVIEW",
+      "ARCHIVED",
+    ],
+  },
+  {
+    name: "REVIEW",
+    purpose:
+      "The content is undergoing human quality, brand, factual, and safety review.",
+    next: [
+      "DRAFT",
+      "APPROVED",
+      "ARCHIVED",
+    ],
+  },
+  {
+    name: "APPROVED",
+    purpose:
+      "The content has passed human review and is permitted to enter the publishing workflow.",
+    next: [
+      "SCHEDULED",
+      "DRAFT",
+      "ARCHIVED",
+    ],
+  },
+  {
+    name: "SCHEDULED",
+    purpose:
+      "The content is approved and scheduled for publication on one or more platforms.",
+    next: [
+      "PUBLISHED",
+      "APPROVED",
+      "ARCHIVED",
+    ],
+  },
+  {
+    name: "PUBLISHED",
+    purpose:
+      "The content has been published and may now contribute performance data to the learning system.",
+    next: [
+      "ARCHIVED",
+    ],
+  },
+  {
+    name: "ARCHIVED",
+    purpose:
+      "The content remains part of ANW history but is no longer active in the publishing workflow.",
+    next: [],
+  },
+];
+
 export function runContent(
   options: ContentOptions = {},
 ): void {
@@ -236,13 +308,14 @@ export function runContent(
       options.status,
       options.taxonomy,
       options.recoveryLibrary,
+      options.workflow,
     ].filter(Boolean).length;
 
   if (
     selectedModes > 1
   ) {
     throw new Error(
-      "Choose only one content mode: --status, --taxonomy, or --recovery-library.",
+      "Choose only one content mode: --status, --taxonomy, --recovery-library, or --workflow.",
     );
   }
 
@@ -264,6 +337,13 @@ export function runContent(
     options.recoveryLibrary === true
   ) {
     runRecoveryLibrary();
+    return;
+  }
+
+  if (
+    options.workflow === true
+  ) {
+    runContentWorkflow();
     return;
   }
 
@@ -418,6 +498,89 @@ function runRecoveryLibrary(): void {
   console.log("");
 }
 
+function runContentWorkflow(): void {
+  console.log("");
+
+  console.log(
+    "# ANW AI-COS Content Workflow",
+  );
+
+  console.log("");
+
+  console.log(
+    `Workflow states: ${CONTENT_WORKFLOW.length}`,
+  );
+
+  console.log("");
+
+  console.log(
+    "Publishing gate: APPROVED",
+  );
+
+  console.log(
+    "Human approval required: YES",
+  );
+
+  console.log("");
+
+  CONTENT_WORKFLOW.forEach(
+    (
+      state,
+      index,
+    ) => {
+      console.log(
+        `${index + 1}. ${state.name}`,
+      );
+
+      console.log(
+        `   Purpose: ${state.purpose}`,
+      );
+
+      console.log(
+        `   Next: ${
+          state.next.length > 0
+            ? state.next.join(", ")
+            : "NONE"
+        }`,
+      );
+
+      console.log("");
+    },
+  );
+
+  console.log(
+    "Workflow:",
+  );
+
+  console.log("");
+
+  console.log(
+    "IDEA -> DRAFT -> REVIEW -> APPROVED -> SCHEDULED -> PUBLISHED -> ARCHIVED",
+  );
+
+  console.log("");
+
+  console.log(
+    "Automation rule:",
+  );
+
+  console.log(
+    "Only APPROVED content may proceed toward automated publishing.",
+  );
+
+  console.log("");
+
+  console.log(
+    "Content workflow inspection complete.",
+  );
+
+  console.log(
+    "No files were changed.",
+  );
+
+  console.log("");
+}
+
 function printContentHelp(): void {
   console.log("");
 
@@ -443,6 +606,10 @@ function printContentHelp(): void {
 
   console.log(
     "npm run dev -- content --recovery-library",
+  );
+
+  console.log(
+    "npm run dev -- content --workflow",
   );
 
   console.log("");
