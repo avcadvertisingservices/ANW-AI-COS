@@ -262,9 +262,18 @@ $releaseMetadataFiles = @(
   "tools/anw-cli/package.json"
 )
 
+$filesToStage = @()
+
+$filesToStage += @(
+  $sourceChanges
+)
+
+$filesToStage += @(
+  $releaseMetadataFiles
+)
+
 $filesToStage = @(
-  $sourceChanges +
-  $releaseMetadataFiles |
+  $filesToStage |
     Where-Object {
       $_ -and
       $_.Trim().Length -gt 0
