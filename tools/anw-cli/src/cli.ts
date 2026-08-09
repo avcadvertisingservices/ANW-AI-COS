@@ -359,7 +359,7 @@ program
 program
   .command("content")
   .description(
-    "Inspect ANW AI-COS content system status, taxonomy, Recovery Library, workflow, and brand rules.",
+    "Inspect ANW AI-COS content status, taxonomy, Recovery Library, workflow, brand rules, and website contract.",
   )
   .option(
     "--status",
@@ -386,6 +386,11 @@ program
     "Show the canonical ANW brand and content safety rules without changing files.",
     false,
   )
+  .option(
+    "--website-contract",
+    "Show the canonical ANW website integration contract without changing files.",
+    false,
+  )
   .action(
     (
       options: {
@@ -394,6 +399,7 @@ program
         recoveryLibrary?: boolean;
         workflow?: boolean;
         brandRules?: boolean;
+        websiteContract?: boolean;
       },
     ) => {
       try {

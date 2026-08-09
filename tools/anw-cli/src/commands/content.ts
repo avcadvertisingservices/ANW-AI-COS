@@ -4,6 +4,7 @@ export type ContentOptions = {
   recoveryLibrary?: boolean;
   workflow?: boolean;
   brandRules?: boolean;
+  websiteContract?: boolean;
 };
 
 type TaxonomySection = {
@@ -25,6 +26,17 @@ type WorkflowState = {
 type BrandRuleSection = {
   name: string;
   rules: string[];
+};
+
+type WebsiteContractField = {
+  name: string;
+  required: boolean;
+  purpose: string;
+};
+
+type WebsiteContractRule = {
+  name: string;
+  rule: string;
 };
 
 const CONTENT_RECORD_FIELDS = [
@@ -418,6 +430,198 @@ const BRAND_AND_SAFETY_RULES: BrandRuleSection[] = [
   },
 ];
 
+const WEBSITE_CONTRACT_FIELDS: WebsiteContractField[] = [
+  {
+    name: "Content ID",
+    required: true,
+    purpose:
+      "Stable unique identifier shared between ANW AI-COS and the website.",
+  },
+  {
+    name: "Page Type",
+    required: true,
+    purpose:
+      "Identifies how the website should render the content, such as article, Recovery Library entry, guide, landing page, or story.",
+  },
+  {
+    name: "Title",
+    required: true,
+    purpose:
+      "Human-readable public title of the website content.",
+  },
+  {
+    name: "Slug",
+    required: true,
+    purpose:
+      "Stable URL-safe identifier used to construct the public website path.",
+  },
+  {
+    name: "Journey Stage",
+    required: true,
+    purpose:
+      "Connects website content to the canonical ANW patient journey taxonomy.",
+  },
+  {
+    name: "Recovery Library Section",
+    required: false,
+    purpose:
+      "Maps content to a canonical Recovery Library section when applicable.",
+  },
+  {
+    name: "Audience",
+    required: true,
+    purpose:
+      "Identifies the primary audience using the ANW content taxonomy.",
+  },
+  {
+    name: "Content Pillar",
+    required: true,
+    purpose:
+      "Identifies the strategic ANW content pillar represented by the page.",
+  },
+  {
+    name: "Summary",
+    required: true,
+    purpose:
+      "Short patient-friendly summary for cards, listings, previews, and introductions.",
+  },
+  {
+    name: "Body",
+    required: true,
+    purpose:
+      "Primary website content body or canonical structured content payload.",
+  },
+  {
+    name: "CTA",
+    required: false,
+    purpose:
+      "Approved ANW call to action associated with the content.",
+  },
+  {
+    name: "Source Type",
+    required: true,
+    purpose:
+      "Identifies whether the content is survivor experience, medical education, community content, expert material, research, or ANW original.",
+  },
+  {
+    name: "Medical Review Level",
+    required: true,
+    purpose:
+      "Defines the review requirement that must be satisfied before publication.",
+  },
+  {
+    name: "Status",
+    required: true,
+    purpose:
+      "Tracks the content through the canonical ANW workflow.",
+  },
+  {
+    name: "Publishable",
+    required: true,
+    purpose:
+      "Explicit website publishing gate derived from approval and review requirements.",
+  },
+  {
+    name: "SEO Title",
+    required: false,
+    purpose:
+      "Search-friendly page title that remains accurate and consistent with the content.",
+  },
+  {
+    name: "SEO Description",
+    required: false,
+    purpose:
+      "Patient-friendly search description that accurately summarizes the page.",
+  },
+  {
+    name: "Featured Media",
+    required: false,
+    purpose:
+      "Reference or identifier for the primary image, video, or other website media asset.",
+  },
+  {
+    name: "Canonical URL",
+    required: false,
+    purpose:
+      "Preferred canonical public URL when the content is published.",
+  },
+  {
+    name: "Created At",
+    required: true,
+    purpose:
+      "Timestamp recording when the canonical content record was created.",
+  },
+  {
+    name: "Updated At",
+    required: true,
+    purpose:
+      "Timestamp recording the latest canonical content update.",
+  },
+];
+
+const WEBSITE_CONTRACT_RULES: WebsiteContractRule[] = [
+  {
+    name: "Approval Gate",
+    rule:
+      "Only content with Status APPROVED or a later valid publishing state may be considered for website publication.",
+  },
+  {
+    name: "Publishable Gate",
+    rule:
+      "Publishable must be YES only when human approval and all applicable medical review requirements have been satisfied.",
+  },
+  {
+    name: "Taxonomy",
+    rule:
+      "Journey Stage, Audience, Content Pillar, CTA, Source Type, Medical Review Level, and Status must conform to the canonical ANW taxonomy.",
+  },
+  {
+    name: "Recovery Library",
+    rule:
+      "Recovery Library Section must match a canonical Recovery Library section whenever the content is part of the Recovery Library.",
+  },
+  {
+    name: "Stable Identity",
+    rule:
+      "Content ID must remain stable across edits, publishing operations, analytics, and website synchronization.",
+  },
+  {
+    name: "Stable Slug",
+    rule:
+      "Slug should remain stable after publication unless a deliberate redirect or migration strategy is used.",
+  },
+  {
+    name: "URL Safety",
+    rule:
+      "Slug must be URL-safe and should use lowercase words separated by hyphens.",
+  },
+  {
+    name: "SEO Accuracy",
+    rule:
+      "SEO Title and SEO Description must accurately represent the page and must not introduce unsupported medical claims.",
+  },
+  {
+    name: "Medical Safety",
+    rule:
+      "Website publication must not bypass the ANW Brand + Safety Rules or required medical review.",
+  },
+  {
+    name: "Media References",
+    rule:
+      "Featured Media should use a stable external reference, asset identifier, or managed URL rather than embedding binary media inside the content record.",
+  },
+  {
+    name: "Canonical Ownership",
+    rule:
+      "ANW AI-COS remains the canonical content authority while the website acts as a publishing and presentation destination.",
+  },
+  {
+    name: "Synchronization",
+    rule:
+      "Website integrations should use Content ID and Updated At to detect and synchronize changed canonical records safely.",
+  },
+];
+
 export function runContent(
   options: ContentOptions = {},
 ): void {
@@ -427,13 +631,14 @@ export function runContent(
     options.recoveryLibrary,
     options.workflow,
     options.brandRules,
+    options.websiteContract,
   ].filter(Boolean).length;
 
   if (
     selectedModes > 1
   ) {
     throw new Error(
-      "Choose only one content mode: --status, --taxonomy, --recovery-library, --workflow, or --brand-rules.",
+      "Choose only one content mode: --status, --taxonomy, --recovery-library, --workflow, --brand-rules, or --website-contract.",
     );
   }
 
@@ -469,6 +674,13 @@ export function runContent(
     options.brandRules === true
   ) {
     runBrandRules();
+    return;
+  }
+
+  if (
+    options.websiteContract === true
+  ) {
+    runWebsiteContract();
     return;
   }
 
@@ -770,6 +982,106 @@ function runBrandRules(): void {
   console.log("");
 }
 
+function runWebsiteContract(): void {
+  console.log("");
+
+  console.log(
+    "# ANW AI-COS Website Integration Contract",
+  );
+
+  console.log("");
+
+  console.log(
+    "Contract version: 1.0",
+  );
+
+  console.log(
+    "Canonical authority: ANW AI-COS",
+  );
+
+  console.log(
+    "Publishing destination: ANW Website",
+  );
+
+  console.log(
+    "Human approval required: YES",
+  );
+
+  console.log("");
+
+  console.log(
+    `Contract fields: ${WEBSITE_CONTRACT_FIELDS.length}`,
+  );
+
+  console.log("");
+
+  WEBSITE_CONTRACT_FIELDS.forEach(
+    (
+      field,
+      index,
+    ) => {
+      console.log(
+        `${index + 1}. ${field.name}`,
+      );
+
+      console.log(
+        `   Required: ${field.required ? "YES" : "NO"}`,
+      );
+
+      console.log(
+        `   Purpose: ${field.purpose}`,
+      );
+
+      console.log("");
+    },
+  );
+
+  console.log(
+    `Integration rules: ${WEBSITE_CONTRACT_RULES.length}`,
+  );
+
+  console.log("");
+
+  WEBSITE_CONTRACT_RULES.forEach(
+    (
+      contractRule,
+      index,
+    ) => {
+      console.log(
+        `${index + 1}. ${contractRule.name}`,
+      );
+
+      console.log(
+        `   ${contractRule.rule}`,
+      );
+
+      console.log("");
+    },
+  );
+
+  console.log(
+    "Website publishing rule:",
+  );
+
+  console.log("");
+
+  console.log(
+    "APPROVED + review requirements satisfied -> Publishable YES -> Website synchronization allowed",
+  );
+
+  console.log("");
+
+  console.log(
+    "Website integration contract inspection complete.",
+  );
+
+  console.log(
+    "No files were changed.",
+  );
+
+  console.log("");
+}
+
 function printContentHelp(): void {
   console.log("");
 
@@ -803,6 +1115,10 @@ function printContentHelp(): void {
 
   console.log(
     "npm run dev -- content --brand-rules",
+  );
+
+  console.log(
+    "npm run dev -- content --website-contract",
   );
 
   console.log("");
