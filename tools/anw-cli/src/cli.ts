@@ -359,7 +359,7 @@ program
 program
   .command("content")
   .description(
-    "Inspect ANW AI-COS content system status and taxonomy.",
+    "Inspect ANW AI-COS content system status, taxonomy, and Recovery Library.",
   )
   .option(
     "--status",
@@ -371,11 +371,17 @@ program
     "Show the canonical ANW AI-COS content taxonomy without changing files.",
     false,
   )
+  .option(
+    "--recovery-library",
+    "Show the canonical ANW Recovery Library registry without changing files.",
+    false,
+  )
   .action(
     (
       options: {
         status?: boolean;
         taxonomy?: boolean;
+        recoveryLibrary?: boolean;
       },
     ) => {
       try {
