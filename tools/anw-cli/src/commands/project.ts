@@ -154,10 +154,11 @@ export function runProject(
 
   if (
     options.output !== undefined &&
-    options.report !== true
+    options.report !== true &&
+    options.compare === undefined
   ) {
     throw new Error(
-      "--output can only be used together with --report.",
+      "--output can only be used together with --report or --compare.",
     );
   }
 
@@ -172,10 +173,11 @@ export function runProject(
 
   if (
     options.force === true &&
-    options.report !== true
+    options.report !== true &&
+    options.compare === undefined
   ) {
     throw new Error(
-      "--force can only be used together with --report --output.",
+      "--force can only be used together with --report --output or --compare --output.",
     );
   }
 
@@ -194,6 +196,8 @@ export function runProject(
     runProjectCompareMode(
       options.compare,
       options.json === true,
+      options.output,
+      options.force === true,
     );
     return;
   }
@@ -270,6 +274,18 @@ function printProjectHelp(): void {
 
   console.log(
     "npm run dev -- project --compare <before.json> <after.json> --json",
+  );
+
+  console.log(
+    "npm run dev -- project --compare <before.json> <after.json> --output docs/comparison.md",
+  );
+
+  console.log(
+    "npm run dev -- project --compare <before.json> <after.json> --json --output docs/comparison.json",
+  );
+
+  console.log(
+    "npm run dev -- project --compare <before.json> <after.json> --output docs/comparison.md --force",
   );
 
   console.log("");
@@ -535,6 +551,8 @@ type ProjectComparisonJsonReport = {
 function runProjectCompareMode(
   reportPaths: string[],
   json: boolean,
+  output: string | undefined,
+  force: boolean,
 ): void {
   if (
     reportPaths.length !== 2
@@ -651,85 +669,91 @@ function runProjectCompareMode(
       afterPath,
     );
 
-  if (
+  const content =
     json
+      ? buildProjectComparisonJson(
+          beforePath,
+          afterPath,
+          beforeReport,
+          afterReport,
+          metrics,
+          beforeHealth,
+          afterHealth,
+        )
+      : buildProjectComparisonMarkdown(
+          beforePath,
+          afterPath,
+          metrics,
+          beforeHealth,
+          afterHealth,
+        );
+
+  if (
+    output !== undefined
   ) {
-    console.log(
-      buildProjectComparisonJson(
-        beforePath,
-        afterPath,
-        beforeReport,
-        afterReport,
-        metrics,
-        beforeHealth,
-        afterHealth,
-      ),
+    writeReportFile(
+      projectRoot,
+      output,
+      content,
+      json
+        ? "JSON"
+        : "Markdown",
+      force,
+      "Project Report Comparison",
     );
 
     return;
   }
 
-  console.log("");
   console.log(
-    "# ANW AI-COS Project Report Comparison",
-  );
-  console.log("");
-
-  console.log(
-    `Before: ${beforePath}`,
+    content,
   );
 
-  console.log(
-    `After: ${afterPath}`,
-  );
-
-  console.log("");
-
-  console.log(
-    "## Architecture Changes",
-  );
-
-  console.log("");
-
-  for (
-    const metric
-    of metrics
+  if (
+    !json
   ) {
+    console.log("");
     console.log(
-      `${metric.label}: ${metric.before} -> ${metric.after} (${formatSignedDelta(
-        metric.after -
-          metric.before,
-      )})`,
+      "No files were changed.",
     );
+    console.log("");
   }
+}
 
-  console.log("");
-
-  console.log(
+function buildProjectComparisonMarkdown(
+  beforePath: string,
+  afterPath: string,
+  metrics: ProjectCompareMetric[],
+  beforeHealth: ProjectHealth,
+  afterHealth: ProjectHealth,
+): string {
+  const lines = [
+    "# ANW AI-COS Project Report Comparison",
+    "",
+    `Before: ${beforePath}`,
+    `After: ${afterPath}`,
+    "",
+    "## Architecture Changes",
+    "",
+    ...metrics.map(
+      (metric) =>
+        `${metric.label}: ${metric.before} -> ${metric.after} (${formatSignedDelta(
+          metric.after -
+            metric.before,
+        )})`,
+    ),
+    "",
     "## Health",
-  );
-
-  console.log("");
-
-  console.log(
+    "",
     `Before: ${beforeHealth}`,
-  );
-
-  console.log(
     `After: ${afterHealth}`,
-  );
-
-  console.log("");
-
-  console.log(
+    "",
     "Project report comparison complete.",
-  );
+  ];
 
-  console.log(
-    "No files were changed.",
+  return lines.join(
+    "\n",
   );
-
-  console.log("");
 }
 
 function buildProjectComparisonJson(
@@ -1246,6 +1270,10 @@ function writeReportFile(
   content: string,
   format: "Markdown" | "JSON",
   force: boolean,
+  artifactName:
+    | "Project Report"
+    | "Project Report Comparison" =
+      "Project Report",
 ): void {
   const trimmedPath =
     requestedPath.trim();
@@ -1293,7 +1321,7 @@ function writeReportFile(
 
   console.log("");
   console.log(
-    "# ANW AI-COS Project Report",
+    `# ANW AI-COS ${artifactName}`,
   );
   console.log("");
 
@@ -1317,8 +1345,8 @@ function writeReportFile(
 
   console.log(
     force
-      ? "Project report written successfully with overwrite permission."
-      : "Project report written successfully.",
+      ? `${artifactName} written successfully with overwrite permission.`
+      : `${artifactName} written successfully.`,
   );
 
   console.log("");
